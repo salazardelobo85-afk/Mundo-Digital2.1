@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-PT" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Digital - Gestão & Compartilhamento Multimédia</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans">
+
+    <!-- CABEÇALHO / NAVBAR -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid font-bold fa-globe text-xl"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 bg-clip-text text-transparent hidden sm:inline-block">
+                    Mundo Digital
+                </span>
+            </div>
+
+            <div class="flex-1 max-w-md mx-2">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar ficheiros, vídeos, links..." 
+                           class="w-full pl-10 pr-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Botão para Ativar Notificações -->
+                <button id="enableNotificationsBtn" onclick="requestNotificationPermission()" title="Ativar Notificações Push" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                    <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
+                </button>
+
+                <button id="themeToggleBtn" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                
+                <button onclick="openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-full shadow-md hover:shadow-lg transition transform active:scale-95 text-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden md:inline">Adicionar Conteúdo</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- BANNER DE BOAS-VINDAS -->
+        <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-2xl">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Central Multimédia Mundo Digital</h1>
+                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização e partilha de ficheiros e recursos em tempo real com suporte a notificações instantâneas.</p>
+            </div>
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
+                <button data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white">
+                    <i class="fa-solid fa-border-all mr-1.5"></i>Todos
+                </button>
+                <button data-filter="image" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-image mr-1.5"></i>Imagens
+                </button>
+                <button data-filter="video" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-video mr-1.5"></i>Vídeos
+                </button>
+                <button data-filter="document" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-file-pdf mr-1.5"></i>Documentos
+                </button>
+                <button data-filter="link" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-link mr-1.5"></i>Links
+                </button>
+            </div>
+            
+            <span id="contentCounter" class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                A carregar...
+            </span>
+        </div>
+
+        <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+            <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center text-3xl mb-4">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Nenhum conteúdo encontrado</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">Não foram encontrados recursos com os filtros atuais ou tente fazer uma nova busca.</p>
+            <button onclick="resetFilters()" class="text-sm text-brand-600 dark:text-brand-400 font-semibold hover:underline">Limpar Filtros e Pesquisa</button>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE ADIÇÃO DE CONTEÚDO -->
+    <div id="addContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-4">
+            
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i> Adicionar ao Mundo Digital
+                </h3>
+                <button onclick="closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="addContentForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
+                    <button type="button" id="tabUploadBtn" onclick="switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
+                        <i class="fa-solid fa-upload mr-1"></i> Ficheiro Local
+                    </button>
+                    <button type="button" id="tabLinkBtn" onclick="switchAddTab('link')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                        <i class="fa-solid fa-link mr-1"></i> Link Externo
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Título do Conteúdo</label>
+                    <input type="text" id="inputTitle" required placeholder="Ex: Vídeo de Apresentação, Relatório PDF..." 
+                           class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <!-- SELETOR VISUAL DE CATEGORIA / TIPO -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-slate-600 dark:text-slate-400">Categoria / Tipo</label>
+                    
+                    <select id="selectCategory" class="hidden">
+                        <option value="image">Imagem</option>
+                        <option value="video">Vídeo</option>
+                        <option value="document">Documento / PDF</option>
+                        <option value="link">Link Web</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-2" id="categoryGrid">
+                        <button type="button" onclick="setCategoryUI('image')" data-cat="image" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition">
+                            <i class="fa-solid fa-image text-base"></i>
+                            <span>Imagem</span>
+                        </button>
+                        <button type="button" onclick="setCategoryUI('video')" data-cat="video" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                            <i class="fa-solid fa-video text-base"></i>
+                            <span>Vídeo</span>
+                        </button>
+                        <button type="button" onclick="setCategoryUI('document')" data-cat="document" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                            <i class="fa-solid fa-file-pdf text-base"></i>
+                            <span>Documento / PDF</span>
+                        </button>
+                        <button type="button" onclick="setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                            <i class="fa-solid fa-link text-base"></i>
+                            <span>Link Web</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="uploadSection" class="space-y-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Selecione o Ficheiro</label>
+                    <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-file-arrow-up text-3xl text-slate-400 mb-2"></i>
+                        <p id="fileNameDisplay" class="text-xs text-slate-500 dark:text-slate-400">Clique para selecionar imagem, vídeo ou PDF</p>
+                        <input type="file" id="fileInput" class="hidden" accept="image/*,video/*,application/pdf" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+
+                <div id="linkSection" class="hidden space-y-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">URL do Recurso / Website</label>
+                    <input type="url" id="inputUrl" placeholder="https://exemplo.com/recurso" 
+                           class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Descrição Curta</label>
+                    <textarea id="inputDescription" rows="2" placeholder="Breve resumo..." 
+                              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar"></textarea>
+                </div>
+
+                <!-- Barra de Progresso do Upload -->
+                <div id="uploadProgressContainer" class="hidden space-y-1">
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>A enviar ficheiro...</span>
+                        <span id="uploadPercent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="uploadProgressBar" class="bg-brand-600 h-2 rounded-full transition-all duration-200 w-0"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal('addContentModal')" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
+                    <button type="submit" id="submitBtn" class="px-5 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow transition">Enviar Recurso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO -->
+    <div id="viewContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4">
+            
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <span id="viewTypeIcon" class="p-2 rounded-lg bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400"></span>
+                    <div>
+                        <h3 id="viewTitle" class="font-bold text-base sm:text-lg line-clamp-1">Título</h3>
+                        <p id="viewCategoryDate" class="text-xs text-slate-500 dark:text-slate-400">Categoria • Data</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('viewContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="viewContainer" class="p-4 flex-1 overflow-auto bg-slate-950/20 flex items-center justify-center min-h-[300px] custom-scrollbar"></div>
+
+            <div class="p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <p id="viewDescription" class="text-sm text-slate-600 dark:text-slate-300 max-w-2xl">Descrição...</p>
+                
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <a id="viewDownloadBtn" target="_blank" download href="#" class="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg text-sm shadow transition text-center inline-flex">
+                        <i class="fa-solid fa-download"></i> Transferir / Abrir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT MODULAR DO FIREBASE (v10+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            deleteDoc, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getStorage, 
+            ref, 
+            uploadBytesResumable, 
+            getDownloadURL, 
+            deleteObject 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { 
+            getMessaging, 
+            getToken, 
+            onMessage,
+            isSupported
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
+            authDomain: "mundo-digital-9429d.firebaseapp.com",
+            projectId: "mundo-digital-9429d",
+            storageBucket: "mundo-digital-9429d.firebasestorage.app",
+            messagingSenderId: "1086109928706",
+            appId: "1:1086109928706:web:a059fb44dcf8c9c4e5c61b"
+        };
+
+        // Registo Físico do Service Worker
+        let swRegistration = null;
+        if ('serviceWorker' in navigator) {
+            try {
+                swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                console.log('Service Worker registado com sucesso:', swRegistration);
+            } catch (err) {
+                console.error('Falha ao registar o Service Worker:', err);
+            }
+        }
+
+        // Inicialização dos Serviços
+        const app = initializeApp(firebaseConfig);
+        export const auth = getAuth(app);
+        export const db = getFirestore(app);
+        export const storage = getStorage(app);
+        
+        let messaging = null;
+        const messagingSupported = await isSupported();
+        if (messagingSupported) {
+            messaging = getMessaging(app);
+        } else {
+            console.warn('Firebase Messaging não é suportado neste navegador.');
+        }
+
+        /* CONFIGURAÇÃO DO FIREBASE CLOUD MESSAGING (FCM) */
+        async function requestNotificationPermission() {
+            if (!messaging) {
+                alert('As notificações não são suportadas neste navegador ou dispositivo.');
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const tokenOptions = {
+                        vapidKey: 'BLItmueK8XrNq10vbQq3C1FlfdPJqIPYgMmbEO_Gp7xcb3DPHzld71uDcBM_pT6wST423gk9K1vm3XMgHPYkWqA'
+                    };
+                    if (swRegistration) {
+                        tokenOptions.serviceWorkerRegistration = swRegistration;
+                    }
+
+                    const token = await getToken(messaging, tokenOptions);
+                    
+                    if (token) {
+                        console.log('FCM Token obtido com sucesso:', token);
+                        alert('Notificações ativadas com sucesso no Mundo Digital!');
+                        document.getElementById('notificationIcon').className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
+                    } else {
+                        console.warn('Não foi possível obter o token de notificação.');
+                    }
+                } else {
+                    alert('Permissão de notificações recusada.');
+                }
+            } catch (error) {
+                console.error('Erro ao ativar notificações:', error);
+            }
+        }
+
+        // Receber notificações em primeiro plano
+        if (messaging) {
+            onMessage(messaging, (payload) => {
+                console.log('Mensagem recebida em primeiro plano: ', payload);
+                if (payload.notification) {
+                    alert(`[${payload.notification.title}]: ${payload.notification.body}`);
+                }
+            });
+        }
+
+        /* ESTADO DA APLICAÇÃO */
+        let contents = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let currentAddTab = 'upload';
+        let selectedFile = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            setupEventListeners();
+            listenToDatabaseChanges();
+        });
+
+        /* ESCUTAR MUDANÇAS EM TEMPO REAL NO FIRESTORE */
+        function listenToDatabaseChanges() {
+            try {
+                const contentsRef = collection(db, "contents");
+                onSnapshot(contentsRef, (snapshot) => {
+                    contents = snapshot.docs.map(docSnap => ({
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    }));
+                    contents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    render();
+                }, (error) => {
+                    console.error("Erro no Firestore:", error);
+                    document.getElementById('contentCounter').innerText = "Erro ao ligar à base de dados.";
+                });
+            } catch (e) {
+                console.error("Erro na ligação:", e);
+            }
+        }
+
+        /* GESTÃO DE TEMA */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('mundo_digital_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon(false);
+            }
+        }
+
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('mundo_digital_theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        });
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
+        }
+
+        /* GERENCIADOR VISUAL DA CATEGORIA */
+        function setCategoryUI(val) {
+            const select = document.getElementById('selectCategory');
+            if (select) select.value = val;
+
+            document.querySelectorAll('.cat-tile').forEach(tile => {
+                if (tile.getAttribute('data-cat') === val) {
+                    tile.className = "cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition";
+                } else {
+                    tile.className = "cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition";
+                }
+            });
+        }
+
+        /* EVENT LISTENERS */
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase().trim();
+                render();
+            });
+
+            document.querySelectorAll('#filterTabs button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#filterTabs button').forEach(b => {
+                        b.classList.remove('bg-brand-600', 'text-white', 'active');
+                        b.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+                    });
+                    
+                    const targetBtn = e.currentTarget;
+                    targetBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+                    targetBtn.classList.add('bg-brand-600', 'text-white', 'active');
+
+                    currentFilter = targetBtn.getAttribute('data-filter');
+                    render();
+                });
+            });
+        }
+
+        function resetFilters() {
+            searchQuery = '';
+            currentFilter = 'all';
+            document.getElementById('searchInput').value = '';
+            document.querySelector('#filterTabs button[data-filter="all"]').click();
+        }
+
+        /* RENDERIZAÇÃO */
+        function render() {
+            const grid = document.getElementById('contentGrid');
+            const emptyState = document.getElementById('emptyState');
+            const counter = document.getElementById('contentCounter');
+
+            const filtered = contents.filter(item => {
+                const matchesFilter = currentFilter === 'all' || item.type === currentFilter;
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery) || 
+                                      (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+                                      item.category.toLowerCase().includes(searchQuery);
+                return matchesFilter && matchesSearch;
+            });
+
+            counter.innerText = `${filtered.length} recurso(s) online`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            grid.innerHTML = filtered.map(item => createCardHTML(item)).join('');
+        }
+
+        function createCardHTML(item) {
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/70 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group">
+                    <div class="relative h-44 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
+                        ${getCardPreviewHTML(item)}
+                        <div class="absolute top-3 left-3">${getTypeBadgeHTML(item.type)}</div>
+                        <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 backdrop-blur-[2px]">
+                            <button onclick="openViewer('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Visualizar">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <a href="${item.url}" target="_blank" download="${item.title}" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Descarregar">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                            <button onclick="deleteContent('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Eliminar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">
+                                ${escapeHTML(item.title)}
+                            </h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                                ${escapeHTML(item.description || 'Sem descrição.')}
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
+                            <span class="font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">${item.size || 'Ficheiro'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCardPreviewHTML(item) {
+            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">`;
+            if (item.type === 'video') return `<div class="flex flex-col items-center justify-center text-brand-500"><i class="fa-solid fa-circle-play text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Vídeo</span></div>`;
+            if (item.type === 'document') return `<div class="flex flex-col items-center justify-center text-red-500"><i class="fa-solid fa-file-pdf text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Documento PDF</span></div>`;
+            return `<div class="flex flex-col items-center justify-center text-indigo-500"><i class="fa-solid fa-globe text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Link Externo</span></div>`;
+        }
+
+        function getTypeBadgeHTML(type) {
+            switch(type) {
+                case 'image': return `<span class="bg-emerald-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-image mr-1"></i>Imagem</span>`;
+                case 'video': return `<span class="bg-amber-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-video mr-1"></i>Vídeo</span>`;
+                case 'document': return `<span class="bg-rose-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</span>`;
+                default: return `<span class="bg-indigo-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-link mr-1"></i>Link</span>`;
+            }
+        }
+
+        function switchAddTab(tab) {
+            currentAddTab = tab;
+            const uploadBtn = document.getElementById('tabUploadBtn');
+            const linkBtn = document.getElementById('tabLinkBtn');
+            const uploadSec = document.getElementById('uploadSection');
+            const linkSec = document.getElementById('linkSection');
+
+            if (tab === 'upload') {
+                uploadBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                linkBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+                uploadSec.classList.remove('hidden');
+                linkSec.classList.add('hidden');
+            } else {
+                linkBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                uploadBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+                linkSec.classList.remove('hidden');
+                uploadSec.classList.add('hidden');
+                setCategoryUI('link');
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            selectedFile = file;
+            const formattedSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            document.getElementById('fileNameDisplay').innerText = `${file.name} (${formattedSize})`;
+
+            if (file.type.startsWith('image/')) setCategoryUI('image');
+            else if (file.type.startsWith('video/')) setCategoryUI('video');
+            else if (file.type === 'application/pdf') setCategoryUI('document');
+        }
+
+        /* ENVIO PARA O FIREBASE STORAGE + FIRESTORE */
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('inputTitle').value;
+            const category = document.getElementById('selectCategory').value;
+            const description = document.getElementById('inputDescription').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const customId = Date.now().toString();
+            let finalUrl = '';
+            let fileSize = 'Link Web';
+            let storagePath = null;
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                if (currentAddTab === 'upload') {
+                    if (!selectedFile) {
+                        alert('Por favor, selecione um ficheiro.');
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-50');
+                        return;
+                    }
+
+                    const progressContainer = document.getElementById('uploadProgressContainer');
+                    const progressBar = document.getElementById('uploadProgressBar');
+                    const progressPercent = document.getElementById('uploadPercent');
+                    progressContainer.classList.remove('hidden');
+
+                    storagePath = `uploads/${customId}_${selectedFile.name}`;
+                    const storageRef = ref(storage, storagePath);
+                    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+
+                    finalUrl = await new Promise((resolve, reject) => {
+                        uploadTask.on('state_changed', 
+                            (snapshot) => {
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                progressBar.style.width = `${progress}%`;
+                                progressPercent.innerText = `${Math.round(progress)}%`;
+                            }, 
+                            (error) => reject(error), 
+                            async () => {
+                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                                resolve(downloadURL);
+                            }
+                        );
+                    });
+
+                    fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+                } else {
+                    finalUrl = document.getElementById('inputUrl').value;
+                    if (!finalUrl) {
+                        alert('Por favor, insira o URL.');
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-50');
+                        return;
+                    }
+                }
+
+                const newItem = {
+                    title: title,
+                    description: description,
+                    type: category,
+                    category: category.charAt(0).toUpperCase() + category.slice(1),
+                    url: finalUrl,
+                    storagePath: storagePath,
+                    date: new Date().toISOString().split('T')[0],
+                    size: fileSize
+                };
+
+                await setDoc(doc(db, "contents", customId), newItem);
+                
+                closeModal('addContentModal');
+                resetAddForm();
+            } catch (error) {
+                console.error("Erro no envio:", error);
+                alert("Erro ao enviar o ficheiro. Certifique-se de configurar as permissões de gravação na consola do Firebase.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        }
+
+        function resetAddForm() {
+            document.getElementById('addContentForm').reset();
+            document.getElementById('fileNameDisplay').innerText = 'Clique para selecionar imagem, vídeo ou PDF';
+            document.getElementById('uploadProgressContainer').classList.add('hidden');
+            document.getElementById('uploadProgressBar').style.width = '0%';
+            selectedFile = null;
+            setCategoryUI('image');
+            switchAddTab('upload');
+        }
+
+        function openViewer(id) {
+            const item = contents.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('viewTitle').innerText = item.title;
+            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${item.date}`;
+            document.getElementById('viewDescription').innerText = item.description || 'Sem descrição.';
+            
+            const downloadBtn = document.getElementById('viewDownloadBtn');
+            downloadBtn.href = item.url;
+
+            const container = document.getElementById('viewContainer');
+            const iconContainer = document.getElementById('viewTypeIcon');
+
+            if (item.type === 'image') {
+                iconContainer.innerHTML = `<i class="fa-solid fa-image"></i>`;
+                container.innerHTML = `<img src="${item.url}" class="max-h-[65vh] w-auto max-w-full rounded-lg object-contain shadow-md" alt="${escapeHTML(item.title)}">`;
+            } else if (item.type === 'video') {
+                iconContainer.innerHTML = `<i class="fa-solid fa-video"></i>`;
+                container.innerHTML = `<video controls autoplay class="w-full max-h-[65vh] rounded-lg shadow-md"><source src="${item.url}"></video>`;
+            } else if (item.type === 'document') {
+                iconContainer.innerHTML = `<i class="fa-solid fa-file-pdf"></i>`;
+                container.innerHTML = `<iframe src="${item.url}" class="w-full h-[60vh] rounded-lg border-0 shadow-sm"></iframe>`;
+            } else {
+                iconContainer.innerHTML = `<i class="fa-solid fa-link"></i>`;
+                container.innerHTML = `
+                    <div class="text-center p-8">
+                        <i class="fa-solid fa-globe text-6xl text-brand-500 mb-4"></i>
+                        <h4 class="text-lg font-bold mb-2">Recurso Externo</h4>
+                        <a href="${item.url}" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg mt-4">Visitar Website</a>
+                    </div>
+                `;
+            }
+
+            openModal('viewContentModal');
+        }
+
+        async function deleteContent(id) {
+            const item = contents.find(i => i.id === id);
+            if (!item) return;
+
+            if (confirm(`Deseja eliminar "${item.title}"?`)) {
+                try {
+                    if (item.storagePath) {
+                        const fileRef = ref(storage, item.storagePath);
+                        await deleteObject(fileRef).catch(e => console.warn("Ficheiro no Storage já não existe:", e));
+                    }
+                    await deleteDoc(doc(db, "contents", id));
+                } catch (error) {
+                    console.error("Erro ao eliminar:", error);
+                }
+            }
+        }
+
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            m.firstElementChild.classList.remove('scale-95');
+            m.firstElementChild.classList.add('scale-100');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.add('opacity-0', 'pointer-events-none');
+            m.firstElementChild.classList.remove('scale-100');
+            m.firstElementChild.classList.add('scale-95');
+            if (id === 'viewContentModal') document.getElementById('viewContainer').innerHTML = '';
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        // Expor funções para o escopo global
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.switchAddTab = switchAddTab;
+        window.handleFileSelect = handleFileSelect;
+        window.handleFormSubmit = handleFormSubmit;
+        window.openViewer = openViewer;
+        window.deleteContent = deleteContent;
+        window.resetFilters = resetFilters;
+        window.setCategoryUI = setCategoryUI;
+        window.requestNotificationPermission = requestNotificationPermission;
+    </script>
+</body>
+</html>
