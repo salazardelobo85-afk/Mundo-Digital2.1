@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Digital - Gestão & Compartilhamento Multimédia</title>
+    <title>Mundo Digital - Gestão, Conteúdo & Chat</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,6 +16,7 @@
                         brand: {
                             50: '#f0f9ff',
                             100: '#e0f2fe',
+                            400: '#38bdf8',
                             500: '#0284c7',
                             600: '#0284c7',
                             700: '#0369a1',
@@ -38,7 +39,7 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto">
 
     <!-- CABEÇALHO / NAVBAR -->
     <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
@@ -62,8 +63,14 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Botão do Chat -->
+                <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
+                    <i class="fa-solid fa-comments text-lg"></i>
+                    <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
+                </button>
+
                 <!-- Botão para Ativar Notificações -->
-                <button id="enableNotificationsBtn" onclick="requestNotificationPermission()" title="Ativar Notificações Push" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                <button id="enableNotificationsBtn" onclick="window.requestNotificationPermission()" title="Ativar Notificações" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
                     <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
                 </button>
 
@@ -71,7 +78,7 @@
                     <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
                 </button>
                 
-                <button onclick="openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-full shadow-md hover:shadow-lg transition transform active:scale-95 text-sm">
+                <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-full shadow-md hover:shadow-lg transition transform active:scale-95 text-sm">
                     <i class="fa-solid fa-plus"></i>
                     <span class="hidden md:inline">Adicionar Conteúdo</span>
                 </button>
@@ -86,7 +93,7 @@
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Central Multimédia Mundo Digital</h1>
-                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização e partilha de ficheiros e recursos em tempo real com suporte a notificações instantâneas.</p>
+                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização, partilha de ficheiros e comunicação em tempo real com outros utilizadores.</p>
             </div>
             <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -125,10 +132,71 @@
             </div>
             <h3 class="text-lg font-bold mb-1">Nenhum conteúdo encontrado</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">Não foram encontrados recursos com os filtros atuais ou tente fazer uma nova busca.</p>
-            <button onclick="resetFilters()" class="text-sm text-brand-600 dark:text-brand-400 font-semibold hover:underline">Limpar Filtros e Pesquisa</button>
+            <button onclick="window.resetFilters()" class="text-sm text-brand-600 dark:text-brand-400 font-semibold hover:underline">Limpar Filtros e Pesquisa</button>
         </div>
 
     </main>
+
+    <!-- MODAL DE CHAT E PESQUISA DE UTILIZADORES -->
+    <div id="chatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[80vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4">
+            
+            <!-- Cabeçalho do Chat -->
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400">
+                        <i class="fa-solid fa-comments text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base sm:text-lg">Mensagens e Conversas</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="chatSubtitle">Procure utilizadores para iniciar uma conversa</p>
+                    </div>
+                </div>
+                <button onclick="window.closeModal('chatModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 flex overflow-hidden">
+                <!-- Barra Lateral: Lista de Utilizadores/Conversas -->
+                <div class="w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/20">
+                    <div class="p-3 border-b border-slate-200 dark:border-slate-700">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                            <input type="text" id="userSearchInput" onkeyup="window.searchUsers()" placeholder="Procurar utilizadores..." 
+                                   class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        </div>
+                    </div>
+                    <div id="usersList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
+                        <div class="p-4 text-center text-xs text-slate-400">A carregar utilizadores...</div>
+                    </div>
+                </div>
+
+                <!-- Janela Principal de Chat -->
+                <div class="flex-1 flex flex-col bg-slate-100/50 dark:bg-slate-900/40">
+                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" id="chatActiveAvatar">U</div>
+                        <span class="font-bold text-sm" id="chatActiveName">Nome do Utilizador</span>
+                    </div>
+
+                    <div id="chatMessages" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-3 flex flex-col">
+                        <div class="text-center my-auto text-slate-400 text-xs">
+                            <i class="fa-solid fa-paper-plane text-3xl mb-2 opacity-50"></i>
+                            <p>Selecione um utilizador na lista à esquerda para iniciar o chat.</p>
+                        </div>
+                    </div>
+
+                    <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex gap-2 hidden">
+                        <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." required autocomplete="off"
+                               class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl text-sm transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL DE ADIÇÃO DE CONTEÚDO -->
     <div id="addContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
@@ -138,17 +206,17 @@
                 <h3 class="font-bold text-lg flex items-center gap-2">
                     <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i> Adicionar ao Mundo Digital
                 </h3>
-                <button onclick="closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <button onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
-            <form id="addContentForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+            <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-                    <button type="button" id="tabUploadBtn" onclick="switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
+                    <button type="button" id="tabUploadBtn" onclick="window.switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
                         <i class="fa-solid fa-upload mr-1"></i> Ficheiro Local
                     </button>
-                    <button type="button" id="tabLinkBtn" onclick="switchAddTab('link')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                    <button type="button" id="tabLinkBtn" onclick="window.switchAddTab('link')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
                         <i class="fa-solid fa-link mr-1"></i> Link Externo
                     </button>
                 </div>
@@ -159,7 +227,6 @@
                            class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
 
-                <!-- SELETOR VISUAL DE CATEGORIA / TIPO -->
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-slate-600 dark:text-slate-400">Categoria / Tipo</label>
                     
@@ -171,19 +238,19 @@
                     </select>
 
                     <div class="grid grid-cols-2 gap-2" id="categoryGrid">
-                        <button type="button" onclick="setCategoryUI('image')" data-cat="image" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition">
+                        <button type="button" onclick="window.setCategoryUI('image')" data-cat="image" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition">
                             <i class="fa-solid fa-image text-base"></i>
                             <span>Imagem</span>
                         </button>
-                        <button type="button" onclick="setCategoryUI('video')" data-cat="video" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                        <button type="button" onclick="window.setCategoryUI('video')" data-cat="video" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
                             <i class="fa-solid fa-video text-base"></i>
                             <span>Vídeo</span>
                         </button>
-                        <button type="button" onclick="setCategoryUI('document')" data-cat="document" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                        <button type="button" onclick="window.setCategoryUI('document')" data-cat="document" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
                             <i class="fa-solid fa-file-pdf text-base"></i>
                             <span>Documento / PDF</span>
                         </button>
-                        <button type="button" onclick="setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                        <button type="button" onclick="window.setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
                             <i class="fa-solid fa-link text-base"></i>
                             <span>Link Web</span>
                         </button>
@@ -195,7 +262,7 @@
                     <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50" onclick="document.getElementById('fileInput').click()">
                         <i class="fa-solid fa-file-arrow-up text-3xl text-slate-400 mb-2"></i>
                         <p id="fileNameDisplay" class="text-xs text-slate-500 dark:text-slate-400">Clique para selecionar imagem, vídeo ou PDF</p>
-                        <input type="file" id="fileInput" class="hidden" accept="image/*,video/*,application/pdf" onchange="handleFileSelect(event)">
+                        <input type="file" id="fileInput" class="hidden" accept="image/*,video/*,application/pdf" onchange="window.handleFileSelect(event)">
                     </div>
                 </div>
 
@@ -223,7 +290,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeModal('addContentModal')" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
+                    <button type="button" onclick="window.closeModal('addContentModal')" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
                     <button type="submit" id="submitBtn" class="px-5 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow transition">Enviar Recurso</button>
                 </div>
             </form>
@@ -242,7 +309,7 @@
                         <p id="viewCategoryDate" class="text-xs text-slate-500 dark:text-slate-400">Categoria • Data</p>
                     </div>
                 </div>
-                <button onclick="closeModal('viewContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">
+                <button onclick="window.closeModal('viewContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -253,25 +320,28 @@
                 <p id="viewDescription" class="text-sm text-slate-600 dark:text-slate-300 max-w-2xl">Descrição...</p>
                 
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <a id="viewDownloadBtn" target="_blank" download href="#" class="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg text-sm shadow transition text-center inline-flex">
-                        <i class="fa-solid fa-download"></i> Transferir / Abrir
+                    <a id="viewDownloadBtn" target="_blank" rel="noopener noreferrer" href="#" class="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg text-sm shadow transition text-center inline-flex">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT MODULAR DO FIREBASE (v10+) -->
+    <!-- SCRIPT MODULAR DO FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, 
             collection, 
             doc, 
             setDoc, 
             deleteDoc, 
-            onSnapshot 
+            onSnapshot,
+            addDoc,
+            query,
+            orderBy
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getStorage, 
@@ -283,7 +353,6 @@
         import { 
             getMessaging, 
             getToken, 
-            onMessage,
             isSupported
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
@@ -297,89 +366,207 @@
             appId: "1:1086109928706:web:a059fb44dcf8c9c4e5c61b"
         };
 
-        // Registo Físico do Service Worker
-        let swRegistration = null;
-        if ('serviceWorker' in navigator) {
-            try {
-                swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                console.log('Service Worker registado com sucesso:', swRegistration);
-            } catch (err) {
-                console.error('Falha ao registar o Service Worker:', err);
-            }
-        }
-
-        // Inicialização dos Serviços
         const app = initializeApp(firebaseConfig);
-        export const auth = getAuth(app);
-        export const db = getFirestore(app);
-        export const storage = getStorage(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUserId = null;
+        let currentUserName = "Utilizador Anónimo";
+        let activeChatUserId = null;
+        let unsubscribeChat = null;
+        let unsubscribeUsers = null;
+        let allUsers = [];
+
+        // Autenticação anónima automática para identificar o utilizador no chat
+        signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
         
-        let messaging = null;
-        const messagingSupported = await isSupported();
-        if (messagingSupported) {
-            messaging = getMessaging(app);
-        } else {
-            console.warn('Firebase Messaging não é suportado neste navegador.');
-        }
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                currentUserName = "Utilizador " + user.uid.substring(0, 5);
+                
+                await setDoc(doc(db, "users", currentUserId), {
+                    uid: currentUserId,
+                    name: currentUserName,
+                    lastSeen: new Date().toISOString()
+                }, { merge: true });
 
-        /* CONFIGURAÇÃO DO FIREBASE CLOUD MESSAGING (FCM) */
-        async function requestNotificationPermission() {
-            if (!messaging) {
-                alert('As notificações não são suportadas neste navegador ou dispositivo.');
-                return;
+                listenToUsersRealtime();
             }
+        });
 
+        async function requestNotificationPermission() {
             try {
+                if (!('Notification' in window)) {
+                    alert('As notificações não são suportadas neste navegador.');
+                    return;
+                }
+
+                const messagingSupported = await isSupported().catch(() => false);
+                if (!messagingSupported) {
+                    alert('O serviço de notificações em tempo real (FCM) não é suportado no contexto atual do navegador.');
+                    return;
+                }
+
                 const permission = await Notification.requestPermission();
+                
                 if (permission === 'granted') {
+                    const messaging = getMessaging(app);
+                    let swRegistration = null;
+
+                    if ('serviceWorker' in navigator) {
+                        swRegistration = await navigator.serviceWorker.getRegistration().catch(() => null);
+                    }
+                    
                     const tokenOptions = {
                         vapidKey: 'BLItmueK8XrNq10vbQq3C1FlfdPJqIPYgMmbEO_Gp7xcb3DPHzld71uDcBM_pT6wST423gk9K1vm3XMgHPYkWqA'
                     };
-                    if (swRegistration) {
-                        tokenOptions.serviceWorkerRegistration = swRegistration;
-                    }
+                    if (swRegistration) tokenOptions.serviceWorkerRegistration = swRegistration;
 
-                    const token = await getToken(messaging, tokenOptions);
-                    
-                    if (token) {
-                        console.log('FCM Token obtido com sucesso:', token);
-                        alert('Notificações ativadas com sucesso no Mundo Digital!');
-                        document.getElementById('notificationIcon').className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
-                    } else {
-                        console.warn('Não foi possível obter o token de notificação.');
-                    }
+                    const token = await getToken(messaging, tokenOptions).catch(err => {
+                        console.warn("Aviso ao obter FCM Token:", err);
+                        return null;
+                    });
+
+                    alert('Notificações ativadas com sucesso!');
+                    const icon = document.getElementById('notificationIcon');
+                    if (icon) icon.className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
                 } else {
                     alert('Permissão de notificações recusada.');
                 }
             } catch (error) {
                 console.error('Erro ao ativar notificações:', error);
+                alert('Não foi possível ativar as notificações neste dispositivo.');
             }
         }
 
-        // Receber notificações em primeiro plano
-        if (messaging) {
-            onMessage(messaging, (payload) => {
-                console.log('Mensagem recebida em primeiro plano: ', payload);
-                if (payload.notification) {
-                    alert(`[${payload.notification.title}]: ${payload.notification.body}`);
-                }
+        function listenToUsersRealtime() {
+            if (unsubscribeUsers) unsubscribeUsers();
+
+            const usersRef = collection(db, "users");
+            unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+                allUsers = snapshot.docs.map(d => d.data());
+                searchUsers();
+            }, (err) => {
+                console.error("Erro na escuta de utilizadores:", err);
             });
         }
 
-        /* ESTADO DA APLICAÇÃO */
+        function searchUsers() {
+            const searchInput = document.getElementById('userSearchInput');
+            const queryText = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const filtered = allUsers.filter(u => 
+                (u.name && u.name.toLowerCase().includes(queryText)) || 
+                (u.uid && u.uid.toLowerCase().includes(queryText))
+            );
+            renderUsersList(filtered);
+        }
+
+        function renderUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            if (!usersList) return;
+
+            const otherUsers = users.filter(u => u.uid !== currentUserId);
+
+            if (otherUsers.length === 0) {
+                usersList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Nenhum utilizador online ou encontrado.</div>`;
+                return;
+            }
+
+            usersList.innerHTML = otherUsers.map(u => {
+                const safeName = escapeHTML(u.name || 'Utilizador');
+                return `
+                <div onclick="window.startChatWith('${u.uid}', '${safeName.replace(/'/g, "\\'")}')" 
+                     class="p-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer flex items-center gap-2.5 transition ${activeChatUserId === u.uid ? 'bg-brand-50 dark:bg-brand-900/30' : ''}">
+                    <div class="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                        ${(u.name || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-xs font-semibold truncate">${safeName}</p>
+                        <p class="text-[10px] text-slate-400 truncate">ID: ${u.uid.substring(0, 8)}...</p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function getChatId(uid1, uid2) {
+            return [uid1, uid2].sort().join("_");
+        }
+
+        function startChatWith(userId, userName) {
+            activeChatUserId = userId;
+            renderUsersList(allUsers);
+
+            document.getElementById('chatActiveHeader').classList.remove('hidden');
+            document.getElementById('chatForm').classList.remove('hidden');
+            document.getElementById('chatActiveName').innerText = userName;
+            document.getElementById('chatActiveAvatar').innerText = userName.charAt(0).toUpperCase();
+
+            const chatId = getChatId(currentUserId, userId);
+
+            if (unsubscribeChat) unsubscribeChat();
+
+            const messagesRef = collection(db, "chats", chatId, "messages");
+            const q = query(messagesRef, orderBy("timestamp", "asc"));
+
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.innerHTML = '';
+
+                if (snapshot.empty) {
+                    messagesContainer.innerHTML = `
+                        <div class="text-center my-auto text-slate-400 text-xs">
+                            <p>Sem mensagens anteriores. Diga olá a <strong>${escapeHTML(userName)}</strong>!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.docs.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    const isMe = msg.senderId === currentUserId;
+
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                    msgDiv.innerHTML = `
+                        <div class="max-w-[80%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
+                            ${escapeHTML(msg.text)}
+                        </div>
+                    `;
+                    messagesContainer.appendChild(msgDiv);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        async function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !activeChatUserId) return;
+
+            const chatId = getChatId(currentUserId, activeChatUserId);
+            input.value = '';
+
+            try {
+                await addDoc(collection(db, "chats", chatId, "messages"), {
+                    senderId: currentUserId,
+                    text: text,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (err) {
+                console.error("Erro ao enviar mensagem:", err);
+            }
+        }
+
         let contents = [];
         let currentFilter = 'all';
         let searchQuery = '';
         let currentAddTab = 'upload';
         let selectedFile = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            setupEventListeners();
-            listenToDatabaseChanges();
-        });
-
-        /* ESCUTAR MUDANÇAS EM TEMPO REAL NO FIRESTORE */
         function listenToDatabaseChanges() {
             try {
                 const contentsRef = collection(db, "contents");
@@ -388,18 +575,18 @@
                         id: docSnap.id,
                         ...docSnap.data()
                     }));
-                    contents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    contents.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
                     render();
                 }, (error) => {
                     console.error("Erro no Firestore:", error);
-                    document.getElementById('contentCounter').innerText = "Erro ao ligar à base de dados.";
+                    const counter = document.getElementById('contentCounter');
+                    if (counter) counter.innerText = "Erro ao ligar à base de dados.";
                 });
             } catch (e) {
                 console.error("Erro na ligação:", e);
             }
         }
 
-        /* GESTÃO DE TEMA */
         function initTheme() {
             const savedTheme = localStorage.getItem('mundo_digital_theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -411,18 +598,13 @@
             }
         }
 
-        document.getElementById('themeToggleBtn').addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('mundo_digital_theme', isDark ? 'dark' : 'light');
-            updateThemeIcon(isDark);
-        });
-
         function updateThemeIcon(isDark) {
             const icon = document.getElementById('themeIcon');
-            icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
+            if (icon) {
+                icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
+            }
         }
 
-        /* GERENCIADOR VISUAL DA CATEGORIA */
         function setCategoryUI(val) {
             const select = document.getElementById('selectCategory');
             if (select) select.value = val;
@@ -436,12 +618,14 @@
             });
         }
 
-        /* EVENT LISTENERS */
         function setupEventListeners() {
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                searchQuery = e.target.value.toLowerCase().trim();
-                render();
-            });
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value.toLowerCase().trim();
+                    render();
+                });
+            }
 
             document.querySelectorAll('#filterTabs button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -458,26 +642,38 @@
                     render();
                 });
             });
+
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('mundo_digital_theme', isDark ? 'dark' : 'light');
+                    updateThemeIcon(isDark);
+                });
+            }
         }
 
         function resetFilters() {
             searchQuery = '';
             currentFilter = 'all';
-            document.getElementById('searchInput').value = '';
-            document.querySelector('#filterTabs button[data-filter="all"]').click();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            const defaultFilterBtn = document.querySelector('#filterTabs button[data-filter="all"]');
+            if (defaultFilterBtn) defaultFilterBtn.click();
         }
 
-        /* RENDERIZAÇÃO */
         function render() {
             const grid = document.getElementById('contentGrid');
             const emptyState = document.getElementById('emptyState');
             const counter = document.getElementById('contentCounter');
 
+            if (!grid || !emptyState || !counter) return;
+
             const filtered = contents.filter(item => {
                 const matchesFilter = currentFilter === 'all' || item.type === currentFilter;
-                const matchesSearch = item.title.toLowerCase().includes(searchQuery) || 
+                const matchesSearch = (item.title && item.title.toLowerCase().includes(searchQuery)) || 
                                       (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-                                      item.category.toLowerCase().includes(searchQuery);
+                                      (item.category && item.category.toLowerCase().includes(searchQuery));
                 return matchesFilter && matchesSearch;
             });
 
@@ -502,13 +698,13 @@
                         ${getCardPreviewHTML(item)}
                         <div class="absolute top-3 left-3">${getTypeBadgeHTML(item.type)}</div>
                         <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 backdrop-blur-[2px]">
-                            <button onclick="openViewer('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Visualizar">
+                            <button onclick="window.openViewer('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Visualizar">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <a href="${item.url}" target="_blank" download="${item.title}" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Descarregar">
+                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Abrir / Descarregar">
                                 <i class="fa-solid fa-download"></i>
                             </a>
-                            <button onclick="deleteContent('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Eliminar">
+                            <button onclick="window.deleteContent('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Eliminar">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -523,7 +719,7 @@
                             </p>
                         </div>
                         <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
-                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date || 'Recente'}</span>
                             <span class="font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">${item.size || 'Ficheiro'}</span>
                         </div>
                     </div>
@@ -581,13 +777,12 @@
             else if (file.type === 'application/pdf') setCategoryUI('document');
         }
 
-        /* ENVIO PARA O FIREBASE STORAGE + FIRESTORE */
         async function handleFormSubmit(e) {
             e.preventDefault();
 
-            const title = document.getElementById('inputTitle').value;
+            const title = document.getElementById('inputTitle').value.trim();
             const category = document.getElementById('selectCategory').value;
-            const description = document.getElementById('inputDescription').value;
+            const description = document.getElementById('inputDescription').value.trim();
             const submitBtn = document.getElementById('submitBtn');
             
             const customId = Date.now().toString();
@@ -633,7 +828,7 @@
 
                     fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
                 } else {
-                    finalUrl = document.getElementById('inputUrl').value;
+                    finalUrl = document.getElementById('inputUrl').value.trim();
                     if (!finalUrl) {
                         alert('Por favor, insira o URL.');
                         submitBtn.disabled = false;
@@ -659,7 +854,7 @@
                 resetAddForm();
             } catch (error) {
                 console.error("Erro no envio:", error);
-                alert("Erro ao enviar o ficheiro. Certifique-se de configurar as permissões de gravação na consola do Firebase.");
+                alert("Erro ao enviar o ficheiro.");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
@@ -681,7 +876,7 @@
             if (!item) return;
 
             document.getElementById('viewTitle').innerText = item.title;
-            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${item.date}`;
+            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${item.date || 'Recente'}`;
             document.getElementById('viewDescription').innerText = item.description || 'Sem descrição.';
             
             const downloadBtn = document.getElementById('viewDownloadBtn');
@@ -698,14 +893,21 @@
                 container.innerHTML = `<video controls autoplay class="w-full max-h-[65vh] rounded-lg shadow-md"><source src="${item.url}"></video>`;
             } else if (item.type === 'document') {
                 iconContainer.innerHTML = `<i class="fa-solid fa-file-pdf"></i>`;
-                container.innerHTML = `<iframe src="${item.url}" class="w-full h-[60vh] rounded-lg border-0 shadow-sm"></iframe>`;
+                container.innerHTML = `
+                    <object data="${item.url}" type="application/pdf" class="w-full h-[60vh] rounded-lg shadow-sm">
+                        <div class="text-center p-6 text-slate-400">
+                            <p class="mb-2">O seu navegador não suporta a pré-visualização de PDF diretamente.</p>
+                            <a href="${item.url}" target="_blank" class="text-brand-500 underline font-semibold">Clique aqui para abrir o documento PDF</a>
+                        </div>
+                    </object>
+                `;
             } else {
                 iconContainer.innerHTML = `<i class="fa-solid fa-link"></i>`;
                 container.innerHTML = `
                     <div class="text-center p-8">
                         <i class="fa-solid fa-globe text-6xl text-brand-500 mb-4"></i>
                         <h4 class="text-lg font-bold mb-2">Recurso Externo</h4>
-                        <a href="${item.url}" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg mt-4">Visitar Website</a>
+                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg mt-4">Visitar Website</a>
                     </div>
                 `;
             }
@@ -732,6 +934,7 @@
 
         function openModal(id) {
             const m = document.getElementById(id);
+            if (!m) return;
             m.classList.remove('opacity-0', 'pointer-events-none');
             m.firstElementChild.classList.remove('scale-95');
             m.firstElementChild.classList.add('scale-100');
@@ -739,6 +942,7 @@
 
         function closeModal(id) {
             const m = document.getElementById(id);
+            if (!m) return;
             m.classList.add('opacity-0', 'pointer-events-none');
             m.firstElementChild.classList.remove('scale-100');
             m.firstElementChild.classList.add('scale-95');
@@ -746,10 +950,11 @@
         }
 
         function escapeHTML(str) {
+            if (!str) return '';
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // Expor funções para o escopo global
+        // Expor funções ao âmbito global
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.switchAddTab = switchAddTab;
@@ -760,6 +965,15 @@
         window.resetFilters = resetFilters;
         window.setCategoryUI = setCategoryUI;
         window.requestNotificationPermission = requestNotificationPermission;
+        window.searchUsers = searchUsers;
+        window.startChatWith = startChatWith;
+        window.sendChatMessage = sendChatMessage;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            setupEventListeners();
+            listenToDatabaseChanges();
+        });
     </script>
 </body>
 </html>
