@@ -110,6 +110,20 @@
         </div>
     </div>
 
+    <!-- MODAL PARA EDITAR ALCUNHA -->
+    <div id="nicknameModal" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 transform scale-95 transition-transform duration-200 m-4">
+            <h3 class="font-bold text-base mb-1">Definir Alcunha</h3>
+            <p class="text-xs text-slate-500 mb-4" id="nicknameModalSub">Atribua um apelido privado a este contacto.</p>
+            <input type="text" id="nicknameInput" placeholder="Ex: Meu Colega, Chefe..." 
+                   class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none mb-4">
+            <div class="flex justify-end gap-2">
+                <button onclick="window.closeModal('nicknameModal')" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
+                <button onclick="window.saveUserNickname()" class="px-4 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow transition">Gravar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CABEÇALHO / NAVBAR -->
     <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -354,7 +368,10 @@
                             </button>
                             <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" id="chatActiveAvatar">U</div>
                             <div>
-                                <span class="font-bold text-sm block" id="chatActiveName">Nome do Utilizador</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-bold text-sm block" id="chatActiveName">Nome do Utilizador</span>
+                                    <button onclick="window.openNicknameModal()" class="text-[10px] text-brand-500 hover:underline" title="Definir Alcunha"><i class="fa-solid fa-pen"></i></button>
+                                </div>
                                 <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
                             </div>
                         </div>
@@ -377,7 +394,7 @@
 
                     <!-- BARRA DE INPUT DE MENSAGEM / SEGURAR PARA GRAVAR ÁUDIO -->
                     <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 hidden">
-                        <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off"
+                        <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off" oninput="window.handleTypingInput()"
                                class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         
                         <!-- BOTÃO "SEGURAR PARA GRAVAR" -->
@@ -525,7 +542,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE COMPLETO COM HOLD-TO-RECORD WEBRTC -->
+    <!-- SCRIPT FIREBASE COMPLETO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -549,7 +566,8 @@
             orderBy,
             limit,
             updateDoc,
-            getDoc
+            getDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getStorage, 
@@ -578,14 +596,17 @@
         let activeChatUserId = null;
         let unsubscribeChat = null;
         let unsubscribeUsers = null;
+        let unsubscribeTyping = null;
         let unreadMessagesCount = 0;
         let allUsers = [];
+        let userNicknames = {};
         let contents = [];
         let currentFilter = 'all';
         let searchQuery = '';
         let currentAddTab = 'upload';
         let selectedFile = null;
         let activeUploadTask = null;
+        let typingTimeout = null;
 
         // VARIÁVEIS WEBRTC PARA CHAMADAS
         let peerConnection = null;
@@ -600,7 +621,7 @@
         let isVideoOff = false;
         let incomingCallData = null;
 
-        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO (HOLD-TO-RECORD)
+        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecordingAudio = false;
@@ -690,7 +711,13 @@
                 const nameInput = document.getElementById('myCustomNameInput');
                 if (nameInput) nameInput.value = currentUserName;
 
-                await setDoc(doc(db, "users", currentUserId), {
+                const userDocRef = doc(db, "users", currentUserId);
+                const userSnap = await getDoc(userDocRef);
+                if (userSnap.exists() && userSnap.data().nicknames) {
+                    userNicknames = userSnap.data().nicknames;
+                }
+
+                await setDoc(userDocRef, {
                     uid: currentUserId,
                     name: currentUserName,
                     email: user.email || null,
@@ -895,10 +922,10 @@
         function searchUsers() {
             const searchInput = document.getElementById('userSearchInput');
             const queryText = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const filtered = allUsers.filter(u => 
-                (u.name && u.name.toLowerCase().includes(queryText)) || 
-                (u.uid && u.uid.toLowerCase().includes(queryText))
-            );
+            const filtered = allUsers.filter(u => {
+                const name = (userNicknames[u.uid] || u.name || u.email || '').toLowerCase();
+                return name.includes(queryText) || (u.uid && u.uid.toLowerCase().includes(queryText));
+            });
             renderUsersList(filtered);
         }
 
@@ -935,9 +962,10 @@
             }
 
             usersList.innerHTML = otherUsers.map(u => {
-                const displayName = u.name || u.email || 'Utilizador';
+                const rawName = u.name || u.email || 'Utilizador';
+                const displayName = userNicknames[u.uid] || rawName;
                 const safeName = escapeHTML(displayName);
-                const encodedName = encodeURIComponent(displayName);
+                const encodedName = encodeURIComponent(rawName);
                 const online = isUserOnline(u);
                 const statusText = formatLastSeen(u.lastSeen, online);
 
@@ -951,7 +979,7 @@
                         <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-800 ${online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
                     </div>
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-xs font-semibold truncate">${safeName}</p>
+                        <p class="text-xs font-semibold truncate">${safeName} ${userNicknames[u.uid] ? `<span class="text-[10px] text-brand-500 font-normal">(${escapeHTML(rawName)})</span>` : ''}</p>
                         <p class="text-[10px] ${online ? 'text-emerald-500 font-medium' : 'text-slate-400'} truncate">${statusText}</p>
                     </div>
                 </div>
@@ -960,6 +988,41 @@
 
         function getChatId(uid1, uid2) {
             return [uid1, uid2].sort().join("_");
+        }
+
+        function openNicknameModal() {
+            if (!activeChatUserId) return;
+            const targetUser = allUsers.find(u => u.uid === activeChatUserId);
+            const rawName = targetUser ? (targetUser.name || targetUser.email) : 'Utilizador';
+            document.getElementById('nicknameModalSub').innerText = `Atribuir alcunha para ${rawName}`;
+            document.getElementById('nicknameInput').value = userNicknames[activeChatUserId] || '';
+            openModal('nicknameModal');
+        }
+
+        async function saveUserNickname() {
+            if (!activeChatUserId || !currentUserId) return;
+            const nickname = document.getElementById('nicknameInput').value.trim();
+            if (nickname) {
+                userNicknames[activeChatUserId] = nickname;
+            } else {
+                delete userNicknames[activeChatUserId];
+            }
+
+            try {
+                await updateDoc(doc(db, "users", currentUserId), {
+                    nicknames: userNicknames
+                });
+                closeModal('nicknameModal');
+                showToast("Alcunha guardada!", "success");
+                searchUsers();
+                const targetUser = allUsers.find(u => u.uid === activeChatUserId);
+                if (targetUser) {
+                    const displayName = userNicknames[activeChatUserId] || targetUser.name || 'Utilizador';
+                    document.getElementById('chatActiveName').innerText = displayName;
+                }
+            } catch (e) {
+                showToast("Erro ao guardar alcunha.", "error");
+            }
         }
 
         function startChatWith(userId, userName) {
@@ -978,15 +1041,26 @@
             const targetUser = allUsers.find(u => u.uid === userId);
             const online = isUserOnline(targetUser);
             const statusText = formatLastSeen(targetUser?.lastSeen, online);
+            const displayName = userNicknames[userId] || userName;
 
             document.getElementById('chatActiveHeader').classList.remove('hidden');
             document.getElementById('chatForm').classList.remove('hidden');
-            document.getElementById('chatActiveName').innerText = userName;
-            document.getElementById('chatActiveAvatar').innerText = userName.charAt(0).toUpperCase();
+            document.getElementById('chatActiveName').innerText = displayName;
+            document.getElementById('chatActiveAvatar').innerText = displayName.charAt(0).toUpperCase();
             document.getElementById('chatActiveStatus').innerText = statusText;
 
             const chatId = getChatId(currentUserId, userId);
             if (unsubscribeChat) unsubscribeChat();
+            if (unsubscribeTyping) unsubscribeTyping();
+
+            // ESCUTAR TYPING INDICATOR
+            unsubscribeTyping = onSnapshot(doc(db, "chats", chatId, "typing", userId), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().isTyping) {
+                    document.getElementById('chatActiveStatus').innerText = "A escrever...";
+                } else {
+                    document.getElementById('chatActiveStatus').innerText = formatLastSeen(targetUser?.lastSeen, online);
+                }
+            });
 
             const messagesRef = collection(db, "chats", chatId, "messages");
             const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
@@ -999,7 +1073,7 @@
                 if (snapshot.empty) {
                     messagesContainer.innerHTML = `
                         <div class="text-center my-auto text-slate-400 text-xs">
-                            <p>Sem mensagens anteriores. Diga olá a <strong>${escapeHTML(userName)}</strong>!</p>
+                            <p>Sem mensagens anteriores. Diga olá a <strong>${escapeHTML(displayName)}</strong>!</p>
                         </div>
                     `;
                     initialLoad = false;
@@ -1007,8 +1081,15 @@
                 }
 
                 snapshot.docs.forEach(docSnap => {
+                    const msgId = docSnap.id;
                     const msg = docSnap.data();
                     const isMe = msg.senderId === currentUserId;
+
+                    // Marcar mensagem como lida se for do outro utilizador
+                    if (!isMe && !msg.read) {
+                        updateDoc(doc(db, "chats", chatId, "messages", msgId), { read: true }).catch(() => {});
+                    }
+
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
                     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1022,13 +1103,28 @@
                             </audio>
                         `;
                     } else {
-                        contentHTML = `<span>${escapeHTML(msg.text)}</span>`;
+                        contentHTML = `<span id="msg_text_${msgId}">${escapeHTML(msg.text)}</span> ${msg.edited ? '<span class="text-[9px] opacity-60 italic">(editada)</span>' : ''}`;
+                    }
+
+                    let readTicks = '';
+                    if (isMe) {
+                        const isRead = msg.read;
+                        readTicks = `<span class="inline-block ml-1 font-bold ${isRead ? 'text-sky-300' : 'text-slate-300'}">✓✓</span>`;
+                    }
+
+                    let editBtn = '';
+                    if (isMe && msg.type !== 'audio') {
+                        editBtn = `<button onclick="window.editMessage('${chatId}', '${msgId}', '${btoa(encodeURIComponent(msg.text))}')" class="text-[10px] opacity-70 hover:opacity-100 ml-2 underline">Editar</button>`;
                     }
 
                     msgDiv.innerHTML = `
                         <div class="max-w-[80%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
                             ${contentHTML}
-                            ${timeStr ? `<span class="block text-[9px] mt-1 opacity-70 text-right">${timeStr}</span>` : ''}
+                            <div class="flex items-center justify-end gap-1 mt-1">
+                                ${editBtn}
+                                ${timeStr ? `<span class="text-[9px] opacity-70">${timeStr}</span>` : ''}
+                                ${readTicks}
+                            </div>
                         </div>
                     `;
                     messagesContainer.appendChild(msgDiv);
@@ -1048,6 +1144,35 @@
                 initialLoad = false;
                 setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 50);
             });
+        }
+
+        function handleTypingInput() {
+            if (!activeChatUserId || !currentUserId) return;
+            const chatId = getChatId(currentUserId, activeChatUserId);
+            const typingRef = doc(db, "chats", chatId, "typing", currentUserId);
+
+            setDoc(typingRef, { isTyping: true }, { merge: true });
+
+            if (typingTimeout) clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                setDoc(typingRef, { isTyping: false }, { merge: true });
+            }, 2000);
+        }
+
+        async function editMessage(chatId, msgId, encodedText) {
+            const oldText = decodeURIComponent(atob(encodedText));
+            const newText = prompt("Editar mensagem:", oldText);
+            if (newText === null || newText.trim() === "" || newText === oldText) return;
+
+            try {
+                await updateDoc(doc(db, "chats", chatId, "messages", msgId), {
+                    text: newText.trim(),
+                    edited: true
+                });
+                showToast("Mensagem atualizada!", "success");
+            } catch (e) {
+                showToast("Erro ao editar mensagem.", "error");
+            }
         }
 
         function updateUnreadBadge() {
@@ -1084,10 +1209,12 @@
             input.value = '';
 
             try {
+                await setDoc(doc(db, "chats", chatId, "typing", currentUserId), { isTyping: false }, { merge: true });
                 await addDoc(collection(db, "chats", chatId, "messages"), {
                     senderId: currentUserId,
                     text: text,
                     type: 'text',
+                    read: false,
                     timestamp: new Date().toISOString()
                 });
             } catch (err) {}
@@ -1182,6 +1309,7 @@
                     senderId: currentUserId,
                     audioUrl: downloadURL,
                     type: 'audio',
+                    read: false,
                     timestamp: new Date().toISOString()
                 });
 
@@ -1194,7 +1322,7 @@
         async function startCall(type) {
             if (!activeChatUserId) return;
             const targetUser = allUsers.find(u => u.uid === activeChatUserId);
-            const targetName = targetUser ? targetUser.name : 'Utilizador';
+            const targetName = userNicknames[activeChatUserId] || (targetUser ? targetUser.name : 'Utilizador');
             activeCallId = 'call_' + [currentUserId, activeChatUserId].sort().join('_');
             
             try {
@@ -1489,7 +1617,7 @@
             }
 
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') ['authModal', 'chatModal', 'addContentModal', 'viewContentModal'].forEach(id => closeModal(id));
+                if (e.key === 'Escape') ['authModal', 'chatModal', 'addContentModal', 'viewContentModal', 'nicknameModal'].forEach(id => closeModal(id));
             });
         }
 
@@ -1817,6 +1945,10 @@
         window.toggleMute = toggleMute;
         window.toggleVideo = toggleVideo;
         window.showToast = showToast;
+        window.openNicknameModal = openNicknameModal;
+        window.saveUserNickname = saveUserNickname;
+        window.handleTypingInput = handleTypingInput;
+        window.editMessage = editMessage;
     </script>
 </body>
 </html>
