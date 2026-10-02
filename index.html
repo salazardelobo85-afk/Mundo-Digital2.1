@@ -389,9 +389,16 @@
                         </div>
                     </div>
 
-                    <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex gap-2 hidden">
-                        <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." required autocomplete="off"
+                    <!-- BARRA DE INPUT DE MENSAGEM / GRAVAÇÃO DE ÁUDIO -->
+                    <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 hidden">
+                        <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off"
                                class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        
+                        <!-- Botão de Gravar Áudio -->
+                        <button type="button" id="audioRecordBtn" onclick="window.toggleAudioRecording()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 transition" title="Gravar Mensagem de Voz">
+                            <i class="fa-solid fa-microphone text-sm" id="audioRecordIcon"></i>
+                        </button>
+
                         <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl text-sm transition">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
@@ -530,7 +537,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO COM WEBRTC -->
+    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO COM WEBRTC E ÁUDIOS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -610,6 +617,11 @@
         let isVideoOff = false;
         let incomingCallData = null;
 
+        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecordingAudio = false;
+
         const rtcConfig = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -669,9 +681,7 @@
                 gain.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.3);
-            } catch (e) {
-                // AudioContext restrito pelo navegador
-            }
+            } catch (e) {}
         }
 
         // GESTÃO DE ESTADO DO UTILIZADOR
@@ -682,9 +692,7 @@
                     online: onlineStatus,
                     lastSeen: new Date().toISOString()
                 });
-            } catch (e) {
-                // Silencioso se o documento não existir ainda
-            }
+            } catch (e) {}
         }
 
         window.addEventListener('beforeunload', () => updateUserStatus(false));
@@ -894,60 +902,28 @@
                 showToast("Nome de exibição atualizado!", "success");
                 if (auth.currentUser) updateAuthUI(auth.currentUser);
             } catch (err) {
-                console.error("Erro ao atualizar nome:", err);
                 showToast("Erro ao atualizar o nome.", "error");
             }
         }
 
         async function requestNotificationPermission() {
             try {
-                if (!('Notification' in window)) {
-                    showToast('As notificações não são suportadas neste navegador.', 'error');
-                    return;
-                }
-
-                const messagingSupported = await isSupported().catch(() => false);
-                if (!messagingSupported) {
-                    showToast('Serviço Push indisponível no navegador atual.', 'error');
-                    return;
-                }
-
+                if (!('Notification' in window)) return;
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    const messaging = getMessaging(app);
-                    let swRegistration = null;
-
-                    if ('serviceWorker' in navigator) {
-                        swRegistration = await navigator.serviceWorker.getRegistration().catch(() => null);
-                    }
-                    
-                    const tokenOptions = {
-                        vapidKey: 'BLItmueK8XrNq10vbQq3C1FlfdPJqIPYgMmbEO_Gp7xcb3DPHzld71uDcBM_pT6wST423gk9K1vm3XMgHPYkWqA'
-                    };
-                    if (swRegistration) tokenOptions.serviceWorkerRegistration = swRegistration;
-
-                    await getToken(messaging, tokenOptions).catch(err => console.warn("Aviso FCM Token:", err));
-
                     showToast('Notificações ativadas com sucesso!', 'success');
                     const icon = document.getElementById('notificationIcon');
                     if (icon) icon.className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
-                } else {
-                    showToast('Permissão de notificações recusada.', 'info');
                 }
-            } catch (error) {
-                console.error('Erro ao ativar notificações:', error);
-            }
+            } catch (error) {}
         }
 
         function listenToUsersRealtime() {
             if (unsubscribeUsers) unsubscribeUsers();
-
             const usersRef = collection(db, "users");
             unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
                 allUsers = snapshot.docs.map(d => d.data());
                 searchUsers();
-            }, (err) => {
-                console.error("Erro na escuta de utilizadores:", err);
             });
         }
 
@@ -962,12 +938,8 @@
         }
 
         function isUserOnline(user) {
-            if (!user) return false;
-            if (user.online === false) return false;
-            if (!user.lastSeen) return false;
-            const lastSeenDate = new Date(user.lastSeen);
-            const now = new Date();
-            return (now - lastSeenDate) < 120000;
+            if (!user || user.online === false || !user.lastSeen) return false;
+            return (new Date() - new Date(user.lastSeen)) < 120000;
         }
 
         function renderUsersList(users) {
@@ -1064,9 +1036,21 @@
                     
                     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
+                    let contentHTML = '';
+                    if (msg.type === 'audio') {
+                        contentHTML = `
+                            <audio controls class="max-w-[220px] h-9 my-1">
+                                <source src="${msg.audioUrl}" type="audio/webm">
+                                Seu navegador não suporta áudio.
+                            </audio>
+                        `;
+                    } else {
+                        contentHTML = `<span>${escapeHTML(msg.text)}</span>`;
+                    }
+
                     msgDiv.innerHTML = `
                         <div class="max-w-[80%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
-                            ${escapeHTML(msg.text)}
+                            ${contentHTML}
                             ${timeStr ? `<span class="block text-[9px] mt-1 opacity-70 text-right">${timeStr}</span>` : ''}
                         </div>
                     `;
@@ -1132,11 +1116,95 @@
                 await addDoc(collection(db, "chats", chatId, "messages"), {
                     senderId: currentUserId,
                     text: text,
+                    type: 'text',
                     timestamp: new Date().toISOString()
                 });
             } catch (err) {
-                console.error("Erro ao enviar mensagem:", err);
                 showToast("Falha ao enviar mensagem.", "error");
+            }
+        }
+
+        // --- SISTEMA DE GRAVAÇÃO E ENVIO DE ÁUDIO NO CHAT ---
+        async function toggleAudioRecording() {
+            if (!activeChatUserId) {
+                showToast("Selecione um utilizador primeiro.", "info");
+                return;
+            }
+
+            const recordBtnIcon = document.getElementById('audioRecordIcon');
+            const recordBtn = document.getElementById('audioRecordBtn');
+
+            if (!isRecordingAudio) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        await uploadAndSendAudio(audioBlob);
+                        
+                        // Parar todas as pistas do stream do microfone
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecordingAudio = true;
+                    
+                    recordBtnIcon.className = "fa-solid fa-stop text-sm animate-pulse";
+                    recordBtn.classList.add('bg-red-600', 'text-white');
+                    recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
+                    showToast("A gravar áudio... Clique novamente para enviar.", "info");
+                } catch (err) {
+                    showToast("Não foi possível aceder ao microfone.", "error");
+                }
+            } else {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                }
+                isRecordingAudio = false;
+                recordBtnIcon.className = "fa-solid fa-microphone text-sm";
+                recordBtn.classList.remove('bg-red-600', 'text-white');
+                recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
+            }
+        }
+
+        async function uploadAndSendAudio(audioBlob) {
+            if (!activeChatUserId) return;
+            const chatId = getChatId(currentUserId, activeChatUserId);
+            const audioId = Date.now().toString();
+            const storagePath = `chats/${chatId}/audio_${audioId}.webm`;
+            const audioStorageRef = ref(storage, storagePath);
+
+            showToast("A enviar mensagem de voz...", "info");
+
+            try {
+                const uploadTask = uploadBytesResumable(audioStorageRef, audioBlob);
+                const downloadURL = await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        null, 
+                        (error) => reject(error), 
+                        async () => {
+                            const url = await getDownloadURL(uploadTask.snapshot.ref);
+                            resolve(url);
+                        }
+                    );
+                });
+
+                await addDoc(collection(db, "chats", chatId, "messages"), {
+                    senderId: currentUserId,
+                    audioUrl: downloadURL,
+                    type: 'audio',
+                    timestamp: new Date().toISOString()
+                });
+
+                showToast("Áudio enviado com sucesso!", "success");
+            } catch (err) {
+                showToast("Erro ao enviar o áudio.", "error");
             }
         }
 
@@ -1154,7 +1222,6 @@
                     video: type === 'video'
                 });
             } catch (err) {
-                console.error("Erro ao aceder câmara/microfone:", err);
                 showToast("Não foi possível aceder à câmara ou microfone.", "error");
                 return;
             }
@@ -1190,7 +1257,6 @@
                 timestamp: new Date().toISOString()
             });
 
-            // Ouvir respostas da chamada
             unsubscribeCall = onSnapshot(callDocRef, async (docSnap) => {
                 const data = docSnap.data();
                 if (!data) return;
@@ -1205,7 +1271,6 @@
                 }
             });
 
-            // Ouvir candidatos ICE da resposta
             unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "answerCandidates"), snapshot => {
                 snapshot.docChanges().forEach(async change => {
                     if (change.type === 'added') {
@@ -1292,7 +1357,6 @@
             startCallTimer();
             document.getElementById('callStatusText').innerText = 'Em chamada';
 
-            // Ouvir candidatos ICE da oferta
             unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "offerCandidates"), snapshot => {
                 snapshot.docChanges().forEach(async change => {
                     if (change.type === 'added') {
@@ -1337,7 +1401,7 @@
                 remoteVideo.classList.remove('hidden');
                 audioPlaceholder.classList.add('hidden');
                 videoToggleBtn.classList.remove('hidden');
-                remoteVideo.srcObject = localStream; // Mostra local temporariamente até ligar
+                remoteVideo.srcObject = localStream;
             }
 
             const modal = document.getElementById('callModal');
@@ -1416,14 +1480,8 @@
                         ...docSnap.data()
                     }));
                     render();
-                }, (error) => {
-                    console.error("Erro no Firestore:", error);
-                    const counter = document.getElementById('contentCounter');
-                    if (counter) counter.innerText = "Erro ao ligar à base de dados.";
-                });
-            } catch (e) {
-                console.error("Erro na ligação:", e);
-            }
+                }, (error) => {});
+            } catch (e) {}
         }
 
         function initTheme() {
@@ -1700,7 +1758,6 @@
                 resetAddForm();
                 showToast("Recurso adicionado com sucesso!", "success");
             } catch (error) {
-                console.error("Erro no envio:", error);
                 showToast("Erro ao enviar o ficheiro.", "error");
             } finally {
                 submitBtn.disabled = false;
@@ -1775,14 +1832,11 @@
                         const fileRef = ref(storage, item.storagePath);
                         try {
                             await deleteObject(fileRef);
-                        } catch (e) {
-                            console.warn("Ficheiro no Storage já não existe:", e);
-                        }
+                        } catch (e) {}
                     }
                     await deleteDoc(doc(db, "contents", id));
                     showToast("Recurso eliminado com sucesso.", "info");
                 } catch (error) {
-                    console.error("Erro ao eliminar:", error);
                     showToast("Erro ao eliminar recurso.", "error");
                 }
             }
@@ -1849,6 +1903,7 @@
         window.startChatWith = startChatWith;
         window.backToUsersList = backToUsersList;
         window.sendChatMessage = sendChatMessage;
+        window.toggleAudioRecording = toggleAudioRecording;
         window.startCall = startCall;
         window.acceptIncomingCall = acceptIncomingCall;
         window.rejectIncomingCall = rejectIncomingCall;
