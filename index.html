@@ -880,6 +880,15 @@
             unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
                 allUsers = snapshot.docs.map(d => d.data());
                 searchUsers();
+                
+                if (activeChatUserId) {
+                    const targetUser = allUsers.find(u => u.uid === activeChatUserId);
+                    if (targetUser) {
+                        const online = isUserOnline(targetUser);
+                        const statusText = formatLastSeen(targetUser.lastSeen, online);
+                        document.getElementById('chatActiveStatus').innerText = statusText;
+                    }
+                }
             });
         }
 
@@ -898,6 +907,23 @@
             return (new Date() - new Date(user.lastSeen)) < 120000;
         }
 
+        function formatLastSeen(isoString, online) {
+            if (online) return "Online agora";
+            if (!isoString) return "Offline";
+
+            const date = new Date(isoString);
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if (isToday) {
+                return `Visto hoje às ${timeStr}`;
+            } else {
+                const dayStr = date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+                return `Visto em ${dayStr} às ${timeStr}`;
+            }
+        }
+
         function renderUsersList(users) {
             const usersList = document.getElementById('usersList');
             if (!usersList) return;
@@ -913,6 +939,7 @@
                 const safeName = escapeHTML(displayName);
                 const encodedName = encodeURIComponent(displayName);
                 const online = isUserOnline(u);
+                const statusText = formatLastSeen(u.lastSeen, online);
 
                 return `
                 <div onclick="window.startChatWith('${u.uid}', decodeURIComponent('${encodedName}'))" 
@@ -925,7 +952,7 @@
                     </div>
                     <div class="flex-1 overflow-hidden">
                         <p class="text-xs font-semibold truncate">${safeName}</p>
-                        <p class="text-[10px] text-slate-400 truncate">${online ? 'Online' : 'Offline'}</p>
+                        <p class="text-[10px] ${online ? 'text-emerald-500 font-medium' : 'text-slate-400'} truncate">${statusText}</p>
                     </div>
                 </div>
             `}).join('');
@@ -950,12 +977,13 @@
 
             const targetUser = allUsers.find(u => u.uid === userId);
             const online = isUserOnline(targetUser);
+            const statusText = formatLastSeen(targetUser?.lastSeen, online);
 
             document.getElementById('chatActiveHeader').classList.remove('hidden');
             document.getElementById('chatForm').classList.remove('hidden');
             document.getElementById('chatActiveName').innerText = userName;
             document.getElementById('chatActiveAvatar').innerText = userName.charAt(0).toUpperCase();
-            document.getElementById('chatActiveStatus').innerText = online ? 'Online' : 'Offline';
+            document.getElementById('chatActiveStatus').innerText = statusText;
 
             const chatId = getChatId(currentUserId, userId);
             if (unsubscribeChat) unsubscribeChat();
@@ -1065,7 +1093,6 @@
             } catch (err) {}
         }
 
-        // --- FUNCIONALIDADE "SEGURAR PARA GRAVAR" (HOLD-TO-RECORD) ---
         function initHoldToRecordAudio() {
             const recordBtn = document.getElementById('audioRecordBtn');
             if (!recordBtn) return;
@@ -1122,12 +1149,9 @@
                 recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
             };
 
-            // Eventos para Computador (Mouse)
             recordBtn.addEventListener('mousedown', startRecording);
             recordBtn.addEventListener('mouseup', stopRecording);
             recordBtn.addEventListener('mouseleave', stopRecording);
-
-            // Eventos para Dispositivos Móveis (Touch)
             recordBtn.addEventListener('touchstart', startRecording, { passive: false });
             recordBtn.addEventListener('touchend', stopRecording, { passive: false });
             recordBtn.addEventListener('touchcancel', stopRecording, { passive: false });
@@ -1167,7 +1191,6 @@
             }
         }
 
-        // --- WEBRTC CHAMADAS ---
         async function startCall(type) {
             if (!activeChatUserId) return;
             const targetUser = allUsers.find(u => u.uid === activeChatUserId);
@@ -1762,12 +1785,10 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // Inicialização Geral
         initTheme();
         setupEventListeners();
         initHoldToRecordAudio();
 
-        // EXPOSIÇÃO GLOBAL
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.switchAddTab = switchAddTab;
