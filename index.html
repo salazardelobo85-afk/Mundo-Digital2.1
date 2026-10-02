@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Digital - Gestão, Conteúdo & Chat</title>
+    <title>Mundo Digital - Gestão, Conteúdo, Chat & Chamadas</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,6 +43,78 @@
 
     <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- MODAL / ECRÃ DE CHAMADA EM CURSO -->
+    <div id="callModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-slate-900 w-full max-w-4xl h-full sm:h-[85vh] sm:rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col relative">
+            
+            <!-- Cabeçalho da Chamada -->
+            <div class="absolute top-0 inset-x-0 p-4 z-20 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold" id="callPeerAvatar">U</div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm sm:text-base" id="callPeerName">A ligar...</h4>
+                        <p class="text-xs text-brand-400 font-medium" id="callStatusText">A estabelecer conexão...</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="callDuration" class="px-3 py-1 bg-slate-800/80 text-white text-xs rounded-full font-mono hidden">00:00</span>
+                </div>
+            </div>
+
+            <!-- Área de Vídeos / Visualização -->
+            <div class="flex-1 relative flex items-center justify-center bg-slate-950 overflow-hidden">
+                <!-- Vídeo Remoto -->
+                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                
+                <!-- Placeholder se for chamada só de áudio ou vídeo desligado -->
+                <div id="audioCallPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 hidden">
+                    <div class="w-24 h-24 rounded-full bg-brand-600/30 text-brand-400 flex items-center justify-center text-4xl mb-4 animate-pulse">
+                        <i class="fa-solid fa-microphone"></i>
+                    </div>
+                    <p class="text-slate-300 font-semibold text-lg" id="audioCallName">Em chamada de áudio</p>
+                </div>
+
+                <!-- Vídeo Local (Picture-in-Picture) -->
+                <div class="absolute bottom-24 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
+                    <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                </div>
+            </div>
+
+            <!-- Controlos da Chamada -->
+            <div class="p-4 sm:p-6 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-4 z-20">
+                <button onclick="window.toggleMute()" id="muteBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg" title="Silenciar Microfone">
+                    <i class="fa-solid fa-microphone text-lg"></i>
+                </button>
+                <button onclick="window.toggleVideo()" id="videoToggleBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg" title="Ligar/Desligar Câmara">
+                    <i class="fa-solid fa-video text-lg"></i>
+                </button>
+                <button onclick="window.endCall()" class="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-lg transform hover:scale-105" title="Terminar Chamada">
+                    <i class="fa-solid fa-phone-slash text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHAMADA ENTRANTE -->
+    <div id="incomingCallModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-800 p-6 text-center transform scale-95 transition-transform duration-300 m-4">
+            <div class="w-20 h-20 rounded-full bg-brand-600/20 text-brand-400 mx-auto flex items-center justify-center text-3xl mb-4 animate-bounce">
+                <i id="incomingCallIcon" class="fa-solid fa-phone-volume"></i>
+            </div>
+            <h3 class="font-bold text-lg text-white mb-1" id="incomingCallerName">A carregar...</h3>
+            <p class="text-xs text-slate-400 mb-6" id="incomingCallType">A receber chamada de vídeo...</p>
+            
+            <div class="flex items-center justify-center gap-4">
+                <button onclick="window.rejectIncomingCall()" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow transition text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-phone-slash"></i> Recusar
+                </button>
+                <button onclick="window.acceptIncomingCall()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow transition text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-phone"></i> Aceitar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- CABEÇALHO / NAVBAR -->
     <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
@@ -105,7 +177,7 @@
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Central Multimédia Mundo Digital</h1>
-                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização, partilha de ficheiros e comunicação em tempo real com outros utilizadores.</p>
+                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização, partilha de ficheiros, chat e chamadas em tempo real.</p>
             </div>
             <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -300,6 +372,14 @@
                                 <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
                             </div>
                         </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="window.startCall('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Áudio">
+                                <i class="fa-solid fa-phone text-sm"></i>
+                            </button>
+                            <button onclick="window.startCall('video')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Vídeo">
+                                <i class="fa-solid fa-video text-sm"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="chatMessages" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-3 flex flex-col">
@@ -450,7 +530,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO -->
+    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO COM WEBRTC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -473,7 +553,8 @@
             query,
             orderBy,
             limit,
-            updateDoc
+            updateDoc,
+            getDoc
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getStorage, 
@@ -515,6 +596,26 @@
         let currentAddTab = 'upload';
         let selectedFile = null;
         let activeUploadTask = null;
+
+        // VARIÁVEIS WEBRTC PARA CHAMADAS
+        let peerConnection = null;
+        let localStream = null;
+        let remoteStream = null;
+        let activeCallId = null;
+        let unsubscribeCall = null;
+        let unsubscribeCandidates = null;
+        let callTimerInterval = null;
+        let callSeconds = 0;
+        let isMuted = false;
+        let isVideoOff = false;
+        let incomingCallData = null;
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
 
         // NOTIFICAÇÕES TOAST
         function showToast(message, type = 'info') {
@@ -622,6 +723,7 @@
 
                 listenToUsersRealtime();
                 listenToDatabaseChanges();
+                listenToIncomingCalls();
             } else {
                 signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
             }
@@ -1036,6 +1138,271 @@
                 console.error("Erro ao enviar mensagem:", err);
                 showToast("Falha ao enviar mensagem.", "error");
             }
+        }
+
+        // --- SISTEMA DE CHAMADAS WEBRTC ---
+        async function startCall(type) {
+            if (!activeChatUserId) return;
+            const targetUser = allUsers.find(u => u.uid === activeChatUserId);
+            const targetName = targetUser ? targetUser.name : 'Utilizador';
+
+            activeCallId = 'call_' + [currentUserId, activeChatUserId].sort().join('_');
+            
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: type === 'video'
+                });
+            } catch (err) {
+                console.error("Erro ao aceder câmara/microfone:", err);
+                showToast("Não foi possível aceder à câmara ou microfone.", "error");
+                return;
+            }
+
+            setupCallUI(targetName, type, true);
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.ontrack = event => {
+                remoteStream = event.streams[0];
+                const remoteVideo = document.getElementById('remoteVideo');
+                remoteVideo.srcObject = remoteStream;
+            };
+
+            peerConnection.onicecandidate = async event => {
+                if (event.candidate) {
+                    await addDoc(collection(db, "calls", activeCallId, "offerCandidates"), event.candidate.toJSON());
+                }
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            const callDocRef = doc(db, "calls", activeCallId);
+            await setDoc(callDocRef, {
+                callerId: currentUserId,
+                callerName: currentUserName,
+                receiverId: activeChatUserId,
+                offer: { type: offer.type, sdp: offer.sdp },
+                type: type,
+                status: 'ringing',
+                timestamp: new Date().toISOString()
+            });
+
+            // Ouvir respostas da chamada
+            unsubscribeCall = onSnapshot(callDocRef, async (docSnap) => {
+                const data = docSnap.data();
+                if (!data) return;
+
+                if (data.status === 'answered' && peerConnection && !peerConnection.currentRemoteDescription) {
+                    const answer = new RTCSessionDescription(data.answer);
+                    await peerConnection.setRemoteDescription(answer);
+                    startCallTimer();
+                    document.getElementById('callStatusText').innerText = 'Em chamada';
+                } else if (data.status === 'ended' || data.status === 'rejected') {
+                    endCall(false);
+                }
+            });
+
+            // Ouvir candidatos ICE da resposta
+            unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "answerCandidates"), snapshot => {
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        if (peerConnection) await peerConnection.addIceCandidate(candidate);
+                    }
+                });
+            });
+        }
+
+        function listenToIncomingCalls() {
+            const callsRef = collection(db, "calls");
+            onSnapshot(callsRef, snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        if (data.receiverId === currentUserId && data.status === 'ringing') {
+                            incomingCallData = { id: change.doc.id, ...data };
+                            showIncomingCallModal(data);
+                        }
+                    }
+                });
+            });
+        }
+
+        function showIncomingCallModal(data) {
+            playNotificationSound();
+            document.getElementById('incomingCallerName').innerText = data.callerName || 'Utilizador';
+            document.getElementById('incomingCallType').innerText = data.type === 'video' ? 'A receber chamada de vídeo...' : 'A receber chamada de áudio...';
+            document.getElementById('incomingCallIcon').className = data.type === 'video' ? 'fa-solid fa-video' : 'fa-solid fa-phone-volume';
+            
+            const modal = document.getElementById('incomingCallModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.remove('scale-95');
+            modal.firstElementChild.classList.add('scale-100');
+        }
+
+        async function acceptIncomingCall() {
+            if (!incomingCallData) return;
+            activeCallId = incomingCallData.id;
+            const callType = incomingCallData.type;
+
+            closeModal('incomingCallModal');
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: callType === 'video'
+                });
+            } catch (err) {
+                showToast("Erro ao aceder dispositivos de media.", "error");
+                return;
+            }
+
+            setupCallUI(incomingCallData.callerName, callType, false);
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.ontrack = event => {
+                remoteStream = event.streams[0];
+                document.getElementById('remoteVideo').srcObject = remoteStream;
+            };
+
+            peerConnection.onicecandidate = async event => {
+                if (event.candidate) {
+                    await addDoc(collection(db, "calls", activeCallId, "answerCandidates"), event.candidate.toJSON());
+                }
+            };
+
+            const callDocRef = doc(db, "calls", activeCallId);
+            const callSnap = await getDoc(callDocRef);
+            const callData = callSnap.data();
+
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+
+            await updateDoc(callDocRef, {
+                answer: { type: answer.type, sdp: answer.sdp },
+                status: 'answered'
+            });
+
+            startCallTimer();
+            document.getElementById('callStatusText').innerText = 'Em chamada';
+
+            // Ouvir candidatos ICE da oferta
+            unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "offerCandidates"), snapshot => {
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        if (peerConnection) await peerConnection.addIceCandidate(candidate);
+                    }
+                });
+            });
+
+            unsubscribeCall = onSnapshot(callDocRef, docSnap => {
+                const data = docSnap.data();
+                if (data && (data.status === 'ended' || data.status === 'rejected')) {
+                    endCall(false);
+                }
+            });
+        }
+
+        async function rejectIncomingCall() {
+            if (!incomingCallData) return;
+            try {
+                await updateDoc(doc(db, "calls", incomingCallData.id), { status: 'rejected' });
+            } catch (e) {}
+            closeModal('incomingCallModal');
+            incomingCallData = null;
+        }
+
+        function setupCallUI(peerName, type, isCaller) {
+            document.getElementById('callPeerName').innerText = peerName;
+            document.getElementById('callPeerAvatar').innerText = peerName.charAt(0).toUpperCase();
+            document.getElementById('callStatusText').innerText = isCaller ? 'A chamar...' : 'A ligar...';
+
+            const remoteVideo = document.getElementById('remoteVideo');
+            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const videoToggleBtn = document.getElementById('videoToggleBtn');
+
+            if (type === 'audio') {
+                remoteVideo.classList.add('hidden');
+                audioPlaceholder.classList.remove('hidden');
+                document.getElementById('audioCallName').innerText = peerName;
+                videoToggleBtn.classList.add('hidden');
+            } else {
+                remoteVideo.classList.remove('hidden');
+                audioPlaceholder.classList.add('hidden');
+                videoToggleBtn.classList.remove('hidden');
+                remoteVideo.srcObject = localStream; // Mostra local temporariamente até ligar
+            }
+
+            const modal = document.getElementById('callModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        async function endCall(updateDb = true) {
+            if (activeCallId && updateDb) {
+                try {
+                    await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' });
+                } catch (e) {}
+            }
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            if (unsubscribeCall) { unsubscribeCall(); unsubscribeCall = null; }
+            if (unsubscribeCandidates) { unsubscribeCandidates(); unsubscribeCandidates = null; }
+
+            clearInterval(callTimerInterval);
+            callSeconds = 0;
+            const timer = document.getElementById('callDuration');
+            timer.classList.add('hidden');
+            timer.innerText = '00:00';
+
+            const modal = document.getElementById('callModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            activeCallId = null;
+            isMuted = false;
+            isVideoOff = false;
+        }
+
+        function toggleMute() {
+            if (!localStream) return;
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            const btn = document.getElementById('muteBtn');
+            btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
+        }
+
+        function toggleVideo() {
+            if (!localStream) return;
+            isVideoOff = !isVideoOff;
+            localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+            const btn = document.getElementById('videoToggleBtn');
+            btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
+        }
+
+        function startCallTimer() {
+            const timer = document.getElementById('callDuration');
+            timer.classList.remove('hidden');
+            callSeconds = 0;
+            callTimerInterval = setInterval(() => {
+                callSeconds++;
+                const mins = Math.floor(callSeconds / 60).toString().padStart(2, '0');
+                const secs = (callSeconds % 60).toString().padStart(2, '0');
+                timer.innerText = `${mins}:${secs}`;
+            }, 1000);
         }
 
         function listenToDatabaseChanges() {
@@ -1482,6 +1849,12 @@
         window.startChatWith = startChatWith;
         window.backToUsersList = backToUsersList;
         window.sendChatMessage = sendChatMessage;
+        window.startCall = startCall;
+        window.acceptIncomingCall = acceptIncomingCall;
+        window.rejectIncomingCall = rejectIncomingCall;
+        window.endCall = endCall;
+        window.toggleMute = toggleMute;
+        window.toggleVideo = toggleVideo;
         window.showToast = showToast;
     </script>
 </body>
