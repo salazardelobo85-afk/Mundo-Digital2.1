@@ -39,13 +39,16 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative">
+
+    <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
     <!-- CABEÇALHO / NAVBAR -->
     <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.resetFilters()">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
                     <i class="fa-solid font-bold fa-globe text-xl"></i>
                 </div>
@@ -67,6 +70,7 @@
                 <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
                     <i class="fa-solid fa-comments text-lg"></i>
                     <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
+                    <span id="unreadTotalBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
                 </button>
 
                 <!-- Botão para Ativar Notificações -->
@@ -80,8 +84,16 @@
                 
                 <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-full shadow-md hover:shadow-lg transition transform active:scale-95 text-sm">
                     <i class="fa-solid fa-plus"></i>
-                    <span class="hidden md:inline">Adicionar Conteúdo</span>
+                    <span class="hidden md:inline">Adicionar</span>
                 </button>
+
+                <!-- ÁREA DE AUTENTICAÇÃO / PERFIL -->
+                <div class="pl-2 border-l border-slate-200 dark:border-slate-700">
+                    <button id="authBtn" onclick="window.handleAuthAction()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-xs font-semibold">
+                        <i id="authBtnIcon" class="fa-solid fa-user-circle text-base text-slate-500"></i>
+                        <span id="authBtnText" class="hidden sm:inline">Entrar</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -137,12 +149,108 @@
 
     </main>
 
-    <!-- MODAL DE CHAT E PESQUISA DE UTILIZADORES -->
-    <div id="chatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[80vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4">
+    <!-- MODAL DE AUTENTICAÇÃO -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-4">
             
-            <!-- Cabeçalho do Chat -->
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                    <i class="fa-solid fa-user-lock text-brand-500"></i> <span id="authModalTitle">Aceder à Conta</span>
+                </h3>
+                <button onclick="window.closeModal('authModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl mb-6" id="authTabGroup">
+                    <button type="button" id="tabLoginBtn" onclick="window.switchAuthTab('login')" class="py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
+                        Iniciar Sessão
+                    </button>
+                    <button type="button" id="tabRegisterBtn" onclick="window.switchAuthTab('register')" class="py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                        Criar Conta
+                    </button>
+                </div>
+
+                <!-- FORMULÁRIO DE LOGIN -->
+                <form id="loginForm" onsubmit="window.handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">E-mail</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="email" id="loginEmail" required placeholder="seu@email.com" 
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Palavra-passe</label>
+                            <button type="button" onclick="window.handlePasswordReset()" class="text-[11px] text-brand-600 dark:text-brand-400 hover:underline">Esqueceu a senha?</button>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="password" id="loginPassword" required placeholder="••••••••" 
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="loginSubmitBtn" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md transition text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> Entrar na Conta
+                    </button>
+
+                    <div class="relative my-4">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
+                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white dark:bg-slate-800 px-2 text-slate-400 font-medium">Ou continuar como</span></div>
+                    </div>
+
+                    <button type="button" onclick="window.handleAnonymousLogin()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-xl transition text-xs flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-secret"></i> Acesso Visitante Anónimo
+                    </button>
+                </form>
+
+                <!-- FORMULÁRIO DE REGISTO -->
+                <form id="registerForm" onsubmit="window.handleRegister(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Nome Completo</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="registerName" required placeholder="Seu Nome" 
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">E-mail</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="email" id="registerEmail" required placeholder="seu@email.com" 
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Palavra-passe</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="password" id="registerPassword" required minlength="6" placeholder="Mínimo 6 caracteres" 
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="registerSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-md transition text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Criar Nova Conta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHAT -->
+    <div id="chatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] sm:h-[80vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
+            
+            <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <div class="flex items-center gap-3">
                     <div class="p-2 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400">
                         <i class="fa-solid fa-comments text-lg"></i>
@@ -152,19 +260,26 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400" id="chatSubtitle">Procure utilizadores para iniciar uma conversa</p>
                     </div>
                 </div>
-                <button onclick="window.closeModal('chatModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">
+                <button onclick="window.closeModal('chatModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl p-1">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Barra Lateral: Lista de Utilizadores/Conversas -->
-                <div class="w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/20">
-                    <div class="p-3 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex-1 flex overflow-hidden relative">
+                <!-- Barra Lateral: Utilizadores -->
+                <div id="chatSidebar" class="w-full sm:w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/20">
+                    <div class="p-3 border-b border-slate-200 dark:border-slate-700 space-y-2">
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
                             <input type="text" id="userSearchInput" onkeyup="window.searchUsers()" placeholder="Procurar utilizadores..." 
                                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        </div>
+                        <div class="flex gap-1.5 items-center">
+                            <input type="text" id="myCustomNameInput" placeholder="O seu nome..." 
+                                   class="flex-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px] focus:outline-none focus:ring-1 focus:ring-brand-500">
+                            <button onclick="window.updateMyName()" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[11px] font-medium transition shrink-0">
+                                Gravar
+                            </button>
                         </div>
                     </div>
                     <div id="usersList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -172,17 +287,25 @@
                     </div>
                 </div>
 
-                <!-- Janela Principal de Chat -->
-                <div class="flex-1 flex flex-col bg-slate-100/50 dark:bg-slate-900/40">
-                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" id="chatActiveAvatar">U</div>
-                        <span class="font-bold text-sm" id="chatActiveName">Nome do Utilizador</span>
+                <!-- Janela de Chat -->
+                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col bg-slate-100/50 dark:bg-slate-900/40 absolute sm:relative inset-0 bg-white dark:bg-slate-800 sm:bg-transparent">
+                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <button onclick="window.backToUsersList()" class="sm:hidden text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" id="chatActiveAvatar">U</div>
+                            <div>
+                                <span class="font-bold text-sm block" id="chatActiveName">Nome do Utilizador</span>
+                                <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="chatMessages" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-3 flex flex-col">
                         <div class="text-center my-auto text-slate-400 text-xs">
                             <i class="fa-solid fa-paper-plane text-3xl mb-2 opacity-50"></i>
-                            <p>Selecione um utilizador na lista à esquerda para iniciar o chat.</p>
+                            <p>Selecione um utilizador na lista para iniciar o chat.</p>
                         </div>
                     </div>
 
@@ -278,7 +401,6 @@
                               class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar"></textarea>
                 </div>
 
-                <!-- Barra de Progresso do Upload -->
                 <div id="uploadProgressContainer" class="hidden space-y-1">
                     <div class="flex justify-between text-xs text-slate-500">
                         <span>A enviar ficheiro...</span>
@@ -299,7 +421,7 @@
 
     <!-- MODAL DE VISUALIZAÇÃO -->
     <div id="viewContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4 transform scale-95 transition-transform duration-200">
             
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <div class="flex items-center gap-3">
@@ -328,10 +450,18 @@
         </div>
     </div>
 
-    <!-- SCRIPT MODULAR DO FIREBASE -->
+    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            sendPasswordResetEmail,
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, 
             collection, 
@@ -341,7 +471,9 @@
             onSnapshot,
             addDoc,
             query,
-            orderBy
+            orderBy,
+            limit,
+            updateDoc
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getStorage, 
@@ -356,7 +488,6 @@
             isSupported
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
-        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
             authDomain: "mundo-digital-9429d.firebaseapp.com",
@@ -376,41 +507,310 @@
         let activeChatUserId = null;
         let unsubscribeChat = null;
         let unsubscribeUsers = null;
+        let unreadMessagesCount = 0;
         let allUsers = [];
+        let contents = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let currentAddTab = 'upload';
+        let selectedFile = null;
+        let activeUploadTask = null;
 
-        // Autenticação anónima automática para identificar o utilizador no chat
-        signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
-        
+        // NOTIFICAÇÕES TOAST
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-center gap-3 p-3.5 rounded-xl shadow-xl text-xs font-medium border transition-all duration-300 opacity-0 translate-y-2 transform ${
+                type === 'success' ? 'bg-emerald-600 text-white border-emerald-500' :
+                type === 'error' ? 'bg-red-600 text-white border-red-500' :
+                'bg-slate-800 text-white border-slate-700'
+            }`;
+
+            const iconClass = type === 'success' ? 'fa-circle-check' :
+                              type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
+
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-sm"></i>
+                <span class="flex-1">${escapeHTML(message)}</span>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white p-0.5">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) {
+                // AudioContext restrito pelo navegador
+            }
+        }
+
+        // GESTÃO DE ESTADO DO UTILIZADOR
+        async function updateUserStatus(onlineStatus) {
+            if (!currentUserId) return;
+            try {
+                await updateDoc(doc(db, "users", currentUserId), {
+                    online: onlineStatus,
+                    lastSeen: new Date().toISOString()
+                });
+            } catch (e) {
+                // Silencioso se o documento não existir ainda
+            }
+        }
+
+        window.addEventListener('beforeunload', () => updateUserStatus(false));
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                updateUserStatus(false);
+            } else {
+                updateUserStatus(true);
+            }
+        });
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
-                currentUserName = "Utilizador " + user.uid.substring(0, 5);
+
+                if (!user.isAnonymous) {
+                    currentUserName = user.displayName || user.email.split('@')[0];
+                } else {
+                    const savedName = localStorage.getItem('mundo_digital_username');
+                    currentUserName = savedName || ("Utilizador " + user.uid.substring(0, 5));
+                }
                 
+                updateAuthUI(user);
+
+                const nameInput = document.getElementById('myCustomNameInput');
+                if (nameInput) nameInput.value = currentUserName;
+
                 await setDoc(doc(db, "users", currentUserId), {
                     uid: currentUserId,
                     name: currentUserName,
+                    email: user.email || null,
+                    isAnonymous: user.isAnonymous,
+                    online: true,
                     lastSeen: new Date().toISOString()
                 }, { merge: true });
 
                 listenToUsersRealtime();
+                listenToDatabaseChanges();
+            } else {
+                signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
             }
         });
+
+        setInterval(() => updateUserStatus(true), 60000);
+
+        function updateAuthUI(user) {
+            const authBtnText = document.getElementById('authBtnText');
+            const authBtnIcon = document.getElementById('authBtnIcon');
+            
+            if (authBtnText && authBtnIcon) {
+                if (user && !user.isAnonymous) {
+                    authBtnText.innerText = currentUserName;
+                    authBtnIcon.className = "fa-solid fa-circle-user text-base text-emerald-500";
+                } else {
+                    authBtnText.innerText = "Entrar";
+                    authBtnIcon.className = "fa-solid fa-user-circle text-base text-slate-500";
+                }
+            }
+        }
+
+        function handleAuthAction() {
+            if (auth.currentUser && !auth.currentUser.isAnonymous) {
+                if (confirm(`Sessão iniciada como ${currentUserName}. Deseja terminar a sessão?`)) {
+                    updateUserStatus(false).then(() => {
+                        signOut(auth).then(() => {
+                            showToast("Sessão terminada com sucesso.", "info");
+                        });
+                    });
+                }
+            } else {
+                openModal('authModal');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const submitBtn = document.getElementById('loginSubmitBtn');
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeModal('authModal');
+                document.getElementById('loginForm').reset();
+                showToast("Sessão iniciada com sucesso!", "success");
+            } catch (error) {
+                showToast(getAuthErrorMessage(error.code), "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const submitBtn = document.getElementById('registerSubmitBtn');
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    isAnonymous: false,
+                    online: true,
+                    lastSeen: new Date().toISOString()
+                }, { merge: true });
+
+                currentUserName = name;
+                closeModal('authModal');
+                document.getElementById('registerForm').reset();
+                showToast("Conta criada com sucesso! Bem-vindo ao Mundo Digital.", "success");
+            } catch (error) {
+                showToast(getAuthErrorMessage(error.code), "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        }
+
+        async function handlePasswordReset() {
+            const email = prompt("Por favor, introduza o seu endereço de e-mail para recuperar a palavra-passe:");
+            if (!email) return;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showToast("E-mail de redefinição enviado! Verifique a sua caixa de entrada.", "success");
+            } catch (error) {
+                showToast(getAuthErrorMessage(error.code), "error");
+            }
+        }
+
+        async function handleAnonymousLogin() {
+            try {
+                if (auth.currentUser && auth.currentUser.isAnonymous) {
+                    closeModal('authModal');
+                    return;
+                }
+                await signInAnonymously(auth);
+                closeModal('authModal');
+                showToast("Iniciou sessão como visitante.", "info");
+            } catch (error) {
+                console.error("Erro no acesso anónimo:", error);
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+            const authModalTitle = document.getElementById('authModalTitle');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+                authModalTitle.innerText = "Aceder à Conta";
+            } else {
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+                authModalTitle.innerText = "Registar Nova Conta";
+            }
+        }
+
+        function getAuthErrorMessage(code) {
+            switch (code) {
+                case 'auth/invalid-email': return 'Endereço de e-mail inválido.';
+                case 'auth/user-disabled': return 'Esta conta foi desativada.';
+                case 'auth/user-not-found': return 'Nenhuma conta encontrada com este e-mail.';
+                case 'auth/wrong-password': return 'Palavra-passe incorreta.';
+                case 'auth/email-already-in-use': return 'Este e-mail já está em utilização.';
+                case 'auth/weak-password': return 'A palavra-passe deve ter pelo menos 6 caracteres.';
+                default: return 'Ocorreu um erro na autenticação. Tente novamente.';
+            }
+        }
+
+        async function updateMyName() {
+            const input = document.getElementById('myCustomNameInput');
+            if (!input || !currentUserId) return;
+            const newName = input.value.trim();
+            if (!newName) return;
+
+            currentUserName = newName;
+            localStorage.setItem('mundo_digital_username', newName);
+
+            try {
+                await setDoc(doc(db, "users", currentUserId), {
+                    name: newName,
+                    lastSeen: new Date().toISOString()
+                }, { merge: true });
+                showToast("Nome de exibição atualizado!", "success");
+                if (auth.currentUser) updateAuthUI(auth.currentUser);
+            } catch (err) {
+                console.error("Erro ao atualizar nome:", err);
+                showToast("Erro ao atualizar o nome.", "error");
+            }
+        }
 
         async function requestNotificationPermission() {
             try {
                 if (!('Notification' in window)) {
-                    alert('As notificações não são suportadas neste navegador.');
+                    showToast('As notificações não são suportadas neste navegador.', 'error');
                     return;
                 }
 
                 const messagingSupported = await isSupported().catch(() => false);
                 if (!messagingSupported) {
-                    alert('O serviço de notificações em tempo real (FCM) não é suportado no contexto atual do navegador.');
+                    showToast('Serviço Push indisponível no navegador atual.', 'error');
                     return;
                 }
 
                 const permission = await Notification.requestPermission();
-                
                 if (permission === 'granted') {
                     const messaging = getMessaging(app);
                     let swRegistration = null;
@@ -424,20 +824,16 @@
                     };
                     if (swRegistration) tokenOptions.serviceWorkerRegistration = swRegistration;
 
-                    const token = await getToken(messaging, tokenOptions).catch(err => {
-                        console.warn("Aviso ao obter FCM Token:", err);
-                        return null;
-                    });
+                    await getToken(messaging, tokenOptions).catch(err => console.warn("Aviso FCM Token:", err));
 
-                    alert('Notificações ativadas com sucesso!');
+                    showToast('Notificações ativadas com sucesso!', 'success');
                     const icon = document.getElementById('notificationIcon');
                     if (icon) icon.className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
                 } else {
-                    alert('Permissão de notificações recusada.');
+                    showToast('Permissão de notificações recusada.', 'info');
                 }
             } catch (error) {
                 console.error('Erro ao ativar notificações:', error);
-                alert('Não foi possível ativar as notificações neste dispositivo.');
             }
         }
 
@@ -463,6 +859,15 @@
             renderUsersList(filtered);
         }
 
+        function isUserOnline(user) {
+            if (!user) return false;
+            if (user.online === false) return false;
+            if (!user.lastSeen) return false;
+            const lastSeenDate = new Date(user.lastSeen);
+            const now = new Date();
+            return (now - lastSeenDate) < 120000;
+        }
+
         function renderUsersList(users) {
             const usersList = document.getElementById('usersList');
             if (!usersList) return;
@@ -470,21 +875,28 @@
             const otherUsers = users.filter(u => u.uid !== currentUserId);
 
             if (otherUsers.length === 0) {
-                usersList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Nenhum utilizador online ou encontrado.</div>`;
+                usersList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Nenhum utilizador encontrado.</div>`;
                 return;
             }
 
             usersList.innerHTML = otherUsers.map(u => {
-                const safeName = escapeHTML(u.name || 'Utilizador');
+                const displayName = u.name || u.email || 'Utilizador';
+                const safeName = escapeHTML(displayName);
+                const encodedName = encodeURIComponent(displayName);
+                const online = isUserOnline(u);
+
                 return `
-                <div onclick="window.startChatWith('${u.uid}', '${safeName.replace(/'/g, "\\'")}')" 
+                <div onclick="window.startChatWith('${u.uid}', decodeURIComponent('${encodedName}'))" 
                      class="p-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer flex items-center gap-2.5 transition ${activeChatUserId === u.uid ? 'bg-brand-50 dark:bg-brand-900/30' : ''}">
-                    <div class="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
-                        ${(u.name || 'U').charAt(0).toUpperCase()}
+                    <div class="relative">
+                        <div class="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                            ${displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-800 ${online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
                     </div>
                     <div class="flex-1 overflow-hidden">
                         <p class="text-xs font-semibold truncate">${safeName}</p>
-                        <p class="text-[10px] text-slate-400 truncate">ID: ${u.uid.substring(0, 8)}...</p>
+                        <p class="text-[10px] text-slate-400 truncate">${online ? 'Online' : 'Offline'}</p>
                     </div>
                 </div>
             `}).join('');
@@ -498,17 +910,34 @@
             activeChatUserId = userId;
             renderUsersList(allUsers);
 
+            const mainArea = document.getElementById('chatMainArea');
+            const sidebar = document.getElementById('chatSidebar');
+            
+            if (mainArea) {
+                mainArea.classList.remove('hidden');
+                mainArea.classList.add('flex');
+            }
+            if (sidebar && window.innerWidth < 640) {
+                sidebar.classList.add('hidden');
+            }
+
+            const targetUser = allUsers.find(u => u.uid === userId);
+            const online = isUserOnline(targetUser);
+
             document.getElementById('chatActiveHeader').classList.remove('hidden');
             document.getElementById('chatForm').classList.remove('hidden');
             document.getElementById('chatActiveName').innerText = userName;
             document.getElementById('chatActiveAvatar').innerText = userName.charAt(0).toUpperCase();
+            document.getElementById('chatActiveStatus').innerText = online ? 'Online' : 'Offline';
 
             const chatId = getChatId(currentUserId, userId);
 
             if (unsubscribeChat) unsubscribeChat();
 
             const messagesRef = collection(db, "chats", chatId, "messages");
-            const q = query(messagesRef, orderBy("timestamp", "asc"));
+            const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
+
+            let initialLoad = true;
 
             unsubscribeChat = onSnapshot(q, (snapshot) => {
                 const messagesContainer = document.getElementById('chatMessages');
@@ -520,6 +949,7 @@
                             <p>Sem mensagens anteriores. Diga olá a <strong>${escapeHTML(userName)}</strong>!</p>
                         </div>
                     `;
+                    initialLoad = false;
                     return;
                 }
 
@@ -529,16 +959,62 @@
 
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                    
+                    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
                     msgDiv.innerHTML = `
                         <div class="max-w-[80%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
                             ${escapeHTML(msg.text)}
+                            ${timeStr ? `<span class="block text-[9px] mt-1 opacity-70 text-right">${timeStr}</span>` : ''}
                         </div>
                     `;
                     messagesContainer.appendChild(msgDiv);
                 });
 
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                if (!initialLoad && snapshot.docChanges().some(change => change.type === 'added')) {
+                    const lastDoc = snapshot.docs[snapshot.docs.length - 1].data();
+                    if (lastDoc.senderId !== currentUserId) {
+                        playNotificationSound();
+                        const chatModal = document.getElementById('chatModal');
+                        if (chatModal && chatModal.classList.contains('pointer-events-none')) {
+                            unreadMessagesCount++;
+                            updateUnreadBadge();
+                        }
+                    }
+                }
+
+                initialLoad = false;
+
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 50);
             });
+        }
+
+        function updateUnreadBadge() {
+            const chatBadge = document.getElementById('chatBadge');
+            const unreadBadge = document.getElementById('unreadTotalBadge');
+            
+            if (unreadMessagesCount > 0) {
+                if (chatBadge) chatBadge.classList.remove('hidden');
+                if (unreadBadge) {
+                    unreadBadge.innerText = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
+                    unreadBadge.classList.remove('hidden');
+                }
+            } else {
+                if (chatBadge) chatBadge.classList.add('hidden');
+                if (unreadBadge) unreadBadge.classList.add('hidden');
+            }
+        }
+
+        function backToUsersList() {
+            const mainArea = document.getElementById('chatMainArea');
+            const sidebar = document.getElementById('chatSidebar');
+            if (mainArea) {
+                mainArea.classList.add('hidden');
+                mainArea.classList.remove('flex');
+            }
+            if (sidebar) sidebar.classList.remove('hidden');
         }
 
         async function sendChatMessage(e) {
@@ -558,24 +1034,20 @@
                 });
             } catch (err) {
                 console.error("Erro ao enviar mensagem:", err);
+                showToast("Falha ao enviar mensagem.", "error");
             }
         }
-
-        let contents = [];
-        let currentFilter = 'all';
-        let searchQuery = '';
-        let currentAddTab = 'upload';
-        let selectedFile = null;
 
         function listenToDatabaseChanges() {
             try {
                 const contentsRef = collection(db, "contents");
-                onSnapshot(contentsRef, (snapshot) => {
+                const q = query(contentsRef, orderBy("date", "desc"));
+                
+                onSnapshot(q, (snapshot) => {
                     contents = snapshot.docs.map(docSnap => ({
                         id: docSnap.id,
                         ...docSnap.data()
                     }));
-                    contents.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
                     render();
                 }, (error) => {
                     console.error("Erro no Firestore:", error);
@@ -651,6 +1123,12 @@
                     updateThemeIcon(isDark);
                 });
             }
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    ['authModal', 'chatModal', 'addContentModal', 'viewContentModal'].forEach(id => closeModal(id));
+                }
+            });
         }
 
         function resetFilters() {
@@ -719,7 +1197,7 @@
                             </p>
                         </div>
                         <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
-                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date || 'Recente'}</span>
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date ? item.date.split('T')[0] : 'Recente'}</span>
                             <span class="font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">${item.size || 'Ficheiro'}</span>
                         </div>
                     </div>
@@ -728,7 +1206,7 @@
         }
 
         function getCardPreviewHTML(item) {
-            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">`;
+            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-slate-400 text-xs p-2 text-center\'><i class=\'fa-solid fa-image-slash text-2xl mb-1 block\'></i>Imagem indisponível</div>';">`;
             if (item.type === 'video') return `<div class="flex flex-col items-center justify-center text-brand-500"><i class="fa-solid fa-circle-play text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Vídeo</span></div>`;
             if (item.type === 'document') return `<div class="flex flex-col items-center justify-center text-red-500"><i class="fa-solid fa-file-pdf text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Documento PDF</span></div>`;
             return `<div class="flex flex-col items-center justify-center text-indigo-500"><i class="fa-solid fa-globe text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Link Externo</span></div>`;
@@ -796,7 +1274,7 @@
             try {
                 if (currentAddTab === 'upload') {
                     if (!selectedFile) {
-                        alert('Por favor, selecione um ficheiro.');
+                        showToast('Por favor, selecione um ficheiro.', 'error');
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
@@ -809,10 +1287,10 @@
 
                     storagePath = `uploads/${customId}_${selectedFile.name}`;
                     const storageRef = ref(storage, storagePath);
-                    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+                    activeUploadTask = uploadBytesResumable(storageRef, selectedFile);
 
                     finalUrl = await new Promise((resolve, reject) => {
-                        uploadTask.on('state_changed', 
+                        activeUploadTask.on('state_changed', 
                             (snapshot) => {
                                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                                 progressBar.style.width = `${progress}%`;
@@ -820,7 +1298,7 @@
                             }, 
                             (error) => reject(error), 
                             async () => {
-                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                                const downloadURL = await getDownloadURL(activeUploadTask.snapshot.ref);
                                 resolve(downloadURL);
                             }
                         );
@@ -830,7 +1308,7 @@
                 } else {
                     finalUrl = document.getElementById('inputUrl').value.trim();
                     if (!finalUrl) {
-                        alert('Por favor, insira o URL.');
+                        showToast('Por favor, insira o URL.', 'error');
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
@@ -844,20 +1322,23 @@
                     category: category.charAt(0).toUpperCase() + category.slice(1),
                     url: finalUrl,
                     storagePath: storagePath,
-                    date: new Date().toISOString().split('T')[0],
-                    size: fileSize
+                    date: new Date().toISOString(),
+                    size: fileSize,
+                    authorId: currentUserId
                 };
 
                 await setDoc(doc(db, "contents", customId), newItem);
                 
                 closeModal('addContentModal');
                 resetAddForm();
+                showToast("Recurso adicionado com sucesso!", "success");
             } catch (error) {
                 console.error("Erro no envio:", error);
-                alert("Erro ao enviar o ficheiro.");
+                showToast("Erro ao enviar o ficheiro.", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
+                activeUploadTask = null;
             }
         }
 
@@ -875,8 +1356,10 @@
             const item = contents.find(i => i.id === id);
             if (!item) return;
 
+            const displayDate = item.date ? item.date.split('T')[0] : 'Recente';
+
             document.getElementById('viewTitle').innerText = item.title;
-            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${item.date || 'Recente'}`;
+            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${displayDate}`;
             document.getElementById('viewDescription').innerText = item.description || 'Sem descrição.';
             
             const downloadBtn = document.getElementById('viewDownloadBtn');
@@ -923,11 +1406,17 @@
                 try {
                     if (item.storagePath) {
                         const fileRef = ref(storage, item.storagePath);
-                        await deleteObject(fileRef).catch(e => console.warn("Ficheiro no Storage já não existe:", e));
+                        try {
+                            await deleteObject(fileRef);
+                        } catch (e) {
+                            console.warn("Ficheiro no Storage já não existe:", e);
+                        }
                     }
                     await deleteDoc(doc(db, "contents", id));
+                    showToast("Recurso eliminado com sucesso.", "info");
                 } catch (error) {
                     console.error("Erro ao eliminar:", error);
+                    showToast("Erro ao eliminar recurso.", "error");
                 }
             }
         }
@@ -936,17 +1425,30 @@
             const m = document.getElementById(id);
             if (!m) return;
             m.classList.remove('opacity-0', 'pointer-events-none');
-            m.firstElementChild.classList.remove('scale-95');
-            m.firstElementChild.classList.add('scale-100');
+            if (m.firstElementChild) {
+                m.firstElementChild.classList.remove('scale-95');
+                m.firstElementChild.classList.add('scale-100');
+            }
+
+            if (id === 'chatModal') {
+                unreadMessagesCount = 0;
+                updateUnreadBadge();
+            }
         }
 
         function closeModal(id) {
             const m = document.getElementById(id);
             if (!m) return;
             m.classList.add('opacity-0', 'pointer-events-none');
-            m.firstElementChild.classList.remove('scale-100');
-            m.firstElementChild.classList.add('scale-95');
+            if (m.firstElementChild) {
+                m.firstElementChild.classList.remove('scale-100');
+                m.firstElementChild.classList.add('scale-95');
+            }
             if (id === 'viewContentModal') document.getElementById('viewContainer').innerHTML = '';
+            if (id === 'addContentModal' && activeUploadTask) {
+                activeUploadTask.cancel();
+                resetAddForm();
+            }
         }
 
         function escapeHTML(str) {
@@ -954,7 +1456,11 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        // Expor funções ao âmbito global
+        // Inicialização Geral
+        initTheme();
+        setupEventListeners();
+
+        // EXPOSIÇÃO DAS FUNÇÕES PARA O SCOPE GLOBAL
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.switchAddTab = switchAddTab;
@@ -964,16 +1470,19 @@
         window.deleteContent = deleteContent;
         window.resetFilters = resetFilters;
         window.setCategoryUI = setCategoryUI;
+        window.handleAuthAction = handleAuthAction;
+        window.handleLogin = handleLogin;
+        window.handleRegister = handleRegister;
+        window.handlePasswordReset = handlePasswordReset;
+        window.handleAnonymousLogin = handleAnonymousLogin;
+        window.switchAuthTab = switchAuthTab;
+        window.updateMyName = updateMyName;
         window.requestNotificationPermission = requestNotificationPermission;
         window.searchUsers = searchUsers;
         window.startChatWith = startChatWith;
+        window.backToUsersList = backToUsersList;
         window.sendChatMessage = sendChatMessage;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            setupEventListeners();
-            listenToDatabaseChanges();
-        });
+        window.showToast = showToast;
     </script>
 </body>
 </html>
