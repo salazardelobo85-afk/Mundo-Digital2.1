@@ -48,7 +48,6 @@
     <div id="callModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-slate-900 w-full max-w-4xl h-full sm:h-[85vh] sm:rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col relative">
             
-            <!-- Cabeçalho da Chamada -->
             <div class="absolute top-0 inset-x-0 p-4 z-20 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold" id="callPeerAvatar">U</div>
@@ -62,12 +61,9 @@
                 </div>
             </div>
 
-            <!-- Área de Vídeos / Visualização -->
             <div class="flex-1 relative flex items-center justify-center bg-slate-950 overflow-hidden">
-                <!-- Vídeo Remoto -->
                 <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
                 
-                <!-- Placeholder se for chamada só de áudio ou vídeo desligado -->
                 <div id="audioCallPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 hidden">
                     <div class="w-24 h-24 rounded-full bg-brand-600/30 text-brand-400 flex items-center justify-center text-4xl mb-4 animate-pulse">
                         <i class="fa-solid fa-microphone"></i>
@@ -75,13 +71,11 @@
                     <p class="text-slate-300 font-semibold text-lg" id="audioCallName">Em chamada de áudio</p>
                 </div>
 
-                <!-- Vídeo Local (Picture-in-Picture) -->
                 <div class="absolute bottom-24 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
                     <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 </div>
             </div>
 
-            <!-- Controlos da Chamada -->
             <div class="p-4 sm:p-6 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-4 z-20">
                 <button onclick="window.toggleMute()" id="muteBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg" title="Silenciar Microfone">
                     <i class="fa-solid fa-microphone text-lg"></i>
@@ -138,14 +132,12 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <!-- Botão do Chat -->
                 <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
                     <i class="fa-solid fa-comments text-lg"></i>
                     <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
                     <span id="unreadTotalBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
                 </button>
 
-                <!-- Botão para Ativar Notificações -->
                 <button id="enableNotificationsBtn" onclick="window.requestNotificationPermission()" title="Ativar Notificações" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
                     <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
                 </button>
@@ -159,7 +151,6 @@
                     <span class="hidden md:inline">Adicionar</span>
                 </button>
 
-                <!-- ÁREA DE AUTENTICAÇÃO / PERFIL -->
                 <div class="pl-2 border-l border-slate-200 dark:border-slate-700">
                     <button id="authBtn" onclick="window.handleAuthAction()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-xs font-semibold">
                         <i id="authBtnIcon" class="fa-solid fa-user-circle text-base text-slate-500"></i>
@@ -173,7 +164,6 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <!-- BANNER DE BOAS-VINDAS -->
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Central Multimédia Mundo Digital</h1>
@@ -244,7 +234,6 @@
                     </button>
                 </div>
 
-                <!-- FORMULÁRIO DE LOGIN -->
                 <form id="loginForm" onsubmit="window.handleLogin(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">E-mail</label>
@@ -281,7 +270,6 @@
                     </button>
                 </form>
 
-                <!-- FORMULÁRIO DE REGISTO -->
                 <form id="registerForm" onsubmit="window.handleRegister(event)" class="space-y-4 hidden">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Nome Completo</label>
@@ -338,7 +326,6 @@
             </div>
 
             <div class="flex-1 flex overflow-hidden relative">
-                <!-- Barra Lateral: Utilizadores -->
                 <div id="chatSidebar" class="w-full sm:w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/20">
                     <div class="p-3 border-b border-slate-200 dark:border-slate-700 space-y-2">
                         <div class="relative">
@@ -359,7 +346,6 @@
                     </div>
                 </div>
 
-                <!-- Janela de Chat -->
                 <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col bg-slate-100/50 dark:bg-slate-900/40 absolute sm:relative inset-0 bg-white dark:bg-slate-800 sm:bg-transparent">
                     <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
@@ -389,13 +375,15 @@
                         </div>
                     </div>
 
-                    <!-- BARRA DE INPUT DE MENSAGEM / GRAVAÇÃO DE ÁUDIO -->
+                    <!-- BARRA DE INPUT DE MENSAGEM / SEGURAR PARA GRAVAR ÁUDIO -->
                     <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 hidden">
                         <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off"
                                class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         
-                        <!-- Botão de Gravar Áudio -->
-                        <button type="button" id="audioRecordBtn" onclick="window.toggleAudioRecording()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 transition" title="Gravar Mensagem de Voz">
+                        <!-- BOTÃO "SEGURAR PARA GRAVAR" -->
+                        <button type="button" id="audioRecordBtn" 
+                                class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 transition relative select-none" 
+                                title="Segure para gravar áudio">
                             <i class="fa-solid fa-microphone text-sm" id="audioRecordIcon"></i>
                         </button>
 
@@ -537,7 +525,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE COMPLETO E ATUALIZADO COM WEBRTC E ÁUDIOS -->
+    <!-- SCRIPT FIREBASE COMPLETO COM HOLD-TO-RECORD WEBRTC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -570,11 +558,6 @@
             getDownloadURL, 
             deleteObject 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-        import { 
-            getMessaging, 
-            getToken, 
-            isSupported
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
@@ -617,7 +600,7 @@
         let isVideoOff = false;
         let incomingCallData = null;
 
-        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO
+        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO (HOLD-TO-RECORD)
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecordingAudio = false;
@@ -629,7 +612,6 @@
             ]
         };
 
-        // NOTIFICAÇÕES TOAST
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -653,11 +635,7 @@
             `;
 
             container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('opacity-0', 'translate-y-2');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
@@ -667,9 +645,7 @@
         function playNotificationSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (ctx.state === 'suspended') {
-                    ctx.resume();
-                }
+                if (ctx.state === 'suspended') ctx.resume();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
@@ -684,7 +660,6 @@
             } catch (e) {}
         }
 
-        // GESTÃO DE ESTADO DO UTILIZADOR
         async function updateUserStatus(onlineStatus) {
             if (!currentUserId) return;
             try {
@@ -697,17 +672,13 @@
 
         window.addEventListener('beforeunload', () => updateUserStatus(false));
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                updateUserStatus(false);
-            } else {
-                updateUserStatus(true);
-            }
+            if (document.visibilityState === 'hidden') updateUserStatus(false);
+            else updateUserStatus(true);
         });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
-
                 if (!user.isAnonymous) {
                     currentUserName = user.displayName || user.email.split('@')[0];
                 } else {
@@ -716,7 +687,6 @@
                 }
                 
                 updateAuthUI(user);
-
                 const nameInput = document.getElementById('myCustomNameInput');
                 if (nameInput) nameInput.value = currentUserName;
 
@@ -742,7 +712,6 @@
         function updateAuthUI(user) {
             const authBtnText = document.getElementById('authBtnText');
             const authBtnIcon = document.getElementById('authBtnIcon');
-            
             if (authBtnText && authBtnIcon) {
                 if (user && !user.isAnonymous) {
                     authBtnText.innerText = currentUserName;
@@ -758,9 +727,7 @@
             if (auth.currentUser && !auth.currentUser.isAnonymous) {
                 if (confirm(`Sessão iniciada como ${currentUserName}. Deseja terminar a sessão?`)) {
                     updateUserStatus(false).then(() => {
-                        signOut(auth).then(() => {
-                            showToast("Sessão terminada com sucesso.", "info");
-                        });
+                        signOut(auth).then(() => showToast("Sessão terminada com sucesso.", "info"));
                     });
                 }
             } else {
@@ -773,7 +740,6 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const submitBtn = document.getElementById('loginSubmitBtn');
-
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
 
@@ -796,14 +762,12 @@
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value;
             const submitBtn = document.getElementById('registerSubmitBtn');
-
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
                 await setDoc(doc(db, "users", user.uid), {
                     uid: user.uid,
                     name: name,
@@ -816,7 +780,7 @@
                 currentUserName = name;
                 closeModal('authModal');
                 document.getElementById('registerForm').reset();
-                showToast("Conta criada com sucesso! Bem-vindo ao Mundo Digital.", "success");
+                showToast("Conta criada com sucesso!", "success");
             } catch (error) {
                 showToast(getAuthErrorMessage(error.code), "error");
             } finally {
@@ -826,12 +790,11 @@
         }
 
         async function handlePasswordReset() {
-            const email = prompt("Por favor, introduza o seu endereço de e-mail para recuperar a palavra-passe:");
+            const email = prompt("Introduza o seu e-mail para recuperar a palavra-passe:");
             if (!email) return;
-
             try {
                 await sendPasswordResetEmail(auth, email);
-                showToast("E-mail de redefinição enviado! Verifique a sua caixa de entrada.", "success");
+                showToast("E-mail de redefinição enviado!", "success");
             } catch (error) {
                 showToast(getAuthErrorMessage(error.code), "error");
             }
@@ -846,9 +809,7 @@
                 await signInAnonymously(auth);
                 closeModal('authModal');
                 showToast("Iniciou sessão como visitante.", "info");
-            } catch (error) {
-                console.error("Erro no acesso anónimo:", error);
-            }
+            } catch (error) {}
         }
 
         function switchAuthTab(tab) {
@@ -875,13 +836,12 @@
 
         function getAuthErrorMessage(code) {
             switch (code) {
-                case 'auth/invalid-email': return 'Endereço de e-mail inválido.';
-                case 'auth/user-disabled': return 'Esta conta foi desativada.';
-                case 'auth/user-not-found': return 'Nenhuma conta encontrada com este e-mail.';
+                case 'auth/invalid-email': return 'E-mail inválido.';
+                case 'auth/user-not-found': return 'Utilizador não encontrado.';
                 case 'auth/wrong-password': return 'Palavra-passe incorreta.';
-                case 'auth/email-already-in-use': return 'Este e-mail já está em utilização.';
-                case 'auth/weak-password': return 'A palavra-passe deve ter pelo menos 6 caracteres.';
-                default: return 'Ocorreu um erro na autenticação. Tente novamente.';
+                case 'auth/email-already-in-use': return 'E-mail já em uso.';
+                case 'auth/weak-password': return 'Palavra-passe muito curta.';
+                default: return 'Erro na autenticação.';
             }
         }
 
@@ -890,7 +850,6 @@
             if (!input || !currentUserId) return;
             const newName = input.value.trim();
             if (!newName) return;
-
             currentUserName = newName;
             localStorage.setItem('mundo_digital_username', newName);
 
@@ -899,11 +858,9 @@
                     name: newName,
                     lastSeen: new Date().toISOString()
                 }, { merge: true });
-                showToast("Nome de exibição atualizado!", "success");
+                showToast("Nome atualizado!", "success");
                 if (auth.currentUser) updateAuthUI(auth.currentUser);
-            } catch (err) {
-                showToast("Erro ao atualizar o nome.", "error");
-            }
+            } catch (err) {}
         }
 
         async function requestNotificationPermission() {
@@ -911,7 +868,7 @@
                 if (!('Notification' in window)) return;
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    showToast('Notificações ativadas com sucesso!', 'success');
+                    showToast('Notificações ativadas!', 'success');
                     const icon = document.getElementById('notificationIcon');
                     if (icon) icon.className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
                 }
@@ -920,8 +877,7 @@
 
         function listenToUsersRealtime() {
             if (unsubscribeUsers) unsubscribeUsers();
-            const usersRef = collection(db, "users");
-            unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+            unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
                 allUsers = snapshot.docs.map(d => d.data());
                 searchUsers();
             });
@@ -945,7 +901,6 @@
         function renderUsersList(users) {
             const usersList = document.getElementById('usersList');
             if (!usersList) return;
-
             const otherUsers = users.filter(u => u.uid !== currentUserId);
 
             if (otherUsers.length === 0) {
@@ -991,9 +946,7 @@
                 mainArea.classList.remove('hidden');
                 mainArea.classList.add('flex');
             }
-            if (sidebar && window.innerWidth < 640) {
-                sidebar.classList.add('hidden');
-            }
+            if (sidebar && window.innerWidth < 640) sidebar.classList.add('hidden');
 
             const targetUser = allUsers.find(u => u.uid === userId);
             const online = isUserOnline(targetUser);
@@ -1005,12 +958,10 @@
             document.getElementById('chatActiveStatus').innerText = online ? 'Online' : 'Offline';
 
             const chatId = getChatId(currentUserId, userId);
-
             if (unsubscribeChat) unsubscribeChat();
 
             const messagesRef = collection(db, "chats", chatId, "messages");
             const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
-
             let initialLoad = true;
 
             unsubscribeChat = onSnapshot(q, (snapshot) => {
@@ -1030,10 +981,8 @@
                 snapshot.docs.forEach(docSnap => {
                     const msg = docSnap.data();
                     const isMe = msg.senderId === currentUserId;
-
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
-                    
                     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
                     let contentHTML = '';
@@ -1041,7 +990,7 @@
                         contentHTML = `
                             <audio controls class="max-w-[220px] h-9 my-1">
                                 <source src="${msg.audioUrl}" type="audio/webm">
-                                Seu navegador não suporta áudio.
+                                O seu browser não suporta áudio.
                             </audio>
                         `;
                     } else {
@@ -1068,19 +1017,14 @@
                         }
                     }
                 }
-
                 initialLoad = false;
-
-                setTimeout(() => {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }, 50);
+                setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 50);
             });
         }
 
         function updateUnreadBadge() {
             const chatBadge = document.getElementById('chatBadge');
             const unreadBadge = document.getElementById('unreadTotalBadge');
-            
             if (unreadMessagesCount > 0) {
                 if (chatBadge) chatBadge.classList.remove('hidden');
                 if (unreadBadge) {
@@ -1108,7 +1052,6 @@
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if (!text || !activeChatUserId) return;
-
             const chatId = getChatId(currentUserId, activeChatUserId);
             input.value = '';
 
@@ -1119,22 +1062,22 @@
                     type: 'text',
                     timestamp: new Date().toISOString()
                 });
-            } catch (err) {
-                showToast("Falha ao enviar mensagem.", "error");
-            }
+            } catch (err) {}
         }
 
-        // --- SISTEMA DE GRAVAÇÃO E ENVIO DE ÁUDIO NO CHAT ---
-        async function toggleAudioRecording() {
-            if (!activeChatUserId) {
-                showToast("Selecione um utilizador primeiro.", "info");
-                return;
-            }
-
-            const recordBtnIcon = document.getElementById('audioRecordIcon');
+        // --- FUNCIONALIDADE "SEGURAR PARA GRAVAR" (HOLD-TO-RECORD) ---
+        function initHoldToRecordAudio() {
             const recordBtn = document.getElementById('audioRecordBtn');
+            if (!recordBtn) return;
 
-            if (!isRecordingAudio) {
+            const startRecording = async (e) => {
+                e.preventDefault();
+                if (!activeChatUserId) {
+                    showToast("Selecione um utilizador primeiro.", "info");
+                    return;
+                }
+                if (isRecordingAudio) return;
+
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     mediaRecorder = new MediaRecorder(stream);
@@ -1147,30 +1090,47 @@
                     mediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         await uploadAndSendAudio(audioBlob);
-                        
-                        // Parar todas as pistas do stream do microfone
                         stream.getTracks().forEach(track => track.stop());
                     };
 
                     mediaRecorder.start();
                     isRecordingAudio = true;
                     
-                    recordBtnIcon.className = "fa-solid fa-stop text-sm animate-pulse";
-                    recordBtn.classList.add('bg-red-600', 'text-white');
+                    const recordBtnIcon = document.getElementById('audioRecordIcon');
+                    recordBtnIcon.className = "fa-solid fa-microphone text-sm animate-bounce text-white";
+                    recordBtn.classList.add('bg-red-600', 'text-white', 'shadow-lg', 'scale-105');
                     recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
-                    showToast("A gravar áudio... Clique novamente para enviar.", "info");
+                    
+                    showToast("A gravar áudio... (Largue para enviar)", "info");
                 } catch (err) {
-                    showToast("Não foi possível aceder ao microfone.", "error");
+                    showToast("Permissão de microfone negada ou indisponível.", "error");
                 }
-            } else {
-                if (mediaRecorder) {
+            };
+
+            const stopRecording = (e) => {
+                e.preventDefault();
+                if (!isRecordingAudio) return;
+
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
                 }
                 isRecordingAudio = false;
+
+                const recordBtnIcon = document.getElementById('audioRecordIcon');
                 recordBtnIcon.className = "fa-solid fa-microphone text-sm";
-                recordBtn.classList.remove('bg-red-600', 'text-white');
+                recordBtn.classList.remove('bg-red-600', 'text-white', 'shadow-lg', 'scale-105');
                 recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
-            }
+            };
+
+            // Eventos para Computador (Mouse)
+            recordBtn.addEventListener('mousedown', startRecording);
+            recordBtn.addEventListener('mouseup', stopRecording);
+            recordBtn.addEventListener('mouseleave', stopRecording);
+
+            // Eventos para Dispositivos Móveis (Touch)
+            recordBtn.addEventListener('touchstart', startRecording, { passive: false });
+            recordBtn.addEventListener('touchend', stopRecording, { passive: false });
+            recordBtn.addEventListener('touchcancel', stopRecording, { passive: false });
         }
 
         async function uploadAndSendAudio(audioBlob) {
@@ -1185,8 +1145,7 @@
             try {
                 const uploadTask = uploadBytesResumable(audioStorageRef, audioBlob);
                 const downloadURL = await new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed', 
-                        null, 
+                    uploadTask.on('state_changed', null, 
                         (error) => reject(error), 
                         async () => {
                             const url = await getDownloadURL(uploadTask.snapshot.ref);
@@ -1202,39 +1161,33 @@
                     timestamp: new Date().toISOString()
                 });
 
-                showToast("Áudio enviado com sucesso!", "success");
+                showToast("Mensagem de voz enviada!", "success");
             } catch (err) {
-                showToast("Erro ao enviar o áudio.", "error");
+                showToast("Erro ao enviar áudio.", "error");
             }
         }
 
-        // --- SISTEMA DE CHAMADAS WEBRTC ---
+        // --- WEBRTC CHAMADAS ---
         async function startCall(type) {
             if (!activeChatUserId) return;
             const targetUser = allUsers.find(u => u.uid === activeChatUserId);
             const targetName = targetUser ? targetUser.name : 'Utilizador';
-
             activeCallId = 'call_' + [currentUserId, activeChatUserId].sort().join('_');
             
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: type === 'video'
-                });
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
             } catch (err) {
-                showToast("Não foi possível aceder à câmara ou microfone.", "error");
+                showToast("Sem acesso à câmara/microfone.", "error");
                 return;
             }
 
             setupCallUI(targetName, type, true);
-
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
             peerConnection.ontrack = event => {
                 remoteStream = event.streams[0];
-                const remoteVideo = document.getElementById('remoteVideo');
-                remoteVideo.srcObject = remoteStream;
+                document.getElementById('remoteVideo').srcObject = remoteStream;
             };
 
             peerConnection.onicecandidate = async event => {
@@ -1260,10 +1213,8 @@
             unsubscribeCall = onSnapshot(callDocRef, async (docSnap) => {
                 const data = docSnap.data();
                 if (!data) return;
-
                 if (data.status === 'answered' && peerConnection && !peerConnection.currentRemoteDescription) {
-                    const answer = new RTCSessionDescription(data.answer);
-                    await peerConnection.setRemoteDescription(answer);
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
                     startCallTimer();
                     document.getElementById('callStatusText').innerText = 'Em chamada';
                 } else if (data.status === 'ended' || data.status === 'rejected') {
@@ -1282,8 +1233,7 @@
         }
 
         function listenToIncomingCalls() {
-            const callsRef = collection(db, "calls");
-            onSnapshot(callsRef, snapshot => {
+            onSnapshot(collection(db, "calls"), snapshot => {
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const data = change.doc.data();
@@ -1312,21 +1262,16 @@
             if (!incomingCallData) return;
             activeCallId = incomingCallData.id;
             const callType = incomingCallData.type;
-
             closeModal('incomingCallModal');
 
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: callType === 'video'
-                });
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: callType === 'video' });
             } catch (err) {
-                showToast("Erro ao aceder dispositivos de media.", "error");
+                showToast("Erro ao aceder dispositivos.", "error");
                 return;
             }
 
             setupCallUI(incomingCallData.callerName, callType, false);
-
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
@@ -1368,9 +1313,7 @@
 
             unsubscribeCall = onSnapshot(callDocRef, docSnap => {
                 const data = docSnap.data();
-                if (data && (data.status === 'ended' || data.status === 'rejected')) {
-                    endCall(false);
-                }
+                if (data && (data.status === 'ended' || data.status === 'rejected')) endCall(false);
             });
         }
 
@@ -1403,28 +1346,15 @@
                 videoToggleBtn.classList.remove('hidden');
                 remoteVideo.srcObject = localStream;
             }
-
-            const modal = document.getElementById('callModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('callModal').classList.remove('opacity-0', 'pointer-events-none');
         }
 
         async function endCall(updateDb = true) {
             if (activeCallId && updateDb) {
-                try {
-                    await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' });
-                } catch (e) {}
+                try { await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' }); } catch (e) {}
             }
-
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-
+            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+            if (peerConnection) { peerConnection.close(); peerConnection = null; }
             if (unsubscribeCall) { unsubscribeCall(); unsubscribeCall = null; }
             if (unsubscribeCandidates) { unsubscribeCandidates(); unsubscribeCandidates = null; }
 
@@ -1434,17 +1364,14 @@
             timer.classList.add('hidden');
             timer.innerText = '00:00';
 
-            const modal = document.getElementById('callModal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('callModal').classList.add('opacity-0', 'pointer-events-none');
             activeCallId = null;
-            isMuted = false;
-            isVideoOff = false;
         }
 
         function toggleMute() {
             if (!localStream) return;
             isMuted = !isMuted;
-            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
             const btn = document.getElementById('muteBtn');
             btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
         }
@@ -1452,7 +1379,7 @@
         function toggleVideo() {
             if (!localStream) return;
             isVideoOff = !isVideoOff;
-            localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+            localStream.getVideoTracks().forEach(t => t.enabled = !isVideoOff);
             const btn = document.getElementById('videoToggleBtn');
             btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
         }
@@ -1471,16 +1398,10 @@
 
         function listenToDatabaseChanges() {
             try {
-                const contentsRef = collection(db, "contents");
-                const q = query(contentsRef, orderBy("date", "desc"));
-                
-                onSnapshot(q, (snapshot) => {
-                    contents = snapshot.docs.map(docSnap => ({
-                        id: docSnap.id,
-                        ...docSnap.data()
-                    }));
+                onSnapshot(query(collection(db, "contents"), orderBy("date", "desc")), (snapshot) => {
+                    contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
                     render();
-                }, (error) => {});
+                });
             } catch (e) {}
         }
 
@@ -1497,15 +1418,12 @@
 
         function updateThemeIcon(isDark) {
             const icon = document.getElementById('themeIcon');
-            if (icon) {
-                icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
-            }
+            if (icon) icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
         }
 
         function setCategoryUI(val) {
             const select = document.getElementById('selectCategory');
             if (select) select.value = val;
-
             document.querySelectorAll('.cat-tile').forEach(tile => {
                 if (tile.getAttribute('data-cat') === val) {
                     tile.className = "cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition";
@@ -1530,11 +1448,9 @@
                         b.classList.remove('bg-brand-600', 'text-white', 'active');
                         b.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
                     });
-                    
                     const targetBtn = e.currentTarget;
                     targetBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
                     targetBtn.classList.add('bg-brand-600', 'text-white', 'active');
-
                     currentFilter = targetBtn.getAttribute('data-filter');
                     render();
                 });
@@ -1550,9 +1466,7 @@
             }
 
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    ['authModal', 'chatModal', 'addContentModal', 'viewContentModal'].forEach(id => closeModal(id));
-                }
+                if (e.key === 'Escape') ['authModal', 'chatModal', 'addContentModal', 'viewContentModal'].forEach(id => closeModal(id));
             });
         }
 
@@ -1569,7 +1483,6 @@
             const grid = document.getElementById('contentGrid');
             const emptyState = document.getElementById('emptyState');
             const counter = document.getElementById('contentCounter');
-
             if (!grid || !emptyState || !counter) return;
 
             const filtered = contents.filter(item => {
@@ -1581,7 +1494,6 @@
             });
 
             counter.innerText = `${filtered.length} recurso(s) online`;
-
             if (filtered.length === 0) {
                 grid.innerHTML = '';
                 emptyState.classList.remove('hidden');
@@ -1604,7 +1516,7 @@
                             <button onclick="window.openViewer('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Visualizar">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Abrir / Descarregar">
+                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Descarregar">
                                 <i class="fa-solid fa-download"></i>
                             </a>
                             <button onclick="window.deleteContent('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Eliminar">
@@ -1614,12 +1526,8 @@
                     </div>
                     <div class="p-5 flex-1 flex flex-col justify-between">
                         <div>
-                            <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">
-                                ${escapeHTML(item.title)}
-                            </h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                                ${escapeHTML(item.description || 'Sem descrição.')}
-                            </p>
+                            <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">${escapeHTML(item.title)}</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">${escapeHTML(item.description || 'Sem descrição.')}</p>
                         </div>
                         <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
                             <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date ? item.date.split('T')[0] : 'Recente'}</span>
@@ -1631,10 +1539,10 @@
         }
 
         function getCardPreviewHTML(item) {
-            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-slate-400 text-xs p-2 text-center\'><i class=\'fa-solid fa-image-slash text-2xl mb-1 block\'></i>Imagem indisponível</div>';">`;
+            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-slate-400 text-xs p-2 text-center\'><i class=\'fa-solid fa-image-slash text-2xl mb-1 block\'></i>Indisponível</div>';">`;
             if (item.type === 'video') return `<div class="flex flex-col items-center justify-center text-brand-500"><i class="fa-solid fa-circle-play text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Vídeo</span></div>`;
-            if (item.type === 'document') return `<div class="flex flex-col items-center justify-center text-red-500"><i class="fa-solid fa-file-pdf text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Documento PDF</span></div>`;
-            return `<div class="flex flex-col items-center justify-center text-indigo-500"><i class="fa-solid fa-globe text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Link Externo</span></div>`;
+            if (item.type === 'document') return `<div class="flex flex-col items-center justify-center text-red-500"><i class="fa-solid fa-file-pdf text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">PDF</span></div>`;
+            return `<div class="flex flex-col items-center justify-center text-indigo-500"><i class="fa-solid fa-globe text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Link Web</span></div>`;
         }
 
         function getTypeBadgeHTML(type) {
@@ -1670,11 +1578,8 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             selectedFile = file;
-            const formattedSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-            document.getElementById('fileNameDisplay').innerText = `${file.name} (${formattedSize})`;
-
+            document.getElementById('fileNameDisplay').innerText = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
             if (file.type.startsWith('image/')) setCategoryUI('image');
             else if (file.type.startsWith('video/')) setCategoryUI('video');
             else if (file.type === 'application/pdf') setCategoryUI('document');
@@ -1682,12 +1587,10 @@
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-
             const title = document.getElementById('inputTitle').value.trim();
             const category = document.getElementById('selectCategory').value;
             const description = document.getElementById('inputDescription').value.trim();
             const submitBtn = document.getElementById('submitBtn');
-            
             const customId = Date.now().toString();
             let finalUrl = '';
             let fileSize = 'Link Web';
@@ -1699,12 +1602,11 @@
             try {
                 if (currentAddTab === 'upload') {
                     if (!selectedFile) {
-                        showToast('Por favor, selecione um ficheiro.', 'error');
+                        showToast('Selecione um ficheiro.', 'error');
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
                     }
-
                     const progressContainer = document.getElementById('uploadProgressContainer');
                     const progressBar = document.getElementById('uploadProgressBar');
                     const progressPercent = document.getElementById('uploadPercent');
@@ -1722,25 +1624,21 @@
                                 progressPercent.innerText = `${Math.round(progress)}%`;
                             }, 
                             (error) => reject(error), 
-                            async () => {
-                                const downloadURL = await getDownloadURL(activeUploadTask.snapshot.ref);
-                                resolve(downloadURL);
-                            }
+                            async () => resolve(await getDownloadURL(activeUploadTask.snapshot.ref))
                         );
                     });
-
                     fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
                 } else {
                     finalUrl = document.getElementById('inputUrl').value.trim();
                     if (!finalUrl) {
-                        showToast('Por favor, insira o URL.', 'error');
+                        showToast('Insira o URL.', 'error');
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
                     }
                 }
 
-                const newItem = {
+                await setDoc(doc(db, "contents", customId), {
                     title: title,
                     description: description,
                     type: category,
@@ -1750,15 +1648,13 @@
                     date: new Date().toISOString(),
                     size: fileSize,
                     authorId: currentUserId
-                };
+                });
 
-                await setDoc(doc(db, "contents", customId), newItem);
-                
                 closeModal('addContentModal');
                 resetAddForm();
                 showToast("Recurso adicionado com sucesso!", "success");
             } catch (error) {
-                showToast("Erro ao enviar o ficheiro.", "error");
+                showToast("Erro ao enviar.", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
@@ -1779,15 +1675,12 @@
         function openViewer(id) {
             const item = contents.find(i => i.id === id);
             if (!item) return;
-
             const displayDate = item.date ? item.date.split('T')[0] : 'Recente';
 
             document.getElementById('viewTitle').innerText = item.title;
             document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${displayDate}`;
             document.getElementById('viewDescription').innerText = item.description || 'Sem descrição.';
-            
-            const downloadBtn = document.getElementById('viewDownloadBtn');
-            downloadBtn.href = item.url;
+            document.getElementById('viewDownloadBtn').href = item.url;
 
             const container = document.getElementById('viewContainer');
             const iconContainer = document.getElementById('viewTypeIcon');
@@ -1803,8 +1696,8 @@
                 container.innerHTML = `
                     <object data="${item.url}" type="application/pdf" class="w-full h-[60vh] rounded-lg shadow-sm">
                         <div class="text-center p-6 text-slate-400">
-                            <p class="mb-2">O seu navegador não suporta a pré-visualização de PDF diretamente.</p>
-                            <a href="${item.url}" target="_blank" class="text-brand-500 underline font-semibold">Clique aqui para abrir o documento PDF</a>
+                            <p class="mb-2">Pré-visualização não suportada diretamente.</p>
+                            <a href="${item.url}" target="_blank" class="text-brand-500 underline font-semibold">Abrir PDF</a>
                         </div>
                     </object>
                 `;
@@ -1818,27 +1711,20 @@
                     </div>
                 `;
             }
-
             openModal('viewContentModal');
         }
 
         async function deleteContent(id) {
             const item = contents.find(i => i.id === id);
             if (!item) return;
-
             if (confirm(`Deseja eliminar "${item.title}"?`)) {
                 try {
                     if (item.storagePath) {
-                        const fileRef = ref(storage, item.storagePath);
-                        try {
-                            await deleteObject(fileRef);
-                        } catch (e) {}
+                        try { await deleteObject(ref(storage, item.storagePath)); } catch (e) {}
                     }
                     await deleteDoc(doc(db, "contents", id));
-                    showToast("Recurso eliminado com sucesso.", "info");
-                } catch (error) {
-                    showToast("Erro ao eliminar recurso.", "error");
-                }
+                    showToast("Recurso eliminado.", "info");
+                } catch (error) {}
             }
         }
 
@@ -1850,7 +1736,6 @@
                 m.firstElementChild.classList.remove('scale-95');
                 m.firstElementChild.classList.add('scale-100');
             }
-
             if (id === 'chatModal') {
                 unreadMessagesCount = 0;
                 updateUnreadBadge();
@@ -1880,8 +1765,9 @@
         // Inicialização Geral
         initTheme();
         setupEventListeners();
+        initHoldToRecordAudio();
 
-        // EXPOSIÇÃO DAS FUNÇÕES PARA O SCOPE GLOBAL
+        // EXPOSIÇÃO GLOBAL
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.switchAddTab = switchAddTab;
@@ -1903,7 +1789,6 @@
         window.startChatWith = startChatWith;
         window.backToUsersList = backToUsersList;
         window.sendChatMessage = sendChatMessage;
-        window.toggleAudioRecording = toggleAudioRecording;
         window.startCall = startCall;
         window.acceptIncomingCall = acceptIncomingCall;
         window.rejectIncomingCall = rejectIncomingCall;
