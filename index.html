@@ -82,6 +82,9 @@
         .chat-input-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
+        .safe-area-pb {
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+        }
         .wallpaper-tile {
             aspect-ratio: 1;
             border-radius: 0.75rem;
@@ -543,19 +546,23 @@
     </div>
 
     <!-- MODAL DE ADIÇÃO DE CONTEÚDO -->
-    <div id="addContentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-4">
+    <div id="addContentModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-0 sm:m-4 max-h-[92dvh] flex flex-col">
             
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i> Adicionar ao Mundo Digital
-                </h3>
-                <button onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i> Adicionar ao Mundo Digital
+                    </h3>
+                    <p id="storageBackendHint" class="text-[10px] text-slate-400 mt-0.5">A preparar armazenamento…</p>
+                </div>
+                <button type="button" onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
-            <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="p-6 space-y-4">
+            <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col flex-1 min-h-0">
+            <div class="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                 <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
                     <button type="button" id="tabUploadBtn" onclick="window.switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
                         <i class="fa-solid fa-upload mr-1"></i> Ficheiro Local
@@ -608,21 +615,27 @@
 
                 <div id="uploadSection" class="space-y-2">
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Ficheiro do dispositivo</label>
-                    <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50"
+                    <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50"
                          onclick="document.getElementById('fileInput').click()">
-                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-500 mb-2"></i>
-                        <p id="fileNameDisplay" class="text-xs text-slate-600 dark:text-slate-300 font-medium">Toque para escolher ou arraste o ficheiro</p>
-                        <p class="text-[10px] text-slate-400 mt-1">Imagens · Vídeos · PDF · Áudio · Documentos (máx. 100 MB)</p>
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-brand-500 mb-1.5"></i>
+                        <p id="fileNameDisplay" class="text-xs text-slate-600 dark:text-slate-300 font-medium">Toque para escolher ficheiro</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Imagens · Vídeos · PDF · Áudio (máx. 100 MB)</p>
                         <input type="file" id="fileInput" class="hidden"
                                accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
                                onchange="window.handleFileSelect(event)">
                     </div>
-                    <div id="filePreviewBox" class="hidden rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900">
-                        <img id="filePreviewImg" class="hidden w-full max-h-36 object-cover" alt="Pré-visualização">
-                        <video id="filePreviewVideo" class="hidden w-full max-h-36 object-cover" muted></video>
-                        <div id="filePreviewMeta" class="px-3 py-2 text-[11px] text-slate-500 flex items-center justify-between gap-2">
-                            <span id="filePreviewName" class="truncate"></span>
-                            <button type="button" onclick="window.clearSelectedFile()" class="text-red-500 hover:underline shrink-0">Remover</button>
+                    <div id="filePreviewBox" class="hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                        <div class="flex items-center gap-3 p-2.5">
+                            <div class="w-14 h-14 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                                <img id="filePreviewImg" class="hidden w-full h-full object-cover" alt="">
+                                <video id="filePreviewVideo" class="hidden w-full h-full object-cover" muted playsinline></video>
+                                <i id="filePreviewIcon" class="fa-solid fa-file text-slate-400 text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="filePreviewName" class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate"></p>
+                                <p id="filePreviewSize" class="text-[10px] text-slate-500 mt-0.5"></p>
+                            </div>
+                            <button type="button" onclick="window.clearSelectedFile()" class="px-2.5 py-1.5 text-[11px] font-medium text-red-500 hover:bg-red-500/10 rounded-lg shrink-0">Remover</button>
                         </div>
                     </div>
                 </div>
@@ -648,10 +661,14 @@
                         <div id="uploadProgressBar" class="bg-brand-600 h-2 rounded-full transition-all duration-200 w-0"></div>
                     </div>
                 </div>
+            </div>
 
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="window.closeModal('addContentModal')" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
-                    <button type="submit" id="submitBtn" class="px-5 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow transition">Enviar Recurso</button>
+                <!-- Rodapé fixo: botões sempre visíveis -->
+                <div class="shrink-0 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 flex items-center justify-end gap-2 safe-area-pb">
+                    <button type="button" onclick="window.closeModal('addContentModal')" class="px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition">Cancelar</button>
+                    <button type="submit" id="submitBtn" class="px-5 py-2.5 text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow transition min-w-[140px]">
+                        Enviar Recurso
+                    </button>
                 </div>
             </form>
         </div>
@@ -836,6 +853,7 @@
             getDownloadURL, 
             deleteObject 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
@@ -846,10 +864,35 @@
             appId: "1:1086109928706:web:a059fb44dcf8c9c4e5c61b"
         };
 
+        // ========== SUPABASE (Storage de ficheiros) ==========
+        // 1. Cria projeto em https://supabase.com
+        // 2. Settings → API → copia Project URL e anon public key
+        // 3. Storage → New bucket "contents" (Public: ON)
+        // 4. Cola os valores abaixo (ou em localStorage: mundo_digital_supabase_url / mundo_digital_supabase_key)
+        const SUPABASE_URL = localStorage.getItem('mundo_digital_supabase_url') || "https://comjjxizcxhfoboamfqb.supabase.co";
+        const SUPABASE_ANON_KEY = localStorage.getItem('mundo_digital_supabase_key') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvbWpqeGl6Y3hoZm9ib2FtZnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4ODA0MzIsImV4cCI6MjEwNjQ1NjQzMn0.DkZc53FxJx8yo58IcKYcAsd79zBmh7kzY9ykTbj5wBU";
+        const SUPABASE_BUCKET = "contents";
+
+        const supabaseConfigured = SUPABASE_URL.includes("supabase.co")
+            && !SUPABASE_URL.includes("SEU_PROJECTO")
+            && SUPABASE_ANON_KEY
+            && SUPABASE_ANON_KEY.length > 20
+            && !SUPABASE_ANON_KEY.includes("SUA_ANON");
+
+        const supabase = supabaseConfigured
+            ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : null;
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
+
+        if (supabase) {
+            console.info("[MD] Supabase Storage ativo → bucket:", SUPABASE_BUCKET);
+        } else {
+            console.info("[MD] Supabase não configurado — uploads usam Firebase Storage. Define URL/key no código ou localStorage.");
+        }
 
         let currentUserId = null;
         let currentUserName = "Utilizador Anónimo";
@@ -2764,18 +2807,28 @@
 
         const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
 
+        function formatFileSize(bytes) {
+            if (!bytes || bytes < 1024) return `${bytes || 0} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+        }
+
         function clearSelectedFile() {
             selectedFile = null;
             const fileInput = document.getElementById('fileInput');
             if (fileInput) fileInput.value = '';
             const display = document.getElementById('fileNameDisplay');
-            if (display) display.innerText = 'Toque para escolher ou arraste o ficheiro';
+            if (display) display.innerText = 'Toque para escolher ficheiro';
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone) dropZone.classList.remove('hidden');
             const box = document.getElementById('filePreviewBox');
             const img = document.getElementById('filePreviewImg');
             const vid = document.getElementById('filePreviewVideo');
+            const icon = document.getElementById('filePreviewIcon');
             if (box) box.classList.add('hidden');
             if (img) { img.classList.add('hidden'); img.removeAttribute('src'); }
             if (vid) { vid.classList.add('hidden'); vid.removeAttribute('src'); }
+            if (icon) icon.classList.remove('hidden');
         }
 
         function applySelectedFile(file) {
@@ -2789,9 +2842,7 @@
                 return;
             }
             selectedFile = file;
-            const display = document.getElementById('fileNameDisplay');
-            const sizeMb = (file.size / 1024 / 1024).toFixed(2);
-            if (display) display.innerText = `Selecionado: ${file.name} (${sizeMb} MB)`;
+            const sizeLabel = formatFileSize(file.size);
 
             // Título automático se estiver vazio
             const titleInput = document.getElementById('inputTitle');
@@ -2806,23 +2857,34 @@
             else if (file.type.includes('pdf') || file.type.includes('document') || file.type.includes('msword') || file.type.includes('sheet') || file.type.includes('presentation')) setCategoryUI('document');
             else setCategoryUI('document');
 
-            // Pré-visualização
+            // Esconder zona de drop; mostrar cartão compacto
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone) dropZone.classList.add('hidden');
             const box = document.getElementById('filePreviewBox');
             const img = document.getElementById('filePreviewImg');
             const vid = document.getElementById('filePreviewVideo');
+            const icon = document.getElementById('filePreviewIcon');
             const nameEl = document.getElementById('filePreviewName');
-            if (nameEl) nameEl.innerText = `${file.name} · ${sizeMb} MB`;
+            const sizeEl = document.getElementById('filePreviewSize');
+            if (nameEl) nameEl.innerText = file.name;
+            if (sizeEl) sizeEl.innerText = sizeLabel + (file.type ? ` · ${file.type.split('/')[0]}` : '');
             if (box) box.classList.remove('hidden');
             if (img) img.classList.add('hidden');
             if (vid) vid.classList.add('hidden');
+            if (icon) icon.classList.remove('hidden');
+
             if (file.type.startsWith('image/') && img) {
-                const url = URL.createObjectURL(file);
-                img.src = url;
+                img.src = URL.createObjectURL(file);
                 img.classList.remove('hidden');
+                if (icon) icon.classList.add('hidden');
             } else if (file.type.startsWith('video/') && vid) {
-                const url = URL.createObjectURL(file);
-                vid.src = url;
+                vid.src = URL.createObjectURL(file);
                 vid.classList.remove('hidden');
+                if (icon) icon.classList.add('hidden');
+            } else if (icon) {
+                if (file.type.startsWith('audio/')) icon.className = 'fa-solid fa-music text-slate-400 text-lg';
+                else if (file.type.includes('pdf')) icon.className = 'fa-solid fa-file-pdf text-red-400 text-lg';
+                else icon.className = 'fa-solid fa-file text-slate-400 text-lg';
             }
         }
 
@@ -2905,7 +2967,65 @@
                     if (percentText) percentText.innerText = '0%';
 
                     const safeName = selectedFile.name.replace(/[^\w.\-() ]+/g, '_').slice(0, 120);
-                    const storagePath = `contents/${currentUserId || 'anon'}/${Date.now()}_${safeName}`;
+                    const objectPath = `${currentUserId || 'anon'}/${Date.now()}_${safeName}`;
+
+                    // —— Preferir Supabase Storage se configurado ——
+                    if (supabase) {
+                        if (percentText) percentText.innerText = '…';
+                        if (progressBar) progressBar.style.width = '30%';
+                        try {
+                            const { data, error } = await supabase.storage
+                                .from(SUPABASE_BUCKET)
+                                .upload(objectPath, selectedFile, {
+                                    cacheControl: '3600',
+                                    upsert: false,
+                                    contentType: selectedFile.type || 'application/octet-stream'
+                                });
+                            if (error) throw error;
+                            if (progressBar) progressBar.style.width = '80%';
+                            if (percentText) percentText.innerText = '80%';
+
+                            const { data: pub } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(data.path);
+                            const downloadUrl = pub?.publicUrl || '';
+                            if (!downloadUrl) throw new Error('URL pública em falta — o bucket deve ser Public.');
+
+                            await addDoc(collection(db, 'contents'), {
+                                title,
+                                category,
+                                description,
+                                url: downloadUrl,
+                                storagePath: data.path,
+                                storageProvider: 'supabase',
+                                fileName: selectedFile.name,
+                                fileSize: selectedFile.size,
+                                mimeType: selectedFile.type || '',
+                                createdBy: currentUserId,
+                                createdByName: currentUserName || '',
+                                createdAt: serverTimestamp()
+                            });
+                            if (progressBar) progressBar.style.width = '100%';
+                            if (percentText) percentText.innerText = '100%';
+                            if (progressContainer) progressContainer.classList.add('hidden');
+                            resetAddContentForm();
+                            closeModal('addContentModal');
+                            showToast('Publicado no Supabase! Todos podem ver.', 'success');
+                        } catch (err) {
+                            console.error(err);
+                            const msg = (err && err.message) ? String(err.message) : 'Erro no upload Supabase.';
+                            showToast(msg.includes('Bucket') || msg.includes('row-level')
+                                ? 'Erro Supabase: verifique bucket "contents" público e políticas.'
+                                : ('Erro Supabase: ' + msg.slice(0, 120)), 'error');
+                            if (progressContainer) progressContainer.classList.add('hidden');
+                        } finally {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50');
+                            submitBtn.innerHTML = 'Enviar Recurso';
+                        }
+                        return;
+                    }
+
+                    // —— Fallback: Firebase Storage ——
+                    const storagePath = `contents/${objectPath}`;
                     const fileRef = ref(storage, storagePath);
                     const uploadTask = uploadBytesResumable(fileRef, selectedFile, {
                         contentType: selectedFile.type || 'application/octet-stream',
@@ -2942,6 +3062,7 @@
                                     description,
                                     url: downloadUrl,
                                     storagePath,
+                                    storageProvider: 'firebase',
                                     fileName: selectedFile.name,
                                     fileSize: selectedFile.size,
                                     mimeType: selectedFile.type || '',
@@ -2963,7 +3084,6 @@
                             }
                         }
                     );
-                    // Não reativar o botão no finally — o upload continua em background
                     return;
 
                 } else {
@@ -3202,10 +3322,15 @@
             if (!confirm("Tem a certeza de que deseja eliminar este recurso?")) return;
 
             try {
+                const item = contents.find(c => c.id === id);
                 await deleteDoc(doc(db, "contents", id));
                 if (storagePath) {
-                    const fileRef = ref(storage, storagePath);
-                    await deleteObject(fileRef).catch(() => {});
+                    if (item && item.storageProvider === 'supabase' && supabase) {
+                        await supabase.storage.from(SUPABASE_BUCKET).remove([storagePath]).catch(() => {});
+                    } else {
+                        const fileRef = ref(storage, storagePath);
+                        await deleteObject(fileRef).catch(() => {});
+                    }
                 }
                 showToast("Recurso eliminado com sucesso.", "success");
                 if (isAdmin) renderAdminContents();
@@ -3213,6 +3338,21 @@
                 showToast("Erro ao eliminar recurso.", "error");
             }
         }
+
+        /** Configurar Supabase em runtime (consola do browser):
+         *  window.setSupabaseConfig('https://xxxx.supabase.co', 'eyJhbGciOi...')
+         */
+        function setSupabaseConfig(url, anonKey) {
+            if (!url || !anonKey) {
+                showToast('URL e anon key são obrigatórios.', 'error');
+                return false;
+            }
+            localStorage.setItem('mundo_digital_supabase_url', url.trim());
+            localStorage.setItem('mundo_digital_supabase_key', anonKey.trim());
+            showToast('Supabase guardado. Recarregue a página.', 'success');
+            return true;
+        }
+        window.setSupabaseConfig = setSupabaseConfig;
 
         // ========== ADMIN ==========
         function openAdminAccess() {
@@ -3628,6 +3768,14 @@
         applyChatWallpaper(localStorage.getItem('mundo_digital_wallpaper'));
         // Drag & drop para upload de ficheiros
         initDropZone();
+
+        // Indicador de backend de armazenamento no modal Adicionar
+        const storageHint = document.getElementById('storageBackendHint');
+        if (storageHint) {
+            storageHint.innerHTML = supabase
+                ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ficheiros → <strong>Supabase Storage</strong>'
+                : '<i class="fa-solid fa-database text-slate-400 mr-1"></i>Ficheiros → Firebase Storage (configure Supabase no código)';
+        }
 
         // Banner offline / online
         function updateOfflineBanner() {
