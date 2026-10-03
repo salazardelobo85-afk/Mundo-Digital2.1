@@ -37,6 +37,21 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* ANIMAÇÃO DE ENTRADA SUAVE DAS MENSAGENS */
+        @keyframes messagePopIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .msg-animate-in {
+            animation: messagePopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative">
@@ -140,7 +155,7 @@
             <div class="flex-1 max-w-md mx-2">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" placeholder="Pesquisar ficheiros, vídeos, links..." 
+                    <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar ficheiros, vídeos, links..." 
                            class="w-full pl-10 pr-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
                 </div>
             </div>
@@ -149,14 +164,13 @@
                 <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
                     <i class="fa-solid fa-comments text-lg"></i>
                     <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
-                    <span id="unreadTotalBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
                 </button>
 
                 <button id="enableNotificationsBtn" onclick="window.requestNotificationPermission()" title="Ativar Notificações" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
                     <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
                 </button>
 
-                <button id="themeToggleBtn" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                <button id="themeToggleBtn" onclick="window.toggleTheme()" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
                     <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
                 </button>
                 
@@ -190,19 +204,19 @@
 
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
-                <button data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white">
+                <button onclick="window.setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white">
                     <i class="fa-solid fa-border-all mr-1.5"></i>Todos
                 </button>
-                <button data-filter="image" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button onclick="window.setFilter('image')" data-filter="image" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-image mr-1.5"></i>Imagens
                 </button>
-                <button data-filter="video" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button onclick="window.setFilter('video')" data-filter="video" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-video mr-1.5"></i>Vídeos
                 </button>
-                <button data-filter="document" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button onclick="window.setFilter('document')" data-filter="document" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-file-pdf mr-1.5"></i>Documentos
                 </button>
-                <button data-filter="link" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button onclick="window.setFilter('link')" data-filter="link" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-link mr-1.5"></i>Links
                 </button>
             </div>
@@ -542,7 +556,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE COMPLETO -->
+    <!-- SCRIPT FIREBASE E LÓGICA COMPLETA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -596,8 +610,7 @@
         let activeChatUserId = null;
         let unsubscribeChat = null;
         let unsubscribeUsers = null;
-        let unsubscribeTyping = null;
-        let unreadMessagesCount = 0;
+        let unsubscribeContents = null;
         let allUsers = [];
         let userNicknames = {};
         let contents = [];
@@ -605,10 +618,9 @@
         let searchQuery = '';
         let currentAddTab = 'upload';
         let selectedFile = null;
-        let activeUploadTask = null;
-        let typingTimeout = null;
+        let lastMessageCount = 0;
 
-        // VARIÁVEIS WEBRTC PARA CHAMADAS
+        // WEBRTC ESTADO
         let peerConnection = null;
         let localStream = null;
         let remoteStream = null;
@@ -621,17 +633,19 @@
         let isVideoOff = false;
         let incomingCallData = null;
 
-        // VARIÁVEIS PARA GRAVAÇÃO DE ÁUDIO
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecordingAudio = false;
-
         const rtcConfig = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' }
             ]
         };
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -663,24 +677,77 @@
             }, 4000);
         }
 
+        /* SOM DE ENTRADA DE MENSAGEM - 100% DE VOLUME E ALTA AUDIBILIDADE */
         function playNotificationSound() {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
                 if (ctx.state === 'suspended') ctx.resume();
-                const osc = ctx.createOscillator();
+
+                const now = ctx.currentTime;
+
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-                osc.connect(gain);
+
+                osc1.type = 'triangle';
+                osc2.type = 'sine';
+
+                // Notas brilhantes (C6 e E6)
+                osc1.frequency.setValueAtTime(1046.50, now);
+                osc1.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12);
+
+                osc2.frequency.setValueAtTime(1318.51, now + 0.06);
+                osc2.frequency.exponentialRampToValueAtTime(1567.98, now + 0.22);
+
+                // GANHO MÁXIMO (1.0 = 100% de volume no navegador)
+                gain.gain.setValueAtTime(1.0, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
                 gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.3);
-            } catch (e) {}
+
+                osc1.start(now);
+                osc2.start(now + 0.06);
+                osc1.stop(now + 0.35);
+                osc2.stop(now + 0.35);
+            } catch (e) {
+                console.warn("Audio Context bloqueado ou não suportado:", e);
+            }
         }
 
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            const inner = modal.firstElementChild;
+            if (inner) inner.classList.remove('scale-95');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            const inner = modal.firstElementChild;
+            if (inner) inner.classList.add('scale-95');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                if (themeIcon) themeIcon.className = "fa-solid fa-sun text-lg";
+                localStorage.setItem('mundo_digital_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                if (themeIcon) themeIcon.className = "fa-solid fa-moon text-lg";
+                localStorage.setItem('mundo_digital_theme', 'dark');
+            }
+        }
+
+        // AUTENTICAÇÃO
         async function updateUserStatus(onlineStatus) {
             if (!currentUserId) return;
             try {
@@ -729,6 +796,7 @@
                 listenToUsersRealtime();
                 listenToDatabaseChanges();
                 listenToIncomingCalls();
+                initHoldToRecordAudio();
             } else {
                 signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
             }
@@ -839,6 +907,17 @@
             } catch (error) {}
         }
 
+        function getAuthErrorMessage(code) {
+            switch (code) {
+                case 'auth/invalid-email': return 'Formato de e-mail inválido.';
+                case 'auth/user-not-found': return 'Utilizador não encontrado.';
+                case 'auth/wrong-password': return 'Palavra-passe incorreta.';
+                case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+                case 'auth/weak-password': return 'A palavra-passe deve ter pelo menos 6 caracteres.';
+                default: return 'Ocorreu um erro na autenticação.';
+            }
+        }
+
         function switchAuthTab(tab) {
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
@@ -851,732 +930,789 @@
                 registerForm.classList.add('hidden');
                 tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
                 tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                authModalTitle.innerText = "Aceder à Conta";
+                if (authModalTitle) authModalTitle.innerText = "Aceder à Conta";
             } else {
-                registerForm.classList.remove('hidden');
                 loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
                 tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
                 tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                authModalTitle.innerText = "Registar Nova Conta";
+                if (authModalTitle) authModalTitle.innerText = "Criar Nova Conta";
             }
         }
 
-        function getAuthErrorMessage(code) {
-            switch (code) {
-                case 'auth/invalid-email': return 'E-mail inválido.';
-                case 'auth/user-not-found': return 'Utilizador não encontrado.';
-                case 'auth/wrong-password': return 'Palavra-passe incorreta.';
-                case 'auth/email-already-in-use': return 'E-mail já em uso.';
-                case 'auth/weak-password': return 'Palavra-passe muito curta.';
-                default: return 'Erro na autenticação.';
-            }
-        }
-
+        // CHAT & UTILIZADORES
         async function updateMyName() {
-            const input = document.getElementById('myCustomNameInput');
-            if (!input || !currentUserId) return;
-            const newName = input.value.trim();
+            const nameInput = document.getElementById('myCustomNameInput');
+            if (!nameInput) return;
+            const newName = nameInput.value.trim();
             if (!newName) return;
             currentUserName = newName;
             localStorage.setItem('mundo_digital_username', newName);
-
-            try {
-                await setDoc(doc(db, "users", currentUserId), {
-                    name: newName,
-                    lastSeen: new Date().toISOString()
-                }, { merge: true });
-                showToast("Nome atualizado!", "success");
-                if (auth.currentUser) updateAuthUI(auth.currentUser);
-            } catch (err) {}
+            if (currentUserId) {
+                await updateDoc(doc(db, "users", currentUserId), { name: newName });
+            }
+            updateAuthUI(auth.currentUser);
+            showToast("Nome atualizado com sucesso!", "success");
         }
 
-        async function requestNotificationPermission() {
-            try {
-                if (!('Notification' in window)) return;
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    showToast('Notificações ativadas!', 'success');
-                    const icon = document.getElementById('notificationIcon');
-                    if (icon) icon.className = 'fa-solid fa-bell-slash text-brand-500 text-lg';
-                }
-            } catch (error) {}
-        }
-
-        function listenToUsersRealtime() {
-            if (unsubscribeUsers) unsubscribeUsers();
-            unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
-                allUsers = snapshot.docs.map(d => d.data());
-                searchUsers();
-                
-                if (activeChatUserId) {
-                    const targetUser = allUsers.find(u => u.uid === activeChatUserId);
-                    if (targetUser) {
-                        const online = isUserOnline(targetUser);
-                        const statusText = formatLastSeen(targetUser.lastSeen, online);
-                        document.getElementById('chatActiveStatus').innerText = statusText;
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast("Notificações ativadas!", "success");
+                    } else {
+                        showToast("Permissão de notificações negada.", "error");
                     }
-                }
-            });
-        }
-
-        function searchUsers() {
-            const searchInput = document.getElementById('userSearchInput');
-            const queryText = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const filtered = allUsers.filter(u => {
-                const name = (userNicknames[u.uid] || u.name || u.email || '').toLowerCase();
-                return name.includes(queryText) || (u.uid && u.uid.toLowerCase().includes(queryText));
-            });
-            renderUsersList(filtered);
-        }
-
-        function isUserOnline(user) {
-            if (!user || user.online === false || !user.lastSeen) return false;
-            return (new Date() - new Date(user.lastSeen)) < 120000;
-        }
-
-        function formatLastSeen(isoString, online) {
-            if (online) return "Online agora";
-            if (!isoString) return "Offline";
-
-            const date = new Date(isoString);
-            const now = new Date();
-            const isToday = date.toDateString() === now.toDateString();
-            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            if (isToday) {
-                return `Visto hoje às ${timeStr}`;
-            } else {
-                const dayStr = date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
-                return `Visto em ${dayStr} às ${timeStr}`;
+                });
             }
         }
 
-        function renderUsersList(users) {
+        function listenToUsersRealtime() {
+            const q = query(collection(db, "users"));
+            unsubscribeUsers = onSnapshot(q, (snapshot) => {
+                allUsers = snapshot.docs
+                    .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+                    .filter(u => u.id !== currentUserId);
+                renderUsersList();
+            });
+        }
+
+        function getDisplayName(user) {
+            if (!user) return "Utilizador";
+            if (userNicknames && userNicknames[user.id]) {
+                return userNicknames[user.id];
+            }
+            return user.name || user.email || ("Utilizador " + user.id.substring(0, 5));
+        }
+
+        function searchUsers() {
+            renderUsersList();
+        }
+
+        function renderUsersList() {
             const usersList = document.getElementById('usersList');
             if (!usersList) return;
-            const otherUsers = users.filter(u => u.uid !== currentUserId);
 
-            if (otherUsers.length === 0) {
+            const filterVal = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
+            const filtered = allUsers.filter(u => getDisplayName(u).toLowerCase().includes(filterVal));
+
+            if (filtered.length === 0) {
                 usersList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Nenhum utilizador encontrado.</div>`;
                 return;
             }
 
-            usersList.innerHTML = otherUsers.map(u => {
-                const rawName = u.name || u.email || 'Utilizador';
-                const displayName = userNicknames[u.uid] || rawName;
-                const safeName = escapeHTML(displayName);
-                const encodedName = encodeURIComponent(rawName);
-                const online = isUserOnline(u);
-                const statusText = formatLastSeen(u.lastSeen, online);
+            usersList.innerHTML = filtered.map(u => {
+                const displayName = getDisplayName(u);
+                const isOnline = u.online;
+                const isActive = u.id === activeChatUserId;
 
                 return `
-                <div onclick="window.startChatWith('${u.uid}', decodeURIComponent('${encodedName}'))" 
-                     class="p-3 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer flex items-center gap-2.5 transition ${activeChatUserId === u.uid ? 'bg-brand-50 dark:bg-brand-900/30' : ''}">
-                    <div class="relative">
-                        <div class="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
-                            ${displayName.charAt(0).toUpperCase()}
+                    <div onclick="window.startChatWith('${u.id}')" class="p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 transition ${isActive ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}">
+                        <div class="relative">
+                            <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
+                                ${displayName.charAt(0).toUpperCase()}
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
                         </div>
-                        <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-800 ${online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHTML(displayName)}</h4>
+                            <p class="text-[10px] text-slate-400">${isOnline ? 'Online' : 'Offline'}</p>
+                        </div>
                     </div>
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-xs font-semibold truncate">${safeName} ${userNicknames[u.uid] ? `<span class="text-[10px] text-brand-500 font-normal">(${escapeHTML(rawName)})</span>` : ''}</p>
-                        <p class="text-[10px] ${online ? 'text-emerald-500 font-medium' : 'text-slate-400'} truncate">${statusText}</p>
-                    </div>
-                </div>
-            `}).join('');
+                `;
+            }).join('');
         }
 
-        function getChatId(uid1, uid2) {
-            return [uid1, uid2].sort().join("_");
+        function startChatWith(userId) {
+            activeChatUserId = userId;
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const activeHeader = document.getElementById('chatActiveHeader');
+            const chatForm = document.getElementById('chatForm');
+            const chatActiveName = document.getElementById('chatActiveName');
+            const chatActiveAvatar = document.getElementById('chatActiveAvatar');
+            const chatActiveStatus = document.getElementById('chatActiveStatus');
+
+            if (activeHeader) activeHeader.classList.remove('hidden');
+            if (chatForm) chatForm.classList.remove('hidden');
+
+            const name = getDisplayName(user);
+            if (chatActiveName) chatActiveName.innerText = name;
+            if (chatActiveAvatar) chatActiveAvatar.innerText = name.charAt(0).toUpperCase();
+            if (chatActiveStatus) chatActiveStatus.innerText = user.online ? "Online" : "Offline";
+
+            const chatMain = document.getElementById('chatMainArea');
+            if (chatMain) chatMain.classList.remove('hidden');
+
+            lastMessageCount = 0;
+            renderUsersList();
+            listenToChatMessages();
         }
+
+        function listenToChatMessages() {
+            if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+            if (!activeChatUserId || !currentUserId) return;
+
+            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+            const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(100));
+
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                const messages = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+                // Toca som de entrada a 100% caso chegue mensagem do interlocutor
+                if (messages.length > lastMessageCount && lastMessageCount !== 0) {
+                    const lastMsg = messages[messages.length - 1];
+                    if (lastMsg && lastMsg.senderId !== currentUserId) {
+                        playNotificationSound();
+                    }
+                }
+                lastMessageCount = messages.length;
+                renderMessages(messages);
+            });
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center my-auto text-slate-400 text-xs">
+                        <i class="fa-solid fa-comments text-3xl mb-2 opacity-50"></i>
+                        <p>Nenhuma mensagem ainda. Envie um "Olá"!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isMe = msg.senderId === currentUserId;
+                let contentHtml = '';
+
+                if (msg.type === 'audio') {
+                    contentHtml = `<audio src="${msg.audioUrl}" controls class="max-w-[200px] sm:max-w-[240px] h-8 my-1"></audio>`;
+                } else {
+                    contentHtml = `<p class="text-xs break-words">${escapeHTML(msg.text)}</p>`;
+                }
+
+                // Aplicação da classe de animação msg-animate-in
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} msg-animate-in">
+                        <div class="max-w-[80%] px-3 py-2 rounded-2xl ${
+                            isMe 
+                                ? 'bg-brand-600 text-white rounded-tr-none' 
+                                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-tl-none shadow-sm'
+                        }">
+                            ${contentHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('chatInput');
+            if (!input || !activeChatUserId || !currentUserId) return;
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+
+            try {
+                await addDoc(collection(db, "chats", chatId, "messages"), {
+                    senderId: currentUserId,
+                    receiverId: activeChatUserId,
+                    text: text,
+                    type: 'text',
+                    createdAt: serverTimestamp()
+                });
+            } catch (err) {
+                showToast("Erro ao enviar mensagem.", "error");
+            }
+        }
+
+        function handleTypingInput() {}
 
         function openNicknameModal() {
             if (!activeChatUserId) return;
-            const targetUser = allUsers.find(u => u.uid === activeChatUserId);
-            const rawName = targetUser ? (targetUser.name || targetUser.email) : 'Utilizador';
-            document.getElementById('nicknameModalSub').innerText = `Atribuir alcunha para ${rawName}`;
-            document.getElementById('nicknameInput').value = userNicknames[activeChatUserId] || '';
+            const currentNick = userNicknames[activeChatUserId] || '';
+            document.getElementById('nicknameInput').value = currentNick;
             openModal('nicknameModal');
         }
 
         async function saveUserNickname() {
             if (!activeChatUserId || !currentUserId) return;
-            const nickname = document.getElementById('nicknameInput').value.trim();
-            if (nickname) {
-                userNicknames[activeChatUserId] = nickname;
+            const input = document.getElementById('nicknameInput');
+            const nick = input ? input.value.trim() : '';
+
+            if (nick) {
+                userNicknames[activeChatUserId] = nick;
             } else {
                 delete userNicknames[activeChatUserId];
             }
 
             try {
-                await updateDoc(doc(db, "users", currentUserId), {
+                await setDoc(doc(db, "users", currentUserId), {
                     nicknames: userNicknames
-                });
+                }, { merge: true });
+
                 closeModal('nicknameModal');
-                showToast("Alcunha guardada!", "success");
-                searchUsers();
-                const targetUser = allUsers.find(u => u.uid === activeChatUserId);
-                if (targetUser) {
-                    const displayName = userNicknames[activeChatUserId] || targetUser.name || 'Utilizador';
-                    document.getElementById('chatActiveName').innerText = displayName;
+                renderUsersList();
+                const user = allUsers.find(u => u.id === activeChatUserId);
+                if (user) {
+                    const name = getDisplayName(user);
+                    document.getElementById('chatActiveName').innerText = name;
                 }
-            } catch (e) {
-                showToast("Erro ao guardar alcunha.", "error");
-            }
-        }
-
-        function startChatWith(userId, userName) {
-            activeChatUserId = userId;
-            renderUsersList(allUsers);
-
-            const mainArea = document.getElementById('chatMainArea');
-            const sidebar = document.getElementById('chatSidebar');
-            
-            if (mainArea) {
-                mainArea.classList.remove('hidden');
-                mainArea.classList.add('flex');
-            }
-            if (sidebar && window.innerWidth < 640) sidebar.classList.add('hidden');
-
-            const targetUser = allUsers.find(u => u.uid === userId);
-            const online = isUserOnline(targetUser);
-            const statusText = formatLastSeen(targetUser?.lastSeen, online);
-            const displayName = userNicknames[userId] || userName;
-
-            document.getElementById('chatActiveHeader').classList.remove('hidden');
-            document.getElementById('chatForm').classList.remove('hidden');
-            document.getElementById('chatActiveName').innerText = displayName;
-            document.getElementById('chatActiveAvatar').innerText = displayName.charAt(0).toUpperCase();
-            document.getElementById('chatActiveStatus').innerText = statusText;
-
-            const chatId = getChatId(currentUserId, userId);
-            if (unsubscribeChat) unsubscribeChat();
-            if (unsubscribeTyping) unsubscribeTyping();
-
-            // ESCUTAR TYPING INDICATOR
-            unsubscribeTyping = onSnapshot(doc(db, "chats", chatId, "typing", userId), (docSnap) => {
-                if (docSnap.exists() && docSnap.data().isTyping) {
-                    document.getElementById('chatActiveStatus').innerText = "A escrever...";
-                } else {
-                    document.getElementById('chatActiveStatus').innerText = formatLastSeen(targetUser?.lastSeen, online);
-                }
-            });
-
-            const messagesRef = collection(db, "chats", chatId, "messages");
-            const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
-            let initialLoad = true;
-
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
-                const messagesContainer = document.getElementById('chatMessages');
-                messagesContainer.innerHTML = '';
-
-                if (snapshot.empty) {
-                    messagesContainer.innerHTML = `
-                        <div class="text-center my-auto text-slate-400 text-xs">
-                            <p>Sem mensagens anteriores. Diga olá a <strong>${escapeHTML(displayName)}</strong>!</p>
-                        </div>
-                    `;
-                    initialLoad = false;
-                    return;
-                }
-
-                snapshot.docs.forEach(docSnap => {
-                    const msgId = docSnap.id;
-                    const msg = docSnap.data();
-                    const isMe = msg.senderId === currentUserId;
-
-                    // Marcar mensagem como lida se for do outro utilizador
-                    if (!isMe && !msg.read) {
-                        updateDoc(doc(db, "chats", chatId, "messages", msgId), { read: true }).catch(() => {});
-                    }
-
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
-                    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-                    let contentHTML = '';
-                    if (msg.type === 'audio') {
-                        contentHTML = `
-                            <audio controls class="max-w-[220px] h-9 my-1">
-                                <source src="${msg.audioUrl}" type="audio/webm">
-                                O seu browser não suporta áudio.
-                            </audio>
-                        `;
-                    } else {
-                        contentHTML = `<span id="msg_text_${msgId}">${escapeHTML(msg.text)}</span> ${msg.edited ? '<span class="text-[9px] opacity-60 italic">(editada)</span>' : ''}`;
-                    }
-
-                    let readTicks = '';
-                    if (isMe) {
-                        const isRead = msg.read;
-                        readTicks = `<span class="inline-block ml-1 font-bold ${isRead ? 'text-sky-300' : 'text-slate-300'}">✓✓</span>`;
-                    }
-
-                    let editBtn = '';
-                    if (isMe && msg.type !== 'audio') {
-                        editBtn = `<button onclick="window.editMessage('${chatId}', '${msgId}', '${btoa(encodeURIComponent(msg.text))}')" class="text-[10px] opacity-70 hover:opacity-100 ml-2 underline">Editar</button>`;
-                    }
-
-                    msgDiv.innerHTML = `
-                        <div class="max-w-[80%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none'}">
-                            ${contentHTML}
-                            <div class="flex items-center justify-end gap-1 mt-1">
-                                ${editBtn}
-                                ${timeStr ? `<span class="text-[9px] opacity-70">${timeStr}</span>` : ''}
-                                ${readTicks}
-                            </div>
-                        </div>
-                    `;
-                    messagesContainer.appendChild(msgDiv);
-                });
-
-                if (!initialLoad && snapshot.docChanges().some(change => change.type === 'added')) {
-                    const lastDoc = snapshot.docs[snapshot.docs.length - 1].data();
-                    if (lastDoc.senderId !== currentUserId) {
-                        playNotificationSound();
-                        const chatModal = document.getElementById('chatModal');
-                        if (chatModal && chatModal.classList.contains('pointer-events-none')) {
-                            unreadMessagesCount++;
-                            updateUnreadBadge();
-                        }
-                    }
-                }
-                initialLoad = false;
-                setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 50);
-            });
-        }
-
-        function handleTypingInput() {
-            if (!activeChatUserId || !currentUserId) return;
-            const chatId = getChatId(currentUserId, activeChatUserId);
-            const typingRef = doc(db, "chats", chatId, "typing", currentUserId);
-
-            setDoc(typingRef, { isTyping: true }, { merge: true });
-
-            if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                setDoc(typingRef, { isTyping: false }, { merge: true });
-            }, 2000);
-        }
-
-        async function editMessage(chatId, msgId, encodedText) {
-            const oldText = decodeURIComponent(atob(encodedText));
-            const newText = prompt("Editar mensagem:", oldText);
-            if (newText === null || newText.trim() === "" || newText === oldText) return;
-
-            try {
-                await updateDoc(doc(db, "chats", chatId, "messages", msgId), {
-                    text: newText.trim(),
-                    edited: true
-                });
-                showToast("Mensagem atualizada!", "success");
-            } catch (e) {
-                showToast("Erro ao editar mensagem.", "error");
-            }
-        }
-
-        function updateUnreadBadge() {
-            const chatBadge = document.getElementById('chatBadge');
-            const unreadBadge = document.getElementById('unreadTotalBadge');
-            if (unreadMessagesCount > 0) {
-                if (chatBadge) chatBadge.classList.remove('hidden');
-                if (unreadBadge) {
-                    unreadBadge.innerText = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
-                    unreadBadge.classList.remove('hidden');
-                }
-            } else {
-                if (chatBadge) chatBadge.classList.add('hidden');
-                if (unreadBadge) unreadBadge.classList.add('hidden');
+                showToast("Alcunha gravada!", "success");
+            } catch (err) {
+                showToast("Erro ao gravar alcunha.", "error");
             }
         }
 
         function backToUsersList() {
-            const mainArea = document.getElementById('chatMainArea');
-            const sidebar = document.getElementById('chatSidebar');
-            if (mainArea) {
-                mainArea.classList.add('hidden');
-                mainArea.classList.remove('flex');
-            }
-            if (sidebar) sidebar.classList.remove('hidden');
+            const chatMain = document.getElementById('chatMainArea');
+            if (chatMain) chatMain.classList.add('hidden');
         }
 
-        async function sendChatMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text || !activeChatUserId) return;
-            const chatId = getChatId(currentUserId, activeChatUserId);
-            input.value = '';
-
-            try {
-                await setDoc(doc(db, "chats", chatId, "typing", currentUserId), { isTyping: false }, { merge: true });
-                await addDoc(collection(db, "chats", chatId, "messages"), {
-                    senderId: currentUserId,
-                    text: text,
-                    type: 'text',
-                    read: false,
-                    timestamp: new Date().toISOString()
-                });
-            } catch (err) {}
-        }
+        // GRAVAÇÃO DE ÁUDIO (SEGURAR PARA GRAVAR)
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
 
         function initHoldToRecordAudio() {
             const recordBtn = document.getElementById('audioRecordBtn');
+            const recordIcon = document.getElementById('audioRecordIcon');
             if (!recordBtn) return;
 
-            const startRecording = async (e) => {
-                e.preventDefault();
+            const startRecording = async () => {
                 if (!activeChatUserId) {
-                    showToast("Selecione um utilizador primeiro.", "info");
+                    showToast("Selecione um contacto para enviar áudio.", "error");
                     return;
                 }
-                if (isRecordingAudio) return;
-
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     mediaRecorder = new MediaRecorder(stream);
                     audioChunks = [];
 
-                    mediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) audioChunks.push(event.data);
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
                     };
 
                     mediaRecorder.onstop = async () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        await uploadAndSendAudio(audioBlob);
                         stream.getTracks().forEach(track => track.stop());
+
+                        if (audioBlob.size < 1000) return;
+
+                        showToast("A enviar áudio...", "info");
+                        try {
+                            const storagePath = `audios/${Date.now()}_${currentUserId}.webm`;
+                            const fileRef = ref(storage, storagePath);
+                            const uploadTask = await uploadBytesResumable(fileRef, audioBlob);
+                            const audioUrl = await getDownloadURL(uploadTask.ref);
+
+                            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+                            await addDoc(collection(db, "chats", chatId, "messages"), {
+                                senderId: currentUserId,
+                                receiverId: activeChatUserId,
+                                audioUrl: audioUrl,
+                                type: 'audio',
+                                createdAt: serverTimestamp()
+                            });
+                            showToast("Áudio enviado!", "success");
+                        } catch (err) {
+                            showToast("Erro ao enviar áudio.", "error");
+                        }
                     };
 
                     mediaRecorder.start();
-                    isRecordingAudio = true;
-                    
-                    const recordBtnIcon = document.getElementById('audioRecordIcon');
-                    recordBtnIcon.className = "fa-solid fa-microphone text-sm animate-bounce text-white";
-                    recordBtn.classList.add('bg-red-600', 'text-white', 'shadow-lg', 'scale-105');
+                    isRecording = true;
+                    recordBtn.classList.add('bg-red-500', 'text-white');
                     recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
-                    
-                    showToast("A gravar áudio... (Largue para enviar)", "info");
+                    if (recordIcon) recordIcon.className = "fa-solid fa-square text-sm animate-pulse";
                 } catch (err) {
-                    showToast("Permissão de microfone negada ou indisponível.", "error");
+                    showToast("Permissão de microfone necessária.", "error");
                 }
             };
 
-            const stopRecording = (e) => {
-                e.preventDefault();
-                if (!isRecordingAudio) return;
-
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            const stopRecording = () => {
+                if (mediaRecorder && isRecording) {
                     mediaRecorder.stop();
+                    isRecording = false;
+                    recordBtn.classList.remove('bg-red-500', 'text-white');
+                    recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
+                    if (recordIcon) recordIcon.className = "fa-solid fa-microphone text-sm";
                 }
-                isRecordingAudio = false;
-
-                const recordBtnIcon = document.getElementById('audioRecordIcon');
-                recordBtnIcon.className = "fa-solid fa-microphone text-sm";
-                recordBtn.classList.remove('bg-red-600', 'text-white', 'shadow-lg', 'scale-105');
-                recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
             };
 
             recordBtn.addEventListener('mousedown', startRecording);
             recordBtn.addEventListener('mouseup', stopRecording);
             recordBtn.addEventListener('mouseleave', stopRecording);
-            recordBtn.addEventListener('touchstart', startRecording, { passive: false });
-            recordBtn.addEventListener('touchend', stopRecording, { passive: false });
-            recordBtn.addEventListener('touchcancel', stopRecording, { passive: false });
+
+            recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+            recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
         }
 
-        async function uploadAndSendAudio(audioBlob) {
-            if (!activeChatUserId) return;
-            const chatId = getChatId(currentUserId, activeChatUserId);
-            const audioId = Date.now().toString();
-            const storagePath = `chats/${chatId}/audio_${audioId}.webm`;
-            const audioStorageRef = ref(storage, storagePath);
-
-            showToast("A enviar mensagem de voz...", "info");
-
-            try {
-                const uploadTask = uploadBytesResumable(audioStorageRef, audioBlob);
-                const downloadURL = await new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed', null, 
-                        (error) => reject(error), 
-                        async () => {
-                            const url = await getDownloadURL(uploadTask.snapshot.ref);
-                            resolve(url);
-                        }
-                    );
-                });
-
-                await addDoc(collection(db, "chats", chatId, "messages"), {
-                    senderId: currentUserId,
-                    audioUrl: downloadURL,
-                    type: 'audio',
-                    read: false,
-                    timestamp: new Date().toISOString()
-                });
-
-                showToast("Mensagem de voz enviada!", "success");
-            } catch (err) {
-                showToast("Erro ao enviar áudio.", "error");
-            }
-        }
-
-        async function startCall(type) {
-            if (!activeChatUserId) return;
-            const targetUser = allUsers.find(u => u.uid === activeChatUserId);
-            const targetName = userNicknames[activeChatUserId] || (targetUser ? targetUser.name : 'Utilizador');
-            activeCallId = 'call_' + [currentUserId, activeChatUserId].sort().join('_');
-            
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
-            } catch (err) {
-                showToast("Sem acesso à câmara/microfone.", "error");
-                return;
-            }
-
-            setupCallUI(targetName, type, true);
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.ontrack = event => {
-                remoteStream = event.streams[0];
-                document.getElementById('remoteVideo').srcObject = remoteStream;
-            };
-
-            peerConnection.onicecandidate = async event => {
-                if (event.candidate) {
-                    await addDoc(collection(db, "calls", activeCallId, "offerCandidates"), event.candidate.toJSON());
-                }
-            };
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-
-            const callDocRef = doc(db, "calls", activeCallId);
-            await setDoc(callDocRef, {
-                callerId: currentUserId,
-                callerName: currentUserName,
-                receiverId: activeChatUserId,
-                offer: { type: offer.type, sdp: offer.sdp },
-                type: type,
-                status: 'ringing',
-                timestamp: new Date().toISOString()
-            });
-
-            unsubscribeCall = onSnapshot(callDocRef, async (docSnap) => {
-                const data = docSnap.data();
-                if (!data) return;
-                if (data.status === 'answered' && peerConnection && !peerConnection.currentRemoteDescription) {
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                    startCallTimer();
-                    document.getElementById('callStatusText').innerText = 'Em chamada';
-                } else if (data.status === 'ended' || data.status === 'rejected') {
-                    endCall(false);
-                }
-            });
-
-            unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "answerCandidates"), snapshot => {
-                snapshot.docChanges().forEach(async change => {
-                    if (change.type === 'added') {
-                        const candidate = new RTCIceCandidate(change.doc.data());
-                        if (peerConnection) await peerConnection.addIceCandidate(candidate);
-                    }
-                });
-            });
-        }
-
+        // CHAMADAS WEBRTC
         function listenToIncomingCalls() {
-            onSnapshot(collection(db, "calls"), snapshot => {
-                snapshot.docChanges().forEach(change => {
+            if (!currentUserId) return;
+            const q = query(collection(db, "calls"));
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
                     if (change.type === 'added') {
                         const data = change.doc.data();
-                        if (data.receiverId === currentUserId && data.status === 'ringing') {
+                        if (data.receiverId === currentUserId && data.status === 'offered') {
                             incomingCallData = { id: change.doc.id, ...data };
-                            showIncomingCallModal(data);
+                            document.getElementById('incomingCallerName').innerText = data.callerName || "Contacto";
+                            document.getElementById('incomingCallType').innerText = `A receber chamada de ${data.type === 'video' ? 'vídeo' : 'áudio'}...`;
+                            playNotificationSound();
+                            openModal('incomingCallModal');
                         }
                     }
                 });
             });
         }
 
-        function showIncomingCallModal(data) {
-            playNotificationSound();
-            document.getElementById('incomingCallerName').innerText = data.callerName || 'Utilizador';
-            document.getElementById('incomingCallType').innerText = data.type === 'video' ? 'A receber chamada de vídeo...' : 'A receber chamada de áudio...';
-            document.getElementById('incomingCallIcon').className = data.type === 'video' ? 'fa-solid fa-video' : 'fa-solid fa-phone-volume';
-            
-            const modal = document.getElementById('incomingCallModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.firstElementChild.classList.remove('scale-95');
-            modal.firstElementChild.classList.add('scale-100');
-        }
-
-        async function acceptIncomingCall() {
-            if (!incomingCallData) return;
-            activeCallId = incomingCallData.id;
-            const callType = incomingCallData.type;
-            closeModal('incomingCallModal');
-
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: callType === 'video' });
-            } catch (err) {
-                showToast("Erro ao aceder dispositivos.", "error");
-                return;
+        function startCallTimer() {
+            stopCallTimer();
+            callSeconds = 0;
+            const durationEl = document.getElementById('callDuration');
+            if (durationEl) {
+                durationEl.classList.remove('hidden');
+                durationEl.innerText = "00:00";
             }
-
-            setupCallUI(incomingCallData.callerName, callType, false);
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.ontrack = event => {
-                remoteStream = event.streams[0];
-                document.getElementById('remoteVideo').srcObject = remoteStream;
-            };
-
-            peerConnection.onicecandidate = async event => {
-                if (event.candidate) {
-                    await addDoc(collection(db, "calls", activeCallId, "answerCandidates"), event.candidate.toJSON());
-                }
-            };
-
-            const callDocRef = doc(db, "calls", activeCallId);
-            const callSnap = await getDoc(callDocRef);
-            const callData = callSnap.data();
-
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-
-            await updateDoc(callDocRef, {
-                answer: { type: answer.type, sdp: answer.sdp },
-                status: 'answered'
-            });
-
-            startCallTimer();
-            document.getElementById('callStatusText').innerText = 'Em chamada';
-
-            unsubscribeCandidates = onSnapshot(collection(db, "calls", activeCallId, "offerCandidates"), snapshot => {
-                snapshot.docChanges().forEach(async change => {
-                    if (change.type === 'added') {
-                        const candidate = new RTCIceCandidate(change.doc.data());
-                        if (peerConnection) await peerConnection.addIceCandidate(candidate);
-                    }
-                });
-            });
-
-            unsubscribeCall = onSnapshot(callDocRef, docSnap => {
-                const data = docSnap.data();
-                if (data && (data.status === 'ended' || data.status === 'rejected')) endCall(false);
-            });
+            callTimerInterval = setInterval(() => {
+                callSeconds++;
+                const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+                const secs = String(callSeconds % 60).padStart(2, '0');
+                if (durationEl) durationEl.innerText = `${mins}:${secs}`;
+            }, 1000);
         }
 
-        async function rejectIncomingCall() {
-            if (!incomingCallData) return;
-            try {
-                await updateDoc(doc(db, "calls", incomingCallData.id), { status: 'rejected' });
-            } catch (e) {}
-            closeModal('incomingCallModal');
-            incomingCallData = null;
-        }
-
-        function setupCallUI(peerName, type, isCaller) {
-            document.getElementById('callPeerName').innerText = peerName;
-            document.getElementById('callPeerAvatar').innerText = peerName.charAt(0).toUpperCase();
-            document.getElementById('callStatusText').innerText = isCaller ? 'A chamar...' : 'A ligar...';
-
-            const remoteVideo = document.getElementById('remoteVideo');
-            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
-            const videoToggleBtn = document.getElementById('videoToggleBtn');
-
-            if (type === 'audio') {
-                remoteVideo.classList.add('hidden');
-                audioPlaceholder.classList.remove('hidden');
-                document.getElementById('audioCallName').innerText = peerName;
-                videoToggleBtn.classList.add('hidden');
-            } else {
-                remoteVideo.classList.remove('hidden');
-                audioPlaceholder.classList.add('hidden');
-                videoToggleBtn.classList.remove('hidden');
-                remoteVideo.srcObject = localStream;
+        function stopCallTimer() {
+            if (callTimerInterval) {
+                clearInterval(callTimerInterval);
+                callTimerInterval = null;
             }
-            document.getElementById('callModal').classList.remove('opacity-0', 'pointer-events-none');
+            const durationEl = document.getElementById('callDuration');
+            if (durationEl) durationEl.classList.add('hidden');
         }
 
-        async function endCall(updateDb = true) {
-            if (activeCallId && updateDb) {
-                try { await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' }); } catch (e) {}
-            }
-            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-            if (peerConnection) { peerConnection.close(); peerConnection = null; }
+        async function cleanupCall() {
+            stopCallTimer();
             if (unsubscribeCall) { unsubscribeCall(); unsubscribeCall = null; }
             if (unsubscribeCandidates) { unsubscribeCandidates(); unsubscribeCandidates = null; }
 
-            clearInterval(callTimerInterval);
-            callSeconds = 0;
-            const timer = document.getElementById('callDuration');
-            timer.classList.add('hidden');
-            timer.innerText = '00:00';
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
 
-            document.getElementById('callModal').classList.add('opacity-0', 'pointer-events-none');
-            activeCallId = null;
+            const localVideo = document.getElementById('localVideo');
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (localVideo) localVideo.srcObject = null;
+            if (remoteVideo) remoteVideo.srcObject = null;
+
+            closeModal('callModal');
+
+            if (activeCallId) {
+                try {
+                    await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' });
+                } catch (e) {}
+                activeCallId = null;
+            }
+            incomingCallData = null;
+        }
+
+        async function endCall() {
+            await cleanupCall();
         }
 
         function toggleMute() {
             if (!localStream) return;
-            isMuted = !isMuted;
-            localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
-            const btn = document.getElementById('muteBtn');
-            btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                isMuted = !audioTrack.enabled;
+                const btn = document.getElementById('muteBtn');
+                if (btn) {
+                    btn.innerHTML = isMuted 
+                        ? '<i class="fa-solid fa-microphone-slash text-lg text-red-400"></i>' 
+                        : '<i class="fa-solid fa-microphone text-lg"></i>';
+                }
+            }
         }
 
         function toggleVideo() {
             if (!localStream) return;
-            isVideoOff = !isVideoOff;
-            localStream.getVideoTracks().forEach(t => t.enabled = !isVideoOff);
-            const btn = document.getElementById('videoToggleBtn');
-            btn.className = `w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'}`;
-        }
-
-        function startCallTimer() {
-            const timer = document.getElementById('callDuration');
-            timer.classList.remove('hidden');
-            callSeconds = 0;
-            callTimerInterval = setInterval(() => {
-                callSeconds++;
-                const mins = Math.floor(callSeconds / 60).toString().padStart(2, '0');
-                const secs = (callSeconds % 60).toString().padStart(2, '0');
-                timer.innerText = `${mins}:${secs}`;
-            }, 1000);
-        }
-
-        function listenToDatabaseChanges() {
-            try {
-                onSnapshot(query(collection(db, "contents"), orderBy("date", "desc")), (snapshot) => {
-                    contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-                    render();
-                });
-            } catch (e) {}
-        }
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('mundo_digital_theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                updateThemeIcon(true);
-            } else {
-                document.documentElement.classList.remove('dark');
-                updateThemeIcon(false);
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                isVideoOff = !videoTrack.enabled;
+                const btn = document.getElementById('videoToggleBtn');
+                if (btn) {
+                    btn.innerHTML = isVideoOff 
+                        ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>' 
+                        : '<i class="fa-solid fa-video text-lg"></i>';
+                }
             }
         }
 
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('themeIcon');
-            if (icon) icon.className = isDark ? 'fa-solid fa-sun text-yellow-400 text-lg' : 'fa-solid fa-moon text-slate-600 text-lg';
+        async function startCall(type) {
+            if (!activeChatUserId) {
+                showToast("Selecione um utilizador para ligar.", "error");
+                return;
+            }
+
+            const targetUser = allUsers.find(u => u.id === activeChatUserId);
+            const targetName = getDisplayName(targetUser);
+
+            document.getElementById('callPeerName').innerText = targetName;
+            document.getElementById('callPeerAvatar').innerText = targetName.charAt(0).toUpperCase();
+            document.getElementById('callStatusText').innerText = "A chamar...";
+
+            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const remoteVid = document.getElementById('remoteVideo');
+
+            if (type === 'audio') {
+                audioPlaceholder.classList.remove('hidden');
+                remoteVid.classList.add('hidden');
+                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${targetName}`;
+            } else {
+                audioPlaceholder.classList.add('hidden');
+                remoteVid.classList.remove('hidden');
+            }
+
+            openModal('callModal');
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: type === 'video'
+                });
+
+                const localVid = document.getElementById('localVideo');
+                if (localVid) localVid.srcObject = localStream;
+
+                peerConnection = new RTCPeerConnection(rtcConfig);
+                remoteStream = new MediaStream();
+                if (remoteVid) remoteVid.srcObject = remoteStream;
+
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                peerConnection.ontrack = (e) => {
+                    e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                };
+
+                const callDocRef = doc(collection(db, "calls"));
+                activeCallId = callDocRef.id;
+
+                const callerCandidates = collection(callDocRef, "callerCandidates");
+                const receiverCandidates = collection(callDocRef, "receiverCandidates");
+
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        addDoc(callerCandidates, e.candidate.toJSON());
+                    }
+                };
+
+                const offerDescription = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offerDescription);
+
+                await setDoc(callDocRef, {
+                    callerId: currentUserId,
+                    callerName: currentUserName,
+                    receiverId: activeChatUserId,
+                    type: type,
+                    status: 'offered',
+                    offer: { type: offerDescription.type, sdp: offerDescription.sdp },
+                    createdAt: serverTimestamp()
+                });
+
+                unsubscribeCall = onSnapshot(callDocRef, (snap) => {
+                    const data = snap.data();
+                    if (!data) return;
+
+                    if (data.status === 'accepted' && peerConnection && !peerConnection.currentRemoteDescription) {
+                        const answerDescription = new RTCSessionDescription(data.answer);
+                        peerConnection.setRemoteDescription(answerDescription);
+                        document.getElementById('callStatusText').innerText = "Conectado";
+                        startCallTimer();
+                    }
+
+                    if (data.status === 'rejected') {
+                        showToast("Chamada recusada.", "info");
+                        cleanupCall();
+                    }
+
+                    if (data.status === 'ended') {
+                        cleanupCall();
+                    }
+                });
+
+                unsubscribeCandidates = onSnapshot(receiverCandidates, (snap) => {
+                    snap.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const candidate = new RTCIceCandidate(change.doc.data());
+                            peerConnection.addIceCandidate(candidate);
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error(err);
+                showToast("Impossível aceder aos dispositivos de mídia.", "error");
+                cleanupCall();
+            }
         }
 
-        function setCategoryUI(val) {
-            const select = document.getElementById('selectCategory');
-            if (select) select.value = val;
+        async function acceptIncomingCall() {
+            closeModal('incomingCallModal');
+            if (!incomingCallData) return;
+
+            const callDocRef = doc(db, "calls", incomingCallData.id);
+            activeCallId = incomingCallData.id;
+
+            document.getElementById('callPeerName').innerText = incomingCallData.callerName || "Contacto";
+            document.getElementById('callPeerAvatar').innerText = (incomingCallData.callerName || "U").charAt(0).toUpperCase();
+            document.getElementById('callStatusText').innerText = "A ligar...";
+
+            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const remoteVid = document.getElementById('remoteVideo');
+
+            if (incomingCallData.type === 'audio') {
+                audioPlaceholder.classList.remove('hidden');
+                remoteVid.classList.add('hidden');
+                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${incomingCallData.callerName}`;
+            } else {
+                audioPlaceholder.classList.add('hidden');
+                remoteVid.classList.remove('hidden');
+            }
+
+            openModal('callModal');
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: incomingCallData.type === 'video'
+                });
+
+                const localVid = document.getElementById('localVideo');
+                if (localVid) localVid.srcObject = localStream;
+
+                peerConnection = new RTCPeerConnection(rtcConfig);
+                remoteStream = new MediaStream();
+                if (remoteVid) remoteVid.srcObject = remoteStream;
+
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                peerConnection.ontrack = (e) => {
+                    e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                };
+
+                const callerCandidates = collection(callDocRef, "callerCandidates");
+                const receiverCandidates = collection(callDocRef, "receiverCandidates");
+
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        addDoc(receiverCandidates, e.candidate.toJSON());
+                    }
+                };
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+                const answerDescription = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answerDescription);
+
+                await updateDoc(callDocRef, {
+                    answer: { type: answerDescription.type, sdp: answerDescription.sdp },
+                    status: 'accepted'
+                });
+
+                document.getElementById('callStatusText').innerText = "Conectado";
+                startCallTimer();
+
+                unsubscribeCandidates = onSnapshot(callerCandidates, (snap) => {
+                    snap.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const candidate = new RTCIceCandidate(change.doc.data());
+                            peerConnection.addIceCandidate(candidate);
+                        }
+                    });
+                });
+
+                unsubscribeCall = onSnapshot(callDocRef, (snap) => {
+                    const data = snap.data();
+                    if (data && data.status === 'ended') {
+                        cleanupCall();
+                    }
+                });
+
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao atender chamada.", "error");
+                cleanupCall();
+            }
+        }
+
+        async function rejectIncomingCall() {
+            closeModal('incomingCallModal');
+            if (incomingCallData) {
+                try {
+                    await updateDoc(doc(db, "calls", incomingCallData.id), { status: 'rejected' });
+                } catch (e) {}
+                incomingCallData = null;
+            }
+        }
+
+        // GESTÃO DE RECURSOS / CONTEÚDOS
+        function listenToDatabaseChanges() {
+            const q = query(collection(db, "contents"), orderBy("createdAt", "desc"));
+            unsubscribeContents = onSnapshot(q, (snapshot) => {
+                contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                renderContents();
+            });
+        }
+
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-filter') === filterType) {
+                    btn.className = "filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white";
+                } else {
+                    btn.className = "filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+                }
+            });
+            renderContents();
+        }
+
+        function handleSearchInput(e) {
+            searchQuery = e.target.value.toLowerCase().trim();
+            renderContents();
+        }
+
+        function resetFilters() {
+            currentFilter = 'all';
+            searchQuery = '';
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            setFilter('all');
+        }
+
+        function renderContents() {
+            const grid = document.getElementById('contentGrid');
+            const emptyState = document.getElementById('emptyState');
+            const counter = document.getElementById('contentCounter');
+            if (!grid) return;
+
+            const filtered = contents.filter(item => {
+                const matchesFilter = currentFilter === 'all' || item.category === currentFilter;
+                const matchesSearch = !searchQuery || 
+                    (item.title && item.title.toLowerCase().includes(searchQuery)) ||
+                    (item.description && item.description.toLowerCase().includes(searchQuery));
+                return matchesFilter && matchesSearch;
+            });
+
+            if (counter) {
+                counter.innerText = `${filtered.length} ${filtered.length === 1 ? 'recurso' : 'recursos'}`;
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(item => {
+                const isOwner = item.createdBy === currentUserId;
+                let catIcon = "fa-file";
+                let catBadge = "Documento";
+
+                if (item.category === 'image') { catIcon = "fa-image"; catBadge = "Imagem"; }
+                else if (item.category === 'video') { catIcon = "fa-video"; catBadge = "Vídeo"; }
+                else if (item.category === 'document') { catIcon = "fa-file-pdf"; catBadge = "PDF/Doc"; }
+                else if (item.category === 'link') { catIcon = "fa-link"; catBadge = "Link"; }
+
+                let previewHtml = '';
+                if (item.category === 'image' && item.url) {
+                    previewHtml = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-40 object-cover rounded-t-2xl">`;
+                } else {
+                    previewHtml = `
+                        <div class="w-full h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-t-2xl flex items-center justify-center text-slate-400">
+                            <i class="fa-solid ${catIcon} text-4xl"></i>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden">
+                        ${previewHtml}
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between gap-2 mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40">
+                                        <i class="fa-solid ${catIcon} mr-1"></i>${catBadge}
+                                    </span>
+                                    ${isOwner ? `
+                                        <button onclick="window.deleteContent('${item.id}', '${item.storagePath || ''}')" class="text-slate-400 hover:text-red-500 transition text-xs p-1" title="Eliminar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-1 mb-1">${escapeHTML(item.title)}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">${escapeHTML(item.description || 'Sem descrição.')}</p>
+                            </div>
+                            <button onclick="window.viewContent('${item.id}')" class="w-full py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-eye"></i> Visualizar Recurso
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchAddTab(tab) {
+            currentAddTab = tab;
+            const tabUploadBtn = document.getElementById('tabUploadBtn');
+            const tabLinkBtn = document.getElementById('tabLinkBtn');
+            const uploadSection = document.getElementById('uploadSection');
+            const linkSection = document.getElementById('linkSection');
+
+            if (tab === 'upload') {
+                uploadSection.classList.remove('hidden');
+                linkSection.classList.add('hidden');
+                tabUploadBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabLinkBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+            } else {
+                uploadSection.classList.add('hidden');
+                linkSection.classList.remove('hidden');
+                tabLinkBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabUploadBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
+                setCategoryUI('link');
+            }
+        }
+
+        function setCategoryUI(cat) {
+            const selectCat = document.getElementById('selectCategory');
+            if (selectCat) selectCat.value = cat;
+
             document.querySelectorAll('.cat-tile').forEach(tile => {
-                if (tile.getAttribute('data-cat') === val) {
+                if (tile.getAttribute('data-cat') === cat) {
                     tile.className = "cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition";
                 } else {
                     tile.className = "cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition";
@@ -1584,156 +1720,18 @@
             });
         }
 
-        function setupEventListeners() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    searchQuery = e.target.value.toLowerCase().trim();
-                    render();
-                });
-            }
+        function handleFileSelect(e) {
+            selectedFile = e.target.files[0];
+            const display = document.getElementById('fileNameDisplay');
+            if (selectedFile) {
+                if (display) display.innerText = `Ficheiro: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`;
 
-            document.querySelectorAll('#filterTabs button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('#filterTabs button').forEach(b => {
-                        b.classList.remove('bg-brand-600', 'text-white', 'active');
-                        b.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
-                    });
-                    const targetBtn = e.currentTarget;
-                    targetBtn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
-                    targetBtn.classList.add('bg-brand-600', 'text-white', 'active');
-                    currentFilter = targetBtn.getAttribute('data-filter');
-                    render();
-                });
-            });
-
-            const themeBtn = document.getElementById('themeToggleBtn');
-            if (themeBtn) {
-                themeBtn.addEventListener('click', () => {
-                    const isDark = document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('mundo_digital_theme', isDark ? 'dark' : 'light');
-                    updateThemeIcon(isDark);
-                });
-            }
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') ['authModal', 'chatModal', 'addContentModal', 'viewContentModal', 'nicknameModal'].forEach(id => closeModal(id));
-            });
-        }
-
-        function resetFilters() {
-            searchQuery = '';
-            currentFilter = 'all';
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = '';
-            const defaultFilterBtn = document.querySelector('#filterTabs button[data-filter="all"]');
-            if (defaultFilterBtn) defaultFilterBtn.click();
-        }
-
-        function render() {
-            const grid = document.getElementById('contentGrid');
-            const emptyState = document.getElementById('emptyState');
-            const counter = document.getElementById('contentCounter');
-            if (!grid || !emptyState || !counter) return;
-
-            const filtered = contents.filter(item => {
-                const matchesFilter = currentFilter === 'all' || item.type === currentFilter;
-                const matchesSearch = (item.title && item.title.toLowerCase().includes(searchQuery)) || 
-                                      (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-                                      (item.category && item.category.toLowerCase().includes(searchQuery));
-                return matchesFilter && matchesSearch;
-            });
-
-            counter.innerText = `${filtered.length} recurso(s) online`;
-            if (filtered.length === 0) {
-                grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            emptyState.classList.remove('flex');
-            grid.innerHTML = filtered.map(item => createCardHTML(item)).join('');
-        }
-
-        function createCardHTML(item) {
-            return `
-                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/70 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group">
-                    <div class="relative h-44 bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
-                        ${getCardPreviewHTML(item)}
-                        <div class="absolute top-3 left-3">${getTypeBadgeHTML(item.type)}</div>
-                        <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 backdrop-blur-[2px]">
-                            <button onclick="window.openViewer('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Visualizar">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
-                            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Descarregar">
-                                <i class="fa-solid fa-download"></i>
-                            </a>
-                            <button onclick="window.deleteContent('${item.id}')" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white shadow-lg transition transform hover:scale-110" title="Eliminar">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">${escapeHTML(item.title)}</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">${escapeHTML(item.description || 'Sem descrição.')}</p>
-                        </div>
-                        <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
-                            <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${item.date ? item.date.split('T')[0] : 'Recente'}</span>
-                            <span class="font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">${item.size || 'Ficheiro'}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function getCardPreviewHTML(item) {
-            if (item.type === 'image') return `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-slate-400 text-xs p-2 text-center\'><i class=\'fa-solid fa-image-slash text-2xl mb-1 block\'></i>Indisponível</div>';">`;
-            if (item.type === 'video') return `<div class="flex flex-col items-center justify-center text-brand-500"><i class="fa-solid fa-circle-play text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Vídeo</span></div>`;
-            if (item.type === 'document') return `<div class="flex flex-col items-center justify-center text-red-500"><i class="fa-solid fa-file-pdf text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">PDF</span></div>`;
-            return `<div class="flex flex-col items-center justify-center text-indigo-500"><i class="fa-solid fa-globe text-5xl"></i><span class="text-xs mt-2 text-slate-400 font-medium">Link Web</span></div>`;
-        }
-
-        function getTypeBadgeHTML(type) {
-            switch(type) {
-                case 'image': return `<span class="bg-emerald-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-image mr-1"></i>Imagem</span>`;
-                case 'video': return `<span class="bg-amber-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-video mr-1"></i>Vídeo</span>`;
-                case 'document': return `<span class="bg-rose-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</span>`;
-                default: return `<span class="bg-indigo-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase"><i class="fa-solid fa-link mr-1"></i>Link</span>`;
-            }
-        }
-
-        function switchAddTab(tab) {
-            currentAddTab = tab;
-            const uploadBtn = document.getElementById('tabUploadBtn');
-            const linkBtn = document.getElementById('tabLinkBtn');
-            const uploadSec = document.getElementById('uploadSection');
-            const linkSec = document.getElementById('linkSection');
-
-            if (tab === 'upload') {
-                uploadBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
-                linkBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                uploadSec.classList.remove('hidden');
-                linkSec.classList.add('hidden');
+                if (selectedFile.type.startsWith('image/')) setCategoryUI('image');
+                else if (selectedFile.type.startsWith('video/')) setCategoryUI('video');
+                else if (selectedFile.type.includes('pdf')) setCategoryUI('document');
             } else {
-                linkBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
-                uploadBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                linkSec.classList.remove('hidden');
-                uploadSec.classList.add('hidden');
-                setCategoryUI('link');
+                if (display) display.innerText = "Clique para selecionar imagem, vídeo ou PDF";
             }
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            selectedFile = file;
-            document.getElementById('fileNameDisplay').innerText = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
-            if (file.type.startsWith('image/')) setCategoryUI('image');
-            else if (file.type.startsWith('video/')) setCategoryUI('video');
-            else if (file.type === 'application/pdf') setCategoryUI('document');
         }
 
         async function handleFormSubmit(e) {
@@ -1742,10 +1740,8 @@
             const category = document.getElementById('selectCategory').value;
             const description = document.getElementById('inputDescription').value.trim();
             const submitBtn = document.getElementById('submitBtn');
-            const customId = Date.now().toString();
-            let finalUrl = '';
-            let fileSize = 'Link Web';
-            let storagePath = null;
+
+            if (!title) return;
 
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
@@ -1753,179 +1749,151 @@
             try {
                 if (currentAddTab === 'upload') {
                     if (!selectedFile) {
-                        showToast('Selecione um ficheiro.', 'error');
+                        showToast("Selecione um ficheiro local.", "error");
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
                     }
+
                     const progressContainer = document.getElementById('uploadProgressContainer');
                     const progressBar = document.getElementById('uploadProgressBar');
-                    const progressPercent = document.getElementById('uploadPercent');
-                    progressContainer.classList.remove('hidden');
+                    const percentText = document.getElementById('uploadPercent');
+                    if (progressContainer) progressContainer.classList.remove('hidden');
 
-                    storagePath = `uploads/${customId}_${selectedFile.name}`;
-                    const storageRef = ref(storage, storagePath);
-                    activeUploadTask = uploadBytesResumable(storageRef, selectedFile);
+                    const storagePath = `contents/${Date.now()}_${selectedFile.name}`;
+                    const fileRef = ref(storage, storagePath);
+                    const uploadTask = uploadBytesResumable(fileRef, selectedFile);
 
-                    finalUrl = await new Promise((resolve, reject) => {
-                        activeUploadTask.on('state_changed', 
-                            (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                progressBar.style.width = `${progress}%`;
-                                progressPercent.innerText = `${Math.round(progress)}%`;
-                            }, 
-                            (error) => reject(error), 
-                            async () => resolve(await getDownloadURL(activeUploadTask.snapshot.ref))
-                        );
-                    });
-                    fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            if (progressBar) progressBar.style.width = `${progress}%`;
+                            if (percentText) percentText.innerText = `${Math.round(progress)}%`;
+                        },
+                        (error) => {
+                            showToast("Erro ao carregar ficheiro.", "error");
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50');
+                        },
+                        async () => {
+                            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                            await addDoc(collection(db, "contents"), {
+                                title,
+                                category,
+                                description,
+                                url: downloadUrl,
+                                storagePath,
+                                createdBy: currentUserId,
+                                createdAt: serverTimestamp()
+                            });
+
+                            if (progressContainer) progressContainer.classList.add('hidden');
+                            resetAddContentForm();
+                            closeModal('addContentModal');
+                            showToast("Recurso adicionado com sucesso!", "success");
+                        }
+                    );
+
                 } else {
-                    finalUrl = document.getElementById('inputUrl').value.trim();
-                    if (!finalUrl) {
-                        showToast('Insira o URL.', 'error');
+                    const url = document.getElementById('inputUrl').value.trim();
+                    if (!url) {
+                        showToast("Insira um URL válido.", "error");
                         submitBtn.disabled = false;
                         submitBtn.classList.remove('opacity-50');
                         return;
                     }
+
+                    await addDoc(collection(db, "contents"), {
+                        title,
+                        category: 'link',
+                        description,
+                        url,
+                        createdBy: currentUserId,
+                        createdAt: serverTimestamp()
+                    });
+
+                    resetAddContentForm();
+                    closeModal('addContentModal');
+                    showToast("Link adicionado com sucesso!", "success");
                 }
-
-                await setDoc(doc(db, "contents", customId), {
-                    title: title,
-                    description: description,
-                    type: category,
-                    category: category.charAt(0).toUpperCase() + category.slice(1),
-                    url: finalUrl,
-                    storagePath: storagePath,
-                    date: new Date().toISOString(),
-                    size: fileSize,
-                    authorId: currentUserId
-                });
-
-                closeModal('addContentModal');
-                resetAddForm();
-                showToast("Recurso adicionado com sucesso!", "success");
-            } catch (error) {
-                showToast("Erro ao enviar.", "error");
+            } catch (err) {
+                showToast("Erro ao guardar recurso.", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
-                activeUploadTask = null;
             }
         }
 
-        function resetAddForm() {
+        function resetAddContentForm() {
             document.getElementById('addContentForm').reset();
-            document.getElementById('fileNameDisplay').innerText = 'Clique para selecionar imagem, vídeo ou PDF';
-            document.getElementById('uploadProgressContainer').classList.add('hidden');
-            document.getElementById('uploadProgressBar').style.width = '0%';
             selectedFile = null;
+            const display = document.getElementById('fileNameDisplay');
+            if (display) display.innerText = "Clique para selecionar imagem, vídeo ou PDF";
             setCategoryUI('image');
             switchAddTab('upload');
         }
 
-        function openViewer(id) {
-            const item = contents.find(i => i.id === id);
+        function viewContent(id) {
+            const item = contents.find(c => c.id === id);
             if (!item) return;
-            const displayDate = item.date ? item.date.split('T')[0] : 'Recente';
 
             document.getElementById('viewTitle').innerText = item.title;
-            document.getElementById('viewCategoryDate').innerText = `${item.category} • Adicionado a ${displayDate}`;
-            document.getElementById('viewDescription').innerText = item.description || 'Sem descrição.';
+            document.getElementById('viewDescription').innerText = item.description || "Sem descrição disponível.";
             document.getElementById('viewDownloadBtn').href = item.url;
 
-            const container = document.getElementById('viewContainer');
-            const iconContainer = document.getElementById('viewTypeIcon');
+            const categoryDate = document.getElementById('viewCategoryDate');
+            const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-PT') : 'Recente';
+            if (categoryDate) categoryDate.innerText = `${item.category.toUpperCase()} • ${dateStr}`;
 
-            if (item.type === 'image') {
-                iconContainer.innerHTML = `<i class="fa-solid fa-image"></i>`;
-                container.innerHTML = `<img src="${item.url}" class="max-h-[65vh] w-auto max-w-full rounded-lg object-contain shadow-md" alt="${escapeHTML(item.title)}">`;
-            } else if (item.type === 'video') {
-                iconContainer.innerHTML = `<i class="fa-solid fa-video"></i>`;
-                container.innerHTML = `<video controls autoplay class="w-full max-h-[65vh] rounded-lg shadow-md"><source src="${item.url}"></video>`;
-            } else if (item.type === 'document') {
-                iconContainer.innerHTML = `<i class="fa-solid fa-file-pdf"></i>`;
-                container.innerHTML = `
-                    <object data="${item.url}" type="application/pdf" class="w-full h-[60vh] rounded-lg shadow-sm">
-                        <div class="text-center p-6 text-slate-400">
-                            <p class="mb-2">Pré-visualização não suportada diretamente.</p>
-                            <a href="${item.url}" target="_blank" class="text-brand-500 underline font-semibold">Abrir PDF</a>
-                        </div>
-                    </object>
-                `;
+            const container = document.getElementById('viewContainer');
+            const typeIcon = document.getElementById('viewTypeIcon');
+
+            if (item.category === 'image') {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-image text-lg"></i>`;
+                container.innerHTML = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-lg">`;
+            } else if (item.category === 'video') {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-video text-lg"></i>`;
+                container.innerHTML = `<video src="${item.url}" controls class="max-h-[60vh] w-full rounded-lg shadow-lg"></video>`;
+            } else if (item.category === 'document') {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-file-pdf text-lg"></i>`;
+                container.innerHTML = `<iframe src="${item.url}" class="w-full h-[60vh] rounded-lg border border-slate-700"></iframe>`;
             } else {
-                iconContainer.innerHTML = `<i class="fa-solid fa-link"></i>`;
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-link text-lg"></i>`;
                 container.innerHTML = `
                     <div class="text-center p-8">
-                        <i class="fa-solid fa-globe text-6xl text-brand-500 mb-4"></i>
-                        <h4 class="text-lg font-bold mb-2">Recurso Externo</h4>
-                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-lg mt-4">Visitar Website</a>
+                        <i class="fa-solid fa-globe text-6xl text-brand-500 mb-4 animate-pulse"></i>
+                        <h4 class="font-bold text-lg text-white mb-2">${escapeHTML(item.title)}</h4>
+                        <p class="text-xs text-slate-400 mb-6 max-w-md mx-auto">${escapeHTML(item.url)}</p>
+                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition inline-flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Link no Navegador
+                        </a>
                     </div>
                 `;
             }
+
             openModal('viewContentModal');
         }
 
-        async function deleteContent(id) {
-            const item = contents.find(i => i.id === id);
-            if (!item) return;
-            if (confirm(`Deseja eliminar "${item.title}"?`)) {
-                try {
-                    if (item.storagePath) {
-                        try { await deleteObject(ref(storage, item.storagePath)); } catch (e) {}
-                    }
-                    await deleteDoc(doc(db, "contents", id));
-                    showToast("Recurso eliminado.", "info");
-                } catch (error) {}
+        async function deleteContent(id, storagePath) {
+            if (!confirm("Tem a certeza de que deseja eliminar este recurso?")) return;
+
+            try {
+                await deleteDoc(doc(db, "contents", id));
+                if (storagePath) {
+                    const fileRef = ref(storage, storagePath);
+                    await deleteObject(fileRef).catch(() => {});
+                }
+                showToast("Recurso eliminado com sucesso.", "success");
+            } catch (err) {
+                showToast("Erro ao eliminar recurso.", "error");
             }
         }
 
-        function openModal(id) {
-            const m = document.getElementById(id);
-            if (!m) return;
-            m.classList.remove('opacity-0', 'pointer-events-none');
-            if (m.firstElementChild) {
-                m.firstElementChild.classList.remove('scale-95');
-                m.firstElementChild.classList.add('scale-100');
-            }
-            if (id === 'chatModal') {
-                unreadMessagesCount = 0;
-                updateUnreadBadge();
-            }
-        }
-
-        function closeModal(id) {
-            const m = document.getElementById(id);
-            if (!m) return;
-            m.classList.add('opacity-0', 'pointer-events-none');
-            if (m.firstElementChild) {
-                m.firstElementChild.classList.remove('scale-100');
-                m.firstElementChild.classList.add('scale-95');
-            }
-            if (id === 'viewContentModal') document.getElementById('viewContainer').innerHTML = '';
-            if (id === 'addContentModal' && activeUploadTask) {
-                activeUploadTask.cancel();
-                resetAddForm();
-            }
-        }
-
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-        }
-
-        initTheme();
-        setupEventListeners();
-        initHoldToRecordAudio();
-
+        // BIND DE FUNÇÕES AO WINDOW OBJETO PARA COMPATIBILIDADE HTML
         window.openModal = openModal;
         window.closeModal = closeModal;
-        window.switchAddTab = switchAddTab;
-        window.handleFileSelect = handleFileSelect;
-        window.handleFormSubmit = handleFormSubmit;
-        window.openViewer = openViewer;
-        window.deleteContent = deleteContent;
-        window.resetFilters = resetFilters;
-        window.setCategoryUI = setCategoryUI;
+        window.toggleTheme = toggleTheme;
+        window.requestNotificationPermission = requestNotificationPermission;
         window.handleAuthAction = handleAuthAction;
         window.handleLogin = handleLogin;
         window.handleRegister = handleRegister;
@@ -1933,22 +1901,36 @@
         window.handleAnonymousLogin = handleAnonymousLogin;
         window.switchAuthTab = switchAuthTab;
         window.updateMyName = updateMyName;
-        window.requestNotificationPermission = requestNotificationPermission;
         window.searchUsers = searchUsers;
         window.startChatWith = startChatWith;
-        window.backToUsersList = backToUsersList;
         window.sendChatMessage = sendChatMessage;
-        window.startCall = startCall;
-        window.acceptIncomingCall = acceptIncomingCall;
-        window.rejectIncomingCall = rejectIncomingCall;
-        window.endCall = endCall;
-        window.toggleMute = toggleMute;
-        window.toggleVideo = toggleVideo;
-        window.showToast = showToast;
+        window.handleTypingInput = handleTypingInput;
         window.openNicknameModal = openNicknameModal;
         window.saveUserNickname = saveUserNickname;
-        window.handleTypingInput = handleTypingInput;
-        window.editMessage = editMessage;
+        window.backToUsersList = backToUsersList;
+        window.toggleMute = toggleMute;
+        window.toggleVideo = toggleVideo;
+        window.endCall = endCall;
+        window.rejectIncomingCall = rejectIncomingCall;
+        window.acceptIncomingCall = acceptIncomingCall;
+        window.startCall = startCall;
+        window.setFilter = setFilter;
+        window.handleSearchInput = handleSearchInput;
+        window.resetFilters = resetFilters;
+        window.switchAddTab = switchAddTab;
+        window.setCategoryUI = setCategoryUI;
+        window.handleFileSelect = handleFileSelect;
+        window.handleFormSubmit = handleFormSubmit;
+        window.viewContent = viewContent;
+        window.deleteContent = deleteContent;
+
+        // INICIALIZAR TEMA SALVO
+        const savedTheme = localStorage.getItem('mundo_digital_theme');
+        if (savedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) themeIcon.className = "fa-solid fa-sun text-lg";
+        }
     </script>
 </body>
 </html>
