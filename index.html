@@ -57,10 +57,10 @@
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative">
 
     <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[120] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
     <!-- MODAL / ECRÃ DE CHAMADA EM CURSO -->
-    <div id="callModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="callModal" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-slate-900 w-full max-w-4xl h-full sm:h-[85vh] sm:rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col relative">
             
             <div class="absolute top-0 inset-x-0 p-4 z-20 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent">
@@ -86,7 +86,7 @@
                     <p class="text-slate-300 font-semibold text-lg" id="audioCallName">Em chamada de áudio</p>
                 </div>
 
-                <div class="absolute bottom-24 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
+                <div class="absolute bottom-28 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
                     <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 </div>
             </div>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- MODAL DE CHAMADA ENTRANTE -->
-    <div id="incomingCallModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="incomingCallModal" class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-800 p-6 text-center transform scale-95 transition-transform duration-300 m-4">
             <div class="w-20 h-20 rounded-full bg-brand-600/20 text-brand-400 mx-auto flex items-center justify-center text-3xl mb-4 animate-bounce">
                 <i id="incomingCallIcon" class="fa-solid fa-phone-volume"></i>
@@ -126,7 +126,7 @@
     </div>
 
     <!-- MODAL PARA EDITAR ALCUNHA -->
-    <div id="nicknameModal" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="nicknameModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 transform scale-95 transition-transform duration-200 m-4">
             <h3 class="font-bold text-base mb-1">Definir Alcunha</h3>
             <p class="text-xs text-slate-500 mb-4" id="nicknameModalSub">Atribua um apelido privado a este contacto.</p>
@@ -202,8 +202,8 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap w-full sm:w-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
                 <button onclick="window.setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white">
                     <i class="fa-solid fa-border-all mr-1.5"></i>Todos
                 </button>
@@ -221,7 +221,7 @@
                 </button>
             </div>
             
-            <span id="contentCounter" class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span id="contentCounter" class="text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
                 A carregar...
             </span>
         </div>
@@ -240,7 +240,7 @@
     </main>
 
     <!-- MODAL DE AUTENTICAÇÃO -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-4">
             
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
@@ -335,7 +335,7 @@
     </div>
 
     <!-- MODAL DE CHAT -->
-    <div id="chatModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="chatModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] sm:h-[80vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
             
             <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -374,7 +374,8 @@
                     </div>
                 </div>
 
-                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col bg-slate-100/50 dark:bg-slate-900/40 absolute sm:relative inset-0 bg-white dark:bg-slate-800 sm:bg-transparent">
+                <!-- ÁREA PRINCIPAL DO CHAT -->
+                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col bg-slate-100/50 dark:bg-slate-900/40 absolute sm:relative inset-0 bg-white dark:bg-slate-800 sm:bg-transparent z-20 sm:z-auto">
                     <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
                             <button onclick="window.backToUsersList()" class="sm:hidden text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1">
@@ -406,12 +407,11 @@
                         </div>
                     </div>
 
-                    <!-- BARRA DE INPUT DE MENSAGEM / SEGURAR PARA GRAVAR ÁUDIO -->
+                    <!-- BARRA DE INPUT DE MENSAGEM -->
                     <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 hidden">
                         <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off" oninput="window.handleTypingInput()"
                                class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         
-                        <!-- BOTÃO "SEGURAR PARA GRAVAR" -->
                         <button type="button" id="audioRecordBtn" 
                                 class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 transition relative select-none" 
                                 title="Segure para gravar áudio">
@@ -428,7 +428,7 @@
     </div>
 
     <!-- MODAL DE ADIÇÃO DE CONTEÚDO -->
-    <div id="addContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="addContentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-4">
             
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
@@ -526,7 +526,7 @@
     </div>
 
     <!-- MODAL DE VISUALIZAÇÃO -->
-    <div id="viewContentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="viewContentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-4 transform scale-95 transition-transform duration-200">
             
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -570,18 +570,21 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { 
             getFirestore, 
-            collection, 
+            collection,
+            collectionGroup,
             doc, 
             setDoc, 
             deleteDoc, 
             onSnapshot,
             addDoc,
             query,
+            where,
             orderBy,
             limit,
             updateDoc,
             getDoc,
-            serverTimestamp
+            serverTimestamp,
+            writeBatch
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { 
             getStorage, 
@@ -611,6 +614,8 @@
         let unsubscribeChat = null;
         let unsubscribeUsers = null;
         let unsubscribeContents = null;
+        let unsubscribeDelivery = null;
+        let peerActivityUnsubscribe = null;
         let allUsers = [];
         let userNicknames = {};
         let contents = [];
@@ -619,6 +624,10 @@
         let currentAddTab = 'upload';
         let selectedFile = null;
         let lastMessageCount = 0;
+
+        // ESTADO DE DIGITAÇÃO E ATIVIDADE EM TEMPO REAL
+        let typingTimeout = null;
+        let currentPeerStatus = { action: null };
 
         // WEBRTC ESTADO
         let peerConnection = null;
@@ -645,6 +654,28 @@
             return String(str).replace(/[&<>"']/g, function(m) {
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
             });
+        }
+
+        function formatLastSeen(dateVal) {
+            if (!dateVal) return "offline";
+            let date;
+            if (typeof dateVal === 'object' && dateVal.seconds) {
+                date = new Date(dateVal.seconds * 1000);
+            } else {
+                date = new Date(dateVal);
+            }
+            if (isNaN(date.getTime())) return "offline";
+
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            const timeStr = date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+
+            if (isToday) {
+                return `visto por último hoje às ${timeStr}`;
+            } else {
+                const dateStr = date.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+                return `visto por último a ${dateStr} às ${timeStr}`;
+            }
         }
 
         function showToast(message, type = 'info') {
@@ -677,7 +708,6 @@
             }, 4000);
         }
 
-        /* SOM DE ENTRADA DE MENSAGEM - 100% DE VOLUME E ALTA AUDIBILIDADE */
         function playNotificationSound() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -693,14 +723,12 @@
                 osc1.type = 'triangle';
                 osc2.type = 'sine';
 
-                // Notas brilhantes (C6 e E6)
                 osc1.frequency.setValueAtTime(1046.50, now);
                 osc1.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12);
 
                 osc2.frequency.setValueAtTime(1318.51, now + 0.06);
                 osc2.frequency.exponentialRampToValueAtTime(1567.98, now + 0.22);
 
-                // GANHO MÁXIMO (1.0 = 100% de volume no navegador)
                 gain.gain.setValueAtTime(1.0, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
 
@@ -747,7 +775,7 @@
             }
         }
 
-        // AUTENTICAÇÃO
+        // AUTENTICAÇÃO E PRESENÇA (ONLINE / LAST SEEN)
         async function updateUserStatus(onlineStatus) {
             if (!currentUserId) return;
             try {
@@ -796,6 +824,7 @@
                 listenToUsersRealtime();
                 listenToDatabaseChanges();
                 listenToIncomingCalls();
+                listenForIncomingDelivery();
                 initHoldToRecordAudio();
             } else {
                 signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
@@ -803,6 +832,26 @@
         });
 
         setInterval(() => updateUserStatus(true), 60000);
+
+        // LISTENER DE MENSAGENS PARA CONFIRMAÇÃO DE ENTREGA (ENTREGUE - 2 RISCOS CINZA)
+        function listenForIncomingDelivery() {
+            if (unsubscribeDelivery) { unsubscribeDelivery(); unsubscribeDelivery = null; }
+            if (!currentUserId) return;
+
+            const q = query(
+                collectionGroup(db, "messages"),
+                where("receiverId", "==", currentUserId),
+                where("status", "==", "sent")
+            );
+
+            unsubscribeDelivery = onSnapshot(q, (snapshot) => {
+                snapshot.docs.forEach(async (docSnap) => {
+                    try {
+                        await updateDoc(docSnap.ref, { status: 'delivered' });
+                    } catch (e) {}
+                });
+            });
+        }
 
         function updateAuthUI(user) {
             const authBtnText = document.getElementById('authBtnText');
@@ -974,6 +1023,7 @@
                     .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
                     .filter(u => u.id !== currentUserId);
                 renderUsersList();
+                updateActiveHeaderStatus();
             });
         }
 
@@ -1005,6 +1055,7 @@
                 const displayName = getDisplayName(u);
                 const isOnline = u.online;
                 const isActive = u.id === activeChatUserId;
+                const subtext = isOnline ? 'Online' : formatLastSeen(u.lastSeen);
 
                 return `
                     <div onclick="window.startChatWith('${u.id}')" class="p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 transition ${isActive ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}">
@@ -1016,14 +1067,72 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHTML(displayName)}</h4>
-                            <p class="text-[10px] text-slate-400">${isOnline ? 'Online' : 'Offline'}</p>
+                            <p class="text-[10px] ${isOnline ? 'text-emerald-500 font-medium' : 'text-slate-400'} truncate">${subtext}</p>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
+        // CONTROLO DE ATIVIDADE EM TEMPO REAL ("A ESCREVER..." / "A GRAVAR ÁUDIO...")
+        async function setTypingStatus(action) {
+            if (!activeChatUserId || !currentUserId) return;
+            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+            const presenceRef = doc(db, "chats", chatId, "presence", currentUserId);
+            try {
+                await setDoc(presenceRef, {
+                    action: action, // 'typing' | 'recording' | null
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            } catch (e) {}
+        }
+
+        function handleTypingInput() {
+            if (!activeChatUserId) return;
+            setTypingStatus('typing');
+            if (typingTimeout) clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                setTypingStatus(null);
+            }, 2500);
+        }
+
+        function listenToPeerActivity(chatId, peerId) {
+            if (peerActivityUnsubscribe) {
+                peerActivityUnsubscribe();
+                peerActivityUnsubscribe = null;
+            }
+            if (!chatId || !peerId) return;
+
+            const presenceRef = doc(db, "chats", chatId, "presence", peerId);
+            peerActivityUnsubscribe = onSnapshot(presenceRef, (snap) => {
+                currentPeerStatus = snap.exists() ? snap.data() : { action: null };
+                updateActiveHeaderStatus();
+            });
+        }
+
+        function updateActiveHeaderStatus() {
+            if (!activeChatUserId) return;
+            const user = allUsers.find(u => u.id === activeChatUserId);
+            const statusEl = document.getElementById('chatActiveStatus');
+            if (!statusEl) return;
+
+            if (currentPeerStatus && currentPeerStatus.action === 'typing') {
+                statusEl.innerHTML = `<span class="text-brand-500 dark:text-brand-400 font-semibold animate-pulse"><i class="fa-solid fa-pen-line mr-1"></i>a escrever...</span>`;
+            } else if (currentPeerStatus && currentPeerStatus.action === 'recording') {
+                statusEl.innerHTML = `<span class="text-red-500 font-semibold animate-pulse"><i class="fa-solid fa-microphone mr-1"></i>a gravar áudio...</span>`;
+            } else if (user && user.online) {
+                statusEl.innerHTML = `<span class="text-emerald-500 font-medium">Online</span>`;
+            } else if (user) {
+                statusEl.innerText = formatLastSeen(user.lastSeen);
+            } else {
+                statusEl.innerText = "Offline";
+            }
+        }
+
         function startChatWith(userId) {
+            if (activeChatUserId && activeChatUserId !== userId) {
+                setTypingStatus(null);
+            }
             activeChatUserId = userId;
             const user = allUsers.find(u => u.id === userId);
             if (!user) return;
@@ -1032,7 +1141,6 @@
             const chatForm = document.getElementById('chatForm');
             const chatActiveName = document.getElementById('chatActiveName');
             const chatActiveAvatar = document.getElementById('chatActiveAvatar');
-            const chatActiveStatus = document.getElementById('chatActiveStatus');
 
             if (activeHeader) activeHeader.classList.remove('hidden');
             if (chatForm) chatForm.classList.remove('hidden');
@@ -1040,7 +1148,8 @@
             const name = getDisplayName(user);
             if (chatActiveName) chatActiveName.innerText = name;
             if (chatActiveAvatar) chatActiveAvatar.innerText = name.charAt(0).toUpperCase();
-            if (chatActiveStatus) chatActiveStatus.innerText = user.online ? "Online" : "Offline";
+
+            updateActiveHeaderStatus();
 
             const chatMain = document.getElementById('chatMainArea');
             if (chatMain) chatMain.classList.remove('hidden');
@@ -1050,17 +1159,37 @@
             listenToChatMessages();
         }
 
+        // CONFIRMAÇÃO DE LEITURA EM TRÊS ESTÁGIOS (ENVIADO, ENTREGUE, LIDO)
         function listenToChatMessages() {
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (!activeChatUserId || !currentUserId) return;
 
             const chatId = [currentUserId, activeChatUserId].sort().join('_');
+            
+            // Ouvir estado em tempo real da outra pessoa ("a escrever...", "a gravar áudio...")
+            listenToPeerActivity(chatId, activeChatUserId);
+
             const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(100));
 
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
+            unsubscribeChat = onSnapshot(q, async (snapshot) => {
                 const messages = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 
-                // Toca som de entrada a 100% caso chegue mensagem do interlocutor
+                // Atualizar mensagens recebidas não lidas para 'read' (Lido - 2 riscos azuis)
+                const batch = writeBatch(db);
+                let needsBatchUpdate = false;
+
+                snapshot.docs.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    if (msg.receiverId === currentUserId && msg.status !== 'read') {
+                        batch.update(docSnap.ref, { status: 'read' });
+                        needsBatchUpdate = true;
+                    }
+                });
+
+                if (needsBatchUpdate) {
+                    await batch.commit().catch(e => console.error("Erro ao atualizar leituras:", e));
+                }
+
                 if (messages.length > lastMessageCount && lastMessageCount !== 0) {
                     const lastMsg = messages[messages.length - 1];
                     if (lastMsg && lastMsg.senderId !== currentUserId) {
@@ -1070,6 +1199,16 @@
                 lastMessageCount = messages.length;
                 renderMessages(messages);
             });
+        }
+
+        function getStatusTickHtml(status) {
+            if (status === 'read') {
+                return `<i class="fa-solid fa-check-double text-[11px] text-sky-300 ml-1.5" title="Lido"></i>`;
+            } else if (status === 'delivered') {
+                return `<i class="fa-solid fa-check-double text-[11px] text-slate-300/80 ml-1.5" title="Entregue"></i>`;
+            } else {
+                return `<i class="fa-solid fa-check text-[11px] text-slate-300/80 ml-1.5" title="Enviado"></i>`;
+            }
         }
 
         function renderMessages(messages) {
@@ -1090,21 +1229,31 @@
                 const isMe = msg.senderId === currentUserId;
                 let contentHtml = '';
 
+                let timeFormatted = '';
+                if (msg.createdAt && msg.createdAt.seconds) {
+                    timeFormatted = new Date(msg.createdAt.seconds * 1000).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+                }
+
+                const statusTicks = isMe ? getStatusTickHtml(msg.status) : '';
+
                 if (msg.type === 'audio') {
                     contentHtml = `<audio src="${msg.audioUrl}" controls class="max-w-[200px] sm:max-w-[240px] h-8 my-1"></audio>`;
                 } else {
                     contentHtml = `<p class="text-xs break-words">${escapeHTML(msg.text)}</p>`;
                 }
 
-                // Aplicação da classe de animação msg-animate-in
                 return `
                     <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} msg-animate-in">
-                        <div class="max-w-[80%] px-3 py-2 rounded-2xl ${
+                        <div class="max-w-[80%] px-3.5 py-2 rounded-2xl ${
                             isMe 
-                                ? 'bg-brand-600 text-white rounded-tr-none' 
+                                ? 'bg-brand-600 text-white rounded-tr-none shadow-sm' 
                                 : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-tl-none shadow-sm'
                         }">
                             ${contentHtml}
+                            <div class="flex items-center justify-end gap-0.5 mt-0.5 text-[9px] ${isMe ? 'text-white/80' : 'text-slate-400'}">
+                                <span>${timeFormatted}</span>
+                                ${statusTicks}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1122,6 +1271,7 @@
             if (!text) return;
 
             input.value = '';
+            setTypingStatus(null);
             const chatId = [currentUserId, activeChatUserId].sort().join('_');
 
             try {
@@ -1130,14 +1280,13 @@
                     receiverId: activeChatUserId,
                     text: text,
                     type: 'text',
+                    status: 'sent', // 'sent' -> 'delivered' -> 'read'
                     createdAt: serverTimestamp()
                 });
             } catch (err) {
                 showToast("Erro ao enviar mensagem.", "error");
             }
         }
-
-        function handleTypingInput() {}
 
         function openNicknameModal() {
             if (!activeChatUserId) return;
@@ -1176,11 +1325,12 @@
         }
 
         function backToUsersList() {
+            setTypingStatus(null);
             const chatMain = document.getElementById('chatMainArea');
             if (chatMain) chatMain.classList.add('hidden');
         }
 
-        // GRAVAÇÃO DE ÁUDIO (SEGURAR PARA GRAVAR)
+        // GRAVAÇÃO DE ÁUDIO COM SINALIZADOR EM TEMPO REAL ("A GRAVAR ÁUDIO...")
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
@@ -1205,6 +1355,7 @@
                     };
 
                     mediaRecorder.onstop = async () => {
+                        setTypingStatus(null);
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         stream.getTracks().forEach(track => track.stop());
 
@@ -1223,6 +1374,7 @@
                                 receiverId: activeChatUserId,
                                 audioUrl: audioUrl,
                                 type: 'audio',
+                                status: 'sent',
                                 createdAt: serverTimestamp()
                             });
                             showToast("Áudio enviado!", "success");
@@ -1233,6 +1385,7 @@
 
                     mediaRecorder.start();
                     isRecording = true;
+                    setTypingStatus('recording');
                     recordBtn.classList.add('bg-red-500', 'text-white');
                     recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
                     if (recordIcon) recordIcon.className = "fa-solid fa-square text-sm animate-pulse";
