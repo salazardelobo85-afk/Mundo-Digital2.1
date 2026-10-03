@@ -57,17 +57,90 @@
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
         }
+        #chatMessages.has-wallpaper {
+            background-color: #0f172a !important;
+        }
+        #chatMessages.has-wallpaper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            background-size: cover;
+            background-position: center;
+            opacity: 1;
+            z-index: 0;
+            pointer-events: none;
+        }
+        #chatMessages > * {
+            position: relative;
+            z-index: 1;
+        }
         #usersList {
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
         }
-        /* Evita que o header “grude” e cause saltos com teclado mobile */
         .chat-input-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
+        .wallpaper-tile {
+            aspect-ratio: 1;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        .wallpaper-tile:hover { transform: scale(1.03); }
+        .wallpaper-tile.selected {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.35);
+        }
+        #chatMessages.has-wallpaper .msg-bubble-me {
+            background: rgba(2, 132, 199, 0.92) !important;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.28);
+        }
+        #chatMessages.has-wallpaper .msg-bubble-them {
+            background: rgba(255,255,255,0.93) !important;
+            color: #0f172a !important;
+            border-color: rgba(255,255,255,0.45) !important;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+        }
+        .dark #chatMessages.has-wallpaper .msg-bubble-them {
+            background: rgba(30, 41, 59, 0.93) !important;
+            color: #f1f5f9 !important;
+        }
+        .msg-pending { opacity: 0.72; }
+        .msg-failed { box-shadow: 0 0 0 1.5px rgba(239, 68, 68, 0.75) !important; cursor: pointer; }
+        .skeleton-line {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: skel 1.15s ease-in-out infinite;
+            border-radius: 6px;
+            height: 10px;
+        }
+        .dark .skeleton-line {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skel {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        #offlineBanner { display: none; }
+        #offlineBanner.show { display: flex; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
+
+    <!-- BANNER OFFLINE -->
+    <div id="offlineBanner" class="fixed top-0 inset-x-0 z-[200] items-center justify-center gap-2 bg-amber-500 text-slate-900 text-xs font-semibold py-2 px-4 shadow-lg">
+        <i class="fa-solid fa-wifi"></i>
+        <span>Sem ligação à internet. As mensagens serão enviadas quando voltar.</span>
+    </div>
 
     <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-[120] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
@@ -149,6 +222,25 @@
                 <button onclick="window.closeModal('nicknameModal')" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
                 <button onclick="window.saveUserNickname()" class="px-4 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow transition">Gravar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL PAPEL DE PAREDE DO CHAT -->
+    <div id="wallpaperModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5 transform scale-95 transition-transform duration-200 m-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between mb-3 shrink-0">
+                <div>
+                    <h3 class="font-bold text-base">Papel de Parede</h3>
+                    <p class="text-xs text-slate-500">Escolha o fundo das suas conversas</p>
+                </div>
+                <button onclick="window.closeModal('wallpaperModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="wallpaperGrid" class="grid grid-cols-3 gap-2 overflow-y-auto custom-scrollbar flex-1 pr-0.5"></div>
+            <button type="button" onclick="window.setChatWallpaper(null)" class="mt-3 w-full py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition shrink-0">
+                <i class="fa-solid fa-ban mr-1"></i> Sem papel de parede (fundo sólido)
+            </button>
         </div>
     </div>
 
@@ -393,23 +485,26 @@
                     </div>
                 </div>
 
-                <!-- ÁREA PRINCIPAL DO CHAT (fundo opaco no mobile para não ver a lista por baixo) -->
-                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col absolute sm:relative inset-0 z-30 sm:z-auto bg-white dark:bg-slate-800">
-                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden items-center justify-between shrink-0">
-                        <div class="flex items-center gap-2.5">
-                            <button onclick="window.backToUsersList()" class="sm:hidden text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1">
-                                <i class="fa-solid fa-arrow-left"></i>
+                <!-- ÁREA PRINCIPAL DO CHAT (fundo opaco – sem transparência) -->
+                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col absolute sm:relative inset-0 z-30 sm:z-auto bg-slate-100 dark:bg-slate-900">
+                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden items-center justify-between shrink-0 relative z-10">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <button type="button" onclick="window.backToUsersList()" class="text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg transition shrink-0" title="Voltar à lista">
+                                <i class="fa-solid fa-arrow-left text-base"></i>
                             </button>
-                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" id="chatActiveAvatar">U</div>
-                            <div>
+                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0" id="chatActiveAvatar">U</div>
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-sm block" id="chatActiveName">Nome do Utilizador</span>
-                                    <button onclick="window.openNicknameModal()" class="text-[10px] text-brand-500 hover:underline" title="Definir Alcunha"><i class="fa-solid fa-pen"></i></button>
+                                    <span class="font-bold text-sm block truncate" id="chatActiveName">Nome do Utilizador</span>
+                                    <button onclick="window.openNicknameModal()" class="text-[10px] text-brand-500 hover:underline shrink-0" title="Definir Alcunha"><i class="fa-solid fa-pen"></i></button>
                                 </div>
                                 <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-0.5 shrink-0">
+                            <button type="button" onclick="window.openWallpaperModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Papel de parede">
+                                <i class="fa-solid fa-image text-sm"></i>
+                            </button>
                             <button onclick="window.startCall('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Áudio">
                                 <i class="fa-solid fa-phone text-sm"></i>
                             </button>
@@ -419,8 +514,8 @@
                         </div>
                     </div>
 
-                    <div id="chatMessages" class="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar space-y-2.5 flex flex-col min-h-0 bg-slate-100 dark:bg-slate-900/80">
-                        <div class="text-center my-auto text-slate-400 text-xs px-4">
+                    <div id="chatMessages" class="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar space-y-2.5 flex flex-col min-h-0 relative bg-slate-200 dark:bg-slate-900" style="background-size: cover; background-position: center; background-repeat: no-repeat;">
+                        <div class="text-center my-auto text-slate-500 dark:text-slate-400 text-xs px-4 relative z-[1]">
                             <i class="fa-solid fa-paper-plane text-3xl mb-2 opacity-50"></i>
                             <p>Selecione um utilizador na lista para iniciar o chat.</p>
                         </div>
@@ -760,6 +855,14 @@
         let currentAddTab = 'upload';
         let selectedFile = null;
         let lastMessageCount = 0;
+        let usersListLoaded = false;
+        let lastMessagesCache = {}; // { userId: { text, type, at, fromMe } }
+        let pendingMessages = [];   // optimistic UI { tempId, peerId, text, status: pending|failed }
+        let serverMessagesSnapshot = [];
+
+        try {
+            lastMessagesCache = JSON.parse(localStorage.getItem('mundo_digital_last_msgs') || '{}') || {};
+        } catch (_) { lastMessagesCache = {}; }
 
         let typingTimeout = null;
         let currentPeerStatus = { action: null };
@@ -777,6 +880,10 @@
         let isMuted = false;
         let isVideoOff = false;
         let incomingCallData = null;
+        let callAnswerTimeout = null;
+        let callCleanupRunning = false;
+        let pendingIceCandidates = [];
+        let callConnectedOnce = false;
 
         // Admin
         let isAdmin = false;
@@ -789,12 +896,115 @@
         let unsubscribeEntertainmentChat = null;
         let entertainmentChatOpen = false;
 
+        // Mais STUN = melhor descoberta de rede (sem TURN público gratuito fiável)
         const rtcConfig = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:stun.cloudflare.com:3478' }
+            ],
+            iceCandidatePoolSize: 10
         };
+
+        function setCallStatus(text, colorClass) {
+            const el = document.getElementById('callStatusText');
+            if (!el) return;
+            el.innerText = text;
+            el.className = `text-xs font-medium ${colorClass || 'text-brand-400'}`;
+        }
+
+        function clearCallAnswerTimeout() {
+            if (callAnswerTimeout) {
+                clearTimeout(callAnswerTimeout);
+                callAnswerTimeout = null;
+            }
+        }
+
+        async function flushPendingIceCandidates() {
+            if (!peerConnection || !peerConnection.remoteDescription) return;
+            const queued = pendingIceCandidates.splice(0);
+            for (const c of queued) {
+                try {
+                    await peerConnection.addIceCandidate(c);
+                } catch (e) {
+                    console.warn('ICE candidate (queued):', e.message || e);
+                }
+            }
+        }
+
+        function wirePeerConnectionEvents(pc) {
+            callConnectedOnce = false;
+            pendingIceCandidates = [];
+
+            pc.oniceconnectionstatechange = () => {
+                const state = pc.iceConnectionState;
+                if (state === 'checking') {
+                    setCallStatus('A estabelecer ligação...', 'text-amber-400');
+                } else if (state === 'connected' || state === 'completed') {
+                    setCallStatus('Conectado', 'text-emerald-400');
+                    if (!callConnectedOnce) {
+                        callConnectedOnce = true;
+                        clearCallAnswerTimeout();
+                        startCallTimer();
+                    }
+                } else if (state === 'disconnected') {
+                    setCallStatus('Ligação instável… a recuperar', 'text-amber-400');
+                } else if (state === 'failed') {
+                    setCallStatus('Falha na ligação', 'text-red-400');
+                    showToast('A ligação de rede falhou. Tente novamente.', 'error');
+                    setTimeout(() => cleanupCall(), 2500);
+                } else if (state === 'closed') {
+                    setCallStatus('Chamada terminada', 'text-slate-400');
+                }
+            };
+
+            pc.onconnectionstatechange = () => {
+                const state = pc.connectionState;
+                if (state === 'connected' && !callConnectedOnce) {
+                    callConnectedOnce = true;
+                    clearCallAnswerTimeout();
+                    setCallStatus('Conectado', 'text-emerald-400');
+                    startCallTimer();
+                } else if (state === 'failed') {
+                    setCallStatus('Conexão falhou', 'text-red-400');
+                    showToast('Não foi possível manter a chamada.', 'error');
+                    setTimeout(() => cleanupCall(), 2500);
+                }
+            };
+
+            pc.onicegatheringstatechange = () => {
+                if (pc.iceGatheringState === 'gathering') {
+                    // silencioso — ICE a recolher candidatos
+                }
+            };
+        }
+
+        async function getMediaStream(type) {
+            const constraints = {
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                },
+                video: type === 'video' ? {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } : false
+            };
+            try {
+                return await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (e1) {
+                // Fallback mais simples (alguns dispositivos rejeitam constraints avançadas)
+                return await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: type === 'video'
+                });
+            }
+        }
 
         function escapeHTML(str) {
             if (!str) return '';
@@ -1196,12 +1406,30 @@
         function listenToUsersRealtime() {
             const q = query(collection(db, "users"));
             unsubscribeUsers = onSnapshot(q, (snapshot) => {
+                usersListLoaded = true;
                 allUsers = snapshot.docs
                     .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
                     .filter(u => u.id !== currentUserId);
                 renderUsersList();
                 updateActiveHeaderStatus();
-            });
+            }, () => { usersListLoaded = true; renderUsersList(); });
+        }
+
+        function saveLastMessagesCache() {
+            try {
+                localStorage.setItem('mundo_digital_last_msgs', JSON.stringify(lastMessagesCache));
+            } catch (_) {}
+        }
+
+        function updateLastMessagePreview(peerId, text, type, fromMe) {
+            if (!peerId) return;
+            lastMessagesCache[peerId] = {
+                text: type === 'audio' ? '🎤 Áudio' : (text || '').slice(0, 80),
+                type: type || 'text',
+                at: Date.now(),
+                fromMe: !!fromMe
+            };
+            saveLastMessagesCache();
         }
 
         function getDisplayName(user) {
@@ -1220,11 +1448,39 @@
             const usersList = document.getElementById('usersList');
             if (!usersList) return;
 
+            if (!usersListLoaded && allUsers.length === 0) {
+                usersList.innerHTML = [1,2,3,4].map(() => `
+                    <div class="p-3 flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full skeleton-line" style="height:36px;width:36px"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton-line w-2/3"></div>
+                            <div class="skeleton-line w-1/2" style="height:8px"></div>
+                        </div>
+                    </div>
+                `).join('');
+                return;
+            }
+
             const filterVal = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
-            const filtered = allUsers.filter(u => getDisplayName(u).toLowerCase().includes(filterVal));
+            let filtered = allUsers.filter(u => getDisplayName(u).toLowerCase().includes(filterVal));
+
+            // Ordenar: com mensagens recentes primeiro, depois online
+            filtered = filtered.slice().sort((a, b) => {
+                const la = lastMessagesCache[a.id]?.at || 0;
+                const lb = lastMessagesCache[b.id]?.at || 0;
+                if (lb !== la) return lb - la;
+                if (a.online && !b.online) return -1;
+                if (!a.online && b.online) return 1;
+                return 0;
+            });
 
             if (filtered.length === 0) {
-                usersList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Nenhum utilizador encontrado.</div>`;
+                usersList.innerHTML = `
+                    <div class="p-6 text-center text-xs text-slate-400">
+                        <i class="fa-solid fa-user-slash text-2xl mb-2 opacity-50"></i>
+                        <p class="font-medium text-slate-500 dark:text-slate-300 mb-1">Nenhum utilizador encontrado</p>
+                        <p>Ajuste a pesquisa ou aguarde outros entrarem.</p>
+                    </div>`;
                 return;
             }
 
@@ -1232,19 +1488,32 @@
                 const displayName = getDisplayName(u);
                 const isOnline = u.online;
                 const isActive = u.id === activeChatUserId;
-                const subtext = isOnline ? 'Online' : formatLastSeen(u.lastSeen);
+                const last = lastMessagesCache[u.id];
+                let subtext;
+                if (last && last.text) {
+                    const prefix = last.fromMe ? 'Você: ' : '';
+                    subtext = prefix + last.text;
+                } else {
+                    subtext = isOnline ? 'Online' : formatLastSeen(u.lastSeen);
+                }
+                const subClass = last
+                    ? 'text-slate-500 dark:text-slate-400'
+                    : (isOnline ? 'text-emerald-500 font-medium' : 'text-slate-400');
 
                 return `
                     <div onclick="window.startChatWith('${u.id}')" class="p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 transition ${isActive ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}">
-                        <div class="relative">
+                        <div class="relative shrink-0">
                             <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
                                 ${displayName.charAt(0).toUpperCase()}
                             </div>
                             <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHTML(displayName)}</h4>
-                            <p class="text-[10px] ${isOnline ? 'text-emerald-500 font-medium' : 'text-slate-400'} truncate">${subtext}</p>
+                            <div class="flex items-center justify-between gap-2">
+                                <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHTML(displayName)}</h4>
+                                ${last && last.at ? `<span class="text-[9px] text-slate-400 shrink-0">${new Date(last.at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
+                            </div>
+                            <p class="text-[10px] ${subClass} truncate">${escapeHTML(subtext)}</p>
                         </div>
                     </div>
                 `;
@@ -1341,6 +1610,14 @@
                 chatSidebar.classList.add('hidden');
             }
 
+            // Botão físico "voltar" do telemóvel → lista de utilizadores
+            try {
+                if (!history.state || !history.state.chatOpen) {
+                    history.pushState({ chatOpen: true, peerId: userId }, '');
+                }
+            } catch (_) {}
+
+            applyChatWallpaper(localStorage.getItem('mundo_digital_wallpaper'));
             lastMessageCount = 0;
             renderUsersList();
             listenToChatMessages();
@@ -1360,8 +1637,8 @@
 
             unsubscribeChat = onSnapshot(q, (snapshot) => {
                 const messages = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                serverMessagesSnapshot = messages;
 
-                // Marcar como lidas em batch (não bloqueia o render)
                 const unread = snapshot.docs.filter(d => {
                     const m = d.data();
                     return m.receiverId === currentUserId && m.status !== 'read';
@@ -1375,16 +1652,36 @@
                 if (messages.length > lastMessageCount && lastMessageCount !== 0) {
                     const lastMsg = messages[messages.length - 1];
                     if (lastMsg && lastMsg.senderId !== currentUserId) {
-                        playNotificationSound();
-                        // Badge no botão de chat se o modal estiver fechado
                         const chatModal = document.getElementById('chatModal');
-                        if (chatModal && chatModal.classList.contains('opacity-0')) {
+                        const modalClosed = chatModal && chatModal.classList.contains('opacity-0');
+                        // Som só se o modal de chat estiver fechado
+                        if (modalClosed) {
+                            playNotificationSound();
                             const badge = document.getElementById('chatBadge');
                             if (badge) badge.classList.remove('hidden');
                         }
                     }
                 }
                 lastMessageCount = messages.length;
+
+                // Atualizar pré-visualização na lista
+                if (messages.length > 0 && activeChatUserId) {
+                    const lastMsg = messages[messages.length - 1];
+                    const peer = lastMsg.senderId === currentUserId ? lastMsg.receiverId : lastMsg.senderId;
+                    updateLastMessagePreview(
+                        peer,
+                        lastMsg.text || '',
+                        lastMsg.type || 'text',
+                        lastMsg.senderId === currentUserId
+                    );
+                    // Limpar pending que já chegaram ao servidor (mesmo texto recente)
+                    pendingMessages = pendingMessages.filter(p => {
+                        if (p.peerId !== activeChatUserId) return true;
+                        return !messages.some(m => m.senderId === currentUserId && m.text === p.text && m.type !== 'audio');
+                    });
+                    renderUsersList();
+                }
+
                 renderMessages(messages);
             }, (err) => {
                 console.warn('Chat listener error:', err);
@@ -1418,14 +1715,31 @@
             const container = document.getElementById('chatMessages');
             if (!container) return;
 
-            // Preservar posição de scroll se o utilizador estiver a ler mensagens antigas
             const wasNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
 
-            if (messages.length === 0) {
+            // Mensagens do servidor + pendentes deste peer
+            const pendingForPeer = pendingMessages.filter(p => p.peerId === activeChatUserId);
+            const merged = messages.concat(pendingForPeer.map(p => ({
+                id: p.tempId,
+                senderId: currentUserId,
+                receiverId: p.peerId,
+                text: p.text,
+                type: 'text',
+                status: p.status,
+                createdAt: { seconds: Math.floor((p.at || Date.now()) / 1000) },
+                _local: true
+            })));
+
+            if (merged.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center my-auto text-slate-400 text-xs">
-                        <i class="fa-solid fa-comments text-3xl mb-2 opacity-50"></i>
-                        <p>Nenhuma mensagem ainda. Envie um "Olá"!</p>
+                    <div class="text-center my-auto text-slate-500 dark:text-slate-400 text-xs px-4 relative z-[1]">
+                        <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-brand-500/15 text-brand-500 flex items-center justify-center">
+                            <i class="fa-solid fa-comments text-xl"></i>
+                        </div>
+                        <p class="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-1">Ainda sem mensagens</p>
+                        <p class="mb-3 opacity-80">Diga olá e comece a conversa.</p>
+                        <button type="button" onclick="document.getElementById('chatInput').value='Olá! 👋';document.getElementById('chatInput').focus();"
+                            class="px-3 py-1.5 rounded-lg bg-brand-600 text-white text-[11px] font-medium">Olá! 👋</button>
                     </div>
                 `;
                 return;
@@ -1434,7 +1748,7 @@
             let lastDay = null;
             let html = '';
 
-            messages.forEach((msg, idx) => {
+            merged.forEach((msg, idx) => {
                 const isMe = msg.senderId === currentUserId;
                 let timeFormatted = '';
                 if (msg.createdAt && msg.createdAt.seconds) {
@@ -1444,33 +1758,49 @@
                 const dayLabel = formatChatDay(msg.createdAt);
                 if (dayLabel && dayLabel !== lastDay) {
                     lastDay = dayLabel;
-                    html += `<div class="flex justify-center my-2"><span class="px-3 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-700/80 text-[10px] font-medium text-slate-500 dark:text-slate-400">${escapeHTML(dayLabel)}</span></div>`;
+                    html += `<div class="flex justify-center my-2 relative z-[1]"><span class="px-3 py-0.5 rounded-full bg-black/40 text-white text-[10px] font-medium backdrop-blur-sm">${escapeHTML(dayLabel)}</span></div>`;
                 }
 
-                const statusTicks = isMe ? getStatusTickHtml(msg.status) : '';
+                let statusTicks = '';
+                if (isMe) {
+                    if (msg.status === 'pending') {
+                        statusTicks = `<i class="fa-solid fa-clock text-[10px] text-white/70 ml-1.5" title="A enviar"></i>`;
+                    } else if (msg.status === 'failed') {
+                        statusTicks = `<i class="fa-solid fa-circle-exclamation text-[10px] text-red-300 ml-1.5" title="Falhou — toque para reenviar"></i>`;
+                    } else {
+                        statusTicks = getStatusTickHtml(msg.status);
+                    }
+                }
+
                 let contentHtml = '';
                 if (msg.type === 'audio') {
                     contentHtml = `<audio src="${escapeHTML(msg.audioUrl || '')}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>`;
                 } else {
                     contentHtml = `<p class="text-[13px] leading-snug break-words whitespace-pre-wrap">${escapeHTML(msg.text || '')}</p>`;
+                    if (msg.status === 'failed') {
+                        contentHtml += `<p class="text-[10px] text-red-200 mt-0.5">Falha no envio · toque para reenviar</p>`;
+                    }
                 }
 
-                // Agrupar visualmente mensagens consecutivas do mesmo remetente
-                const prev = messages[idx - 1];
-                const next = messages[idx + 1];
+                const prev = merged[idx - 1];
+                const next = merged[idx + 1];
                 const samePrev = prev && prev.senderId === msg.senderId;
                 const sameNext = next && next.senderId === msg.senderId;
                 const radius = isMe
                     ? `rounded-2xl ${samePrev ? 'rounded-tr-md' : 'rounded-tr-none'} ${sameNext ? 'rounded-br-md' : ''}`
                     : `rounded-2xl ${samePrev ? 'rounded-tl-md' : 'rounded-tl-none'} ${sameNext ? 'rounded-bl-md' : ''}`;
 
+                const bubbleClass = isMe
+                    ? `msg-bubble-me bg-brand-600 text-white shadow-sm ${msg.status === 'pending' ? 'msg-pending' : ''} ${msg.status === 'failed' ? 'msg-failed' : ''}`
+                    : 'msg-bubble-them bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm';
+
+                const clickRetry = msg.status === 'failed'
+                    ? `onclick="window.retryPendingMessage('${msg.id}')"`
+                    : '';
+
                 html += `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} ${samePrev ? 'mt-0.5' : 'mt-2'} msg-animate-in">
-                        <div class="max-w-[85%] sm:max-w-[75%] px-3 py-1.5 ${radius} ${
-                            isMe
-                                ? 'bg-brand-600 text-white shadow-sm'
-                                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-sm'
-                        }">
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} ${samePrev ? 'mt-0.5' : 'mt-2'} msg-animate-in relative z-[1]">
+                        <div ${clickRetry} class="max-w-[85%] sm:max-w-[75%] px-3 py-1.5 ${radius} ${bubbleClass}">
                             ${contentHtml}
                             <div class="flex items-center justify-end gap-0.5 mt-0.5 text-[9px] ${isMe ? 'text-white/75' : 'text-slate-400'}">
                                 <span>${timeFormatted}</span>
@@ -1483,7 +1813,7 @@
 
             container.innerHTML = html;
 
-            if (wasNearBottom || lastMessageCount <= 1) {
+            if (wasNearBottom || lastMessageCount <= 1 || pendingForPeer.length) {
                 requestAnimationFrame(() => {
                     container.scrollTop = container.scrollHeight;
                 });
@@ -1501,31 +1831,69 @@
 
             input.value = '';
             setTypingStatus(null);
+
+            const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+            const peerId = activeChatUserId;
+            pendingMessages.push({ tempId, peerId, text, status: 'pending', at: Date.now() });
+            updateLastMessagePreview(peerId, text, 'text', true);
+            renderMessages(serverMessagesSnapshot);
+            renderUsersList();
+
             if (sendBtn) {
                 sendBtn.disabled = true;
                 sendBtn.classList.add('opacity-60');
             }
 
-            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+            const chatId = [currentUserId, peerId].sort().join('_');
 
             try {
+                if (!navigator.onLine) throw new Error('offline');
                 await addDoc(collection(db, "chats", chatId, "messages"), {
                     senderId: currentUserId,
-                    receiverId: activeChatUserId,
+                    receiverId: peerId,
                     text: text,
                     type: 'text',
                     status: 'sent',
                     createdAt: serverTimestamp()
                 });
+                // Remove pending; o snapshot do servidor substitui
+                pendingMessages = pendingMessages.filter(p => p.tempId !== tempId);
             } catch (err) {
-                input.value = text; // devolve o texto se falhar
-                showToast("Erro ao enviar mensagem.", "error");
+                const p = pendingMessages.find(x => x.tempId === tempId);
+                if (p) p.status = 'failed';
+                renderMessages(serverMessagesSnapshot);
+                showToast(navigator.onLine ? 'Erro ao enviar. Toque na mensagem para reenviar.' : 'Sem internet. Toque na mensagem para reenviar.', 'error');
             } finally {
                 if (sendBtn) {
                     sendBtn.disabled = false;
                     sendBtn.classList.remove('opacity-60');
                 }
                 input.focus();
+            }
+        }
+
+        async function retryPendingMessage(tempId) {
+            const p = pendingMessages.find(x => x.tempId === tempId);
+            if (!p || !currentUserId) return;
+            p.status = 'pending';
+            renderMessages(serverMessagesSnapshot);
+            const chatId = [currentUserId, p.peerId].sort().join('_');
+            try {
+                if (!navigator.onLine) throw new Error('offline');
+                await addDoc(collection(db, "chats", chatId, "messages"), {
+                    senderId: currentUserId,
+                    receiverId: p.peerId,
+                    text: p.text,
+                    type: 'text',
+                    status: 'sent',
+                    createdAt: serverTimestamp()
+                });
+                pendingMessages = pendingMessages.filter(x => x.tempId !== tempId);
+                showToast('Mensagem reenviada.', 'success');
+            } catch (err) {
+                p.status = 'failed';
+                renderMessages(serverMessagesSnapshot);
+                showToast('Ainda não foi possível enviar.', 'error');
             }
         }
 
@@ -1565,7 +1933,7 @@
             }
         }
 
-        function backToUsersList() {
+        function backToUsersList(fromPopState) {
             setTypingStatus(null);
             const chatMain = document.getElementById('chatMainArea');
             const chatSidebar = document.getElementById('chatSidebar');
@@ -1584,7 +1952,83 @@
             activeChatUserId = null;
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (peerActivityUnsubscribe) { peerActivityUnsubscribe(); peerActivityUnsubscribe = null; }
+            // Sincronizar histórico se o utilizador usou o botão da UI (não o do telemóvel)
+            if (!fromPopState) {
+                try {
+                    if (history.state && history.state.chatOpen) {
+                        history.back();
+                    }
+                } catch (_) {}
+            }
         }
+
+        // ========== PAPÉIS DE PAREDE DO CHAT (14) ==========
+        const CHAT_WALLPAPERS = [
+            { id: 'city1', name: 'Cidade noite', url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&q=80' },
+            { id: 'city2', name: 'Skyline', url: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80' },
+            { id: 'city3', name: 'Tóquio', url: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80' },
+            { id: 'city4', name: 'Paris', url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80' },
+            { id: 'land1', name: 'Montanhas', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80' },
+            { id: 'land2', name: 'Lago', url: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&q=80' },
+            { id: 'land3', name: 'Deserto', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=80' },
+            { id: 'land4', name: 'Praia', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80' },
+            { id: 'land5', name: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a45b87a?w=800&q=80' },
+            { id: 'forest1', name: 'Floresta verde', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80' },
+            { id: 'forest2', name: 'Bosque nevoeiro', url: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80' },
+            { id: 'forest3', name: 'Trilha', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80' },
+            { id: 'forest4', name: 'Outono', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80' },
+            { id: 'forest5', name: 'Selva', url: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800&q=80' }
+        ];
+
+        function applyChatWallpaper(id) {
+            const el = document.getElementById('chatMessages');
+            if (!el) return;
+            if (!id) {
+                el.style.backgroundImage = '';
+                el.classList.remove('has-wallpaper');
+                el.classList.add('bg-slate-200', 'dark:bg-slate-900');
+                return;
+            }
+            const wp = CHAT_WALLPAPERS.find(w => w.id === id);
+            if (!wp) return;
+            el.style.backgroundImage = `linear-gradient(rgba(15,23,42,0.45), rgba(15,23,42,0.55)), url('${wp.url}')`;
+            el.classList.add('has-wallpaper');
+            el.classList.remove('bg-slate-200', 'dark:bg-slate-900');
+        }
+
+        function openWallpaperModal() {
+            const grid = document.getElementById('wallpaperGrid');
+            if (!grid) return;
+            const current = localStorage.getItem('mundo_digital_wallpaper') || '';
+            grid.innerHTML = CHAT_WALLPAPERS.map(w => `
+                <button type="button" class="wallpaper-tile ${current === w.id ? 'selected' : ''}"
+                        style="background-image: url('${w.url}')"
+                        title="${escapeHTML(w.name)}"
+                        onclick="window.setChatWallpaper('${w.id}')">
+                </button>
+            `).join('');
+            openModal('wallpaperModal');
+        }
+
+        function setChatWallpaper(id) {
+            if (id) {
+                localStorage.setItem('mundo_digital_wallpaper', id);
+            } else {
+                localStorage.removeItem('mundo_digital_wallpaper');
+            }
+            applyChatWallpaper(id);
+            closeModal('wallpaperModal');
+            showToast(id ? 'Papel de parede aplicado!' : 'Fundo sólido restaurado.', 'success');
+        }
+
+        // Botão voltar do telemóvel
+        window.addEventListener('popstate', (e) => {
+            const chatMain = document.getElementById('chatMainArea');
+            const chatOpen = chatMain && !chatMain.classList.contains('hidden') && activeChatUserId;
+            if (chatOpen) {
+                backToUsersList(true);
+            }
+        });
 
         let mediaRecorder = null;
         let audioChunks = [];
@@ -1632,6 +2076,8 @@
                                 status: 'sent',
                                 createdAt: serverTimestamp()
                             });
+                            updateLastMessagePreview(activeChatUserId, '', 'audio', true);
+                            renderUsersList();
                             showToast("Áudio enviado!", "success");
                         } catch (err) {
                             showToast("Erro ao enviar áudio.", "error");
@@ -1735,20 +2181,34 @@
         }
 
         async function cleanupCall() {
+            if (callCleanupRunning) return;
+            callCleanupRunning = true;
+            clearCallAnswerTimeout();
             stopCallTimer();
-            if (unsubscribeCall) { unsubscribeCall(); unsubscribeCall = null; }
-            if (unsubscribeCandidates) { unsubscribeCandidates(); unsubscribeCandidates = null; }
+            pendingIceCandidates = [];
+            callConnectedOnce = false;
+            isMuted = false;
+            isVideoOff = false;
+
+            if (unsubscribeCall) { try { unsubscribeCall(); } catch (_) {} unsubscribeCall = null; }
+            if (unsubscribeCandidates) { try { unsubscribeCandidates(); } catch (_) {} unsubscribeCandidates = null; }
 
             if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
+                localStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
                 localStream = null;
             }
             if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
                 remoteStream = null;
             }
             if (peerConnection) {
-                peerConnection.close();
+                try {
+                    peerConnection.ontrack = null;
+                    peerConnection.onicecandidate = null;
+                    peerConnection.oniceconnectionstatechange = null;
+                    peerConnection.onconnectionstatechange = null;
+                    peerConnection.close();
+                } catch (_) {}
                 peerConnection = null;
             }
 
@@ -1757,19 +2217,29 @@
             if (localVideo) localVideo.srcObject = null;
             if (remoteVideo) remoteVideo.srcObject = null;
 
-            closeModal('callModal');
+            const muteBtn = document.getElementById('muteBtn');
+            const videoBtn = document.getElementById('videoToggleBtn');
+            if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-microphone text-lg"></i>';
+            if (videoBtn) videoBtn.innerHTML = '<i class="fa-solid fa-video text-lg"></i>';
 
-            if (activeCallId) {
-                try {
-                    await updateDoc(doc(db, "calls", activeCallId), { status: 'ended' });
-                } catch (e) {}
-                activeCallId = null;
-            }
+            closeModal('callModal');
+            closeModal('incomingCallModal');
+
+            const endedId = activeCallId;
+            activeCallId = null;
             incomingCallData = null;
+
+            if (endedId) {
+                try {
+                    await updateDoc(doc(db, "calls", endedId), { status: 'ended', endedAt: serverTimestamp() });
+                } catch (e) {}
+            }
+            callCleanupRunning = false;
         }
 
         async function endCall() {
             await cleanupCall();
+            showToast('Chamada terminada.', 'info');
         }
 
         function toggleMute() {
@@ -1807,13 +2277,17 @@
                 showToast("Selecione um utilizador para ligar.", "error");
                 return;
             }
+            if (activeCallId || peerConnection) {
+                showToast("Já existe uma chamada em curso.", "info");
+                return;
+            }
 
             const targetUser = allUsers.find(u => u.id === activeChatUserId);
             const targetName = getDisplayName(targetUser);
 
             document.getElementById('callPeerName').innerText = targetName;
             document.getElementById('callPeerAvatar').innerText = targetName.charAt(0).toUpperCase();
-            document.getElementById('callStatusText').innerText = "A chamar...";
+            setCallStatus('A chamar...', 'text-brand-400');
 
             const audioPlaceholder = document.getElementById('audioCallPlaceholder');
             const remoteVid = document.getElementById('remoteVideo');
@@ -1830,22 +2304,35 @@
             openModal('callModal');
 
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: type === 'video'
-                });
+                localStream = await getMediaStream(type);
 
                 const localVid = document.getElementById('localVideo');
-                if (localVid) localVid.srcObject = localStream;
+                if (localVid) {
+                    localVid.srcObject = localStream;
+                    localVid.muted = true;
+                    localVid.playsInline = true;
+                    localVid.play().catch(() => {});
+                }
 
                 peerConnection = new RTCPeerConnection(rtcConfig);
+                wirePeerConnectionEvents(peerConnection);
                 remoteStream = new MediaStream();
-                if (remoteVid) remoteVid.srcObject = remoteStream;
+                if (remoteVid) {
+                    remoteVid.srcObject = remoteStream;
+                    remoteVid.playsInline = true;
+                    remoteVid.play().catch(() => {});
+                }
 
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
                 peerConnection.ontrack = (e) => {
-                    e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                    e.streams[0].getTracks().forEach(track => {
+                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                            remoteStream.addTrack(track);
+                        }
+                    });
+                    if (remoteVid) remoteVid.play().catch(() => {});
+                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
                 };
 
                 const callDocRef = doc(collection(db, "calls"));
@@ -1856,11 +2343,14 @@
 
                 peerConnection.onicecandidate = (e) => {
                     if (e.candidate) {
-                        addDoc(callerCandidates, e.candidate.toJSON());
+                        addDoc(callerCandidates, e.candidate.toJSON()).catch(() => {});
                     }
                 };
 
-                const offerDescription = await peerConnection.createOffer();
+                const offerDescription = await peerConnection.createOffer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: type === 'video'
+                });
                 await peerConnection.setLocalDescription(offerDescription);
 
                 await setDoc(callDocRef, {
@@ -1873,39 +2363,66 @@
                     createdAt: serverTimestamp()
                 });
 
-                unsubscribeCall = onSnapshot(callDocRef, (snap) => {
+                // Timeout se ninguém atender em 45s
+                clearCallAnswerTimeout();
+                callAnswerTimeout = setTimeout(() => {
+                    if (!callConnectedOnce) {
+                        showToast('Sem resposta. Chamada cancelada.', 'info');
+                        cleanupCall();
+                    }
+                }, 45000);
+
+                unsubscribeCall = onSnapshot(callDocRef, async (snap) => {
                     const data = snap.data();
                     if (!data) return;
 
-                    if (data.status === 'accepted' && peerConnection && !peerConnection.currentRemoteDescription) {
-                        const answerDescription = new RTCSessionDescription(data.answer);
-                        peerConnection.setRemoteDescription(answerDescription);
-                        document.getElementById('callStatusText').innerText = "Conectado";
-                        startCallTimer();
+                    if (data.status === 'accepted' && peerConnection && !peerConnection.currentRemoteDescription && data.answer) {
+                        try {
+                            setCallStatus('A conectar...', 'text-amber-400');
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            await flushPendingIceCandidates();
+                        } catch (e) {
+                            console.warn('setRemoteDescription answer:', e);
+                            showToast('Erro ao estabelecer a chamada.', 'error');
+                            cleanupCall();
+                        }
                     }
 
                     if (data.status === 'rejected') {
-                        showToast("Chamada recusada.", "info");
+                        showToast('Chamada recusada.', 'info');
                         cleanupCall();
                     }
 
-                    if (data.status === 'ended') {
+                    if (data.status === 'ended' && callConnectedOnce) {
+                        showToast('O outro utilizador terminou a chamada.', 'info');
+                        cleanupCall();
+                    } else if (data.status === 'ended' && !callConnectedOnce) {
                         cleanupCall();
                     }
                 });
 
                 unsubscribeCandidates = onSnapshot(receiverCandidates, (snap) => {
-                    snap.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
+                    snap.docChanges().forEach(async (change) => {
+                        if (change.type !== 'added' || !peerConnection) return;
+                        try {
                             const candidate = new RTCIceCandidate(change.doc.data());
-                            peerConnection.addIceCandidate(candidate);
+                            if (peerConnection.remoteDescription) {
+                                await peerConnection.addIceCandidate(candidate);
+                            } else {
+                                pendingIceCandidates.push(candidate);
+                            }
+                        } catch (e) {
+                            console.warn('ICE add (receiver):', e.message || e);
                         }
                     });
                 });
 
             } catch (err) {
                 console.error(err);
-                showToast("Impossível aceder aos dispositivos de mídia.", "error");
+                const msg = (err && err.name === 'NotAllowedError')
+                    ? 'Permissão de microfone/câmara negada.'
+                    : 'Impossível aceder aos dispositivos de mídia.';
+                showToast(msg, 'error');
                 cleanupCall();
             }
         }
@@ -1913,21 +2430,26 @@
         async function acceptIncomingCall() {
             closeModal('incomingCallModal');
             if (!incomingCallData) return;
+            if (activeCallId || peerConnection) {
+                showToast('Já existe uma chamada em curso.', 'info');
+                return;
+            }
 
             const callDocRef = doc(db, "calls", incomingCallData.id);
             activeCallId = incomingCallData.id;
+            const callType = incomingCallData.type || 'audio';
 
-            document.getElementById('callPeerName').innerText = incomingCallData.callerName || "Contacto";
-            document.getElementById('callPeerAvatar').innerText = (incomingCallData.callerName || "U").charAt(0).toUpperCase();
-            document.getElementById('callStatusText').innerText = "A ligar...";
+            document.getElementById('callPeerName').innerText = incomingCallData.callerName || 'Contacto';
+            document.getElementById('callPeerAvatar').innerText = (incomingCallData.callerName || 'U').charAt(0).toUpperCase();
+            setCallStatus('A ligar...', 'text-brand-400');
 
             const audioPlaceholder = document.getElementById('audioCallPlaceholder');
             const remoteVid = document.getElementById('remoteVideo');
 
-            if (incomingCallData.type === 'audio') {
+            if (callType === 'audio') {
                 audioPlaceholder.classList.remove('hidden');
                 remoteVid.classList.add('hidden');
-                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${incomingCallData.callerName}`;
+                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${incomingCallData.callerName || 'Contacto'}`;
             } else {
                 audioPlaceholder.classList.add('hidden');
                 remoteVid.classList.remove('hidden');
@@ -1936,22 +2458,35 @@
             openModal('callModal');
 
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: incomingCallData.type === 'video'
-                });
+                localStream = await getMediaStream(callType);
 
                 const localVid = document.getElementById('localVideo');
-                if (localVid) localVid.srcObject = localStream;
+                if (localVid) {
+                    localVid.srcObject = localStream;
+                    localVid.muted = true;
+                    localVid.playsInline = true;
+                    localVid.play().catch(() => {});
+                }
 
                 peerConnection = new RTCPeerConnection(rtcConfig);
+                wirePeerConnectionEvents(peerConnection);
                 remoteStream = new MediaStream();
-                if (remoteVid) remoteVid.srcObject = remoteStream;
+                if (remoteVid) {
+                    remoteVid.srcObject = remoteStream;
+                    remoteVid.playsInline = true;
+                    remoteVid.play().catch(() => {});
+                }
 
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
                 peerConnection.ontrack = (e) => {
-                    e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                    e.streams[0].getTracks().forEach(track => {
+                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                            remoteStream.addTrack(track);
+                        }
+                    });
+                    if (remoteVid) remoteVid.play().catch(() => {});
+                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
                 };
 
                 const callerCandidates = collection(callDocRef, "callerCandidates");
@@ -1959,11 +2494,34 @@
 
                 peerConnection.onicecandidate = (e) => {
                     if (e.candidate) {
-                        addDoc(receiverCandidates, e.candidate.toJSON());
+                        addDoc(receiverCandidates, e.candidate.toJSON()).catch(() => {});
                     }
                 };
 
+                // Ouvir candidatos do caller ANTES de setRemoteDescription/answer
+                unsubscribeCandidates = onSnapshot(callerCandidates, (snap) => {
+                    snap.docChanges().forEach(async (change) => {
+                        if (change.type !== 'added' || !peerConnection) return;
+                        try {
+                            const candidate = new RTCIceCandidate(change.doc.data());
+                            if (peerConnection.remoteDescription) {
+                                await peerConnection.addIceCandidate(candidate);
+                            } else {
+                                pendingIceCandidates.push(candidate);
+                            }
+                        } catch (e) {
+                            console.warn('ICE add (caller):', e.message || e);
+                        }
+                    });
+                });
+
+                if (!incomingCallData.offer) {
+                    throw new Error('Oferta de chamada em falta');
+                }
+
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+                await flushPendingIceCandidates();
+
                 const answerDescription = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answerDescription);
 
@@ -1972,28 +2530,25 @@
                     status: 'accepted'
                 });
 
-                document.getElementById('callStatusText').innerText = "Conectado";
-                startCallTimer();
-
-                unsubscribeCandidates = onSnapshot(callerCandidates, (snap) => {
-                    snap.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
-                            const candidate = new RTCIceCandidate(change.doc.data());
-                            peerConnection.addIceCandidate(candidate);
-                        }
-                    });
-                });
+                setCallStatus('A conectar...', 'text-amber-400');
 
                 unsubscribeCall = onSnapshot(callDocRef, (snap) => {
                     const data = snap.data();
                     if (data && data.status === 'ended') {
+                        showToast('O outro utilizador terminou a chamada.', 'info');
                         cleanupCall();
                     }
                 });
 
             } catch (err) {
                 console.error(err);
-                showToast("Erro ao atender chamada.", "error");
+                const msg = (err && err.name === 'NotAllowedError')
+                    ? 'Permissão de microfone/câmara negada.'
+                    : 'Erro ao atender chamada.';
+                showToast(msg, 'error');
+                try {
+                    await updateDoc(doc(db, 'calls', incomingCallData.id), { status: 'ended' });
+                } catch (_) {}
                 cleanupCall();
             }
         }
@@ -2744,6 +3299,9 @@
         window.openNicknameModal = openNicknameModal;
         window.saveUserNickname = saveUserNickname;
         window.backToUsersList = backToUsersList;
+        window.openWallpaperModal = openWallpaperModal;
+        window.setChatWallpaper = setChatWallpaper;
+        window.retryPendingMessage = retryPendingMessage;
         window.toggleMute = toggleMute;
         window.toggleVideo = toggleVideo;
         window.endCall = endCall;
@@ -2778,6 +3336,28 @@
             const themeIcon = document.getElementById('themeIcon');
             if (themeIcon) themeIcon.className = "fa-solid fa-sun text-lg";
         }
+
+        // Restaurar papel de parede do chat
+        applyChatWallpaper(localStorage.getItem('mundo_digital_wallpaper'));
+
+        // Banner offline / online
+        function updateOfflineBanner() {
+            const bar = document.getElementById('offlineBanner');
+            if (!bar) return;
+            if (navigator.onLine) bar.classList.remove('show');
+            else bar.classList.add('show');
+        }
+        window.addEventListener('online', () => {
+            updateOfflineBanner();
+            showToast('Ligação restabelecida.', 'success');
+            // Tentar reenviar falhas automaticamente
+            pendingMessages.filter(p => p.status === 'failed').forEach(p => retryPendingMessage(p.tempId));
+        });
+        window.addEventListener('offline', () => {
+            updateOfflineBanner();
+            showToast('Sem internet.', 'error');
+        });
+        updateOfflineBanner();
     </script>
 </body>
 </html>
