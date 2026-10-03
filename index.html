@@ -38,7 +38,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 
-        /* ANIMAÇÃO DE ENTRADA SUAVE DAS MENSAGENS */
         @keyframes messagePopIn {
             0% {
                 opacity: 0;
@@ -59,7 +58,7 @@
     <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-[120] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-    <!-- MODAL / ECRÃ DE CHAMADA EM CURSO -->
+    <!-- MODAL DE CHAMADA EM CURSO -->
     <div id="callModal" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-slate-900 w-full max-w-4xl h-full sm:h-[85vh] sm:rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col relative">
             
@@ -139,7 +138,7 @@
         </div>
     </div>
 
-    <!-- CABEÇALHO / NAVBAR -->
+    <!-- NAVBAR -->
     <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             
@@ -215,6 +214,9 @@
                 </button>
                 <button onclick="window.setFilter('document')" data-filter="document" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-file-pdf mr-1.5"></i>Documentos
+                </button>
+                <button onclick="window.setFilter('entertainment')" data-filter="entertainment" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-film mr-1.5"></i>Filmes e Séries
                 </button>
                 <button onclick="window.setFilter('link')" data-filter="link" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-link mr-1.5"></i>Links
@@ -463,6 +465,7 @@
                         <option value="image">Imagem</option>
                         <option value="video">Vídeo</option>
                         <option value="document">Documento / PDF</option>
+                        <option value="entertainment">Filmes e Séries</option>
                         <option value="link">Link Web</option>
                     </select>
 
@@ -479,7 +482,11 @@
                             <i class="fa-solid fa-file-pdf text-base"></i>
                             <span>Documento / PDF</span>
                         </button>
-                        <button type="button" onclick="window.setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                        <button type="button" onclick="window.setCategoryUI('entertainment')" data-cat="entertainment" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition">
+                            <i class="fa-solid fa-film text-base"></i>
+                            <span>Filmes e Séries</span>
+                        </button>
+                        <button type="button" onclick="window.setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition col-span-2">
                             <i class="fa-solid fa-link text-base"></i>
                             <span>Link Web</span>
                         </button>
@@ -547,7 +554,7 @@
             <div class="p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <p id="viewDescription" class="text-sm text-slate-600 dark:text-slate-300 max-w-2xl">Descrição...</p>
                 
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div id="viewActionContainer" class="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <a id="viewDownloadBtn" target="_blank" rel="noopener noreferrer" href="#" class="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg text-sm shadow transition text-center inline-flex">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar
                     </a>
@@ -625,11 +632,9 @@
         let selectedFile = null;
         let lastMessageCount = 0;
 
-        // ESTADO DE DIGITAÇÃO E ATIVIDADE EM TEMPO REAL
         let typingTimeout = null;
         let currentPeerStatus = { action: null };
 
-        // WEBRTC ESTADO
         let peerConnection = null;
         let localStream = null;
         let remoteStream = null;
@@ -715,7 +720,6 @@
                 if (ctx.state === 'suspended') ctx.resume();
 
                 const now = ctx.currentTime;
-
                 const osc1 = ctx.createOscillator();
                 const osc2 = ctx.createOscillator();
                 const gain = ctx.createGain();
@@ -775,7 +779,6 @@
             }
         }
 
-        // AUTENTICAÇÃO E PRESENÇA (ONLINE / LAST SEEN)
         async function updateUserStatus(onlineStatus) {
             if (!currentUserId) return;
             try {
@@ -833,7 +836,6 @@
 
         setInterval(() => updateUserStatus(true), 60000);
 
-        // LISTENER DE MENSAGENS PARA CONFIRMAÇÃO DE ENTREGA (ENTREGUE - 2 RISCOS CINZA)
         function listenForIncomingDelivery() {
             if (unsubscribeDelivery) { unsubscribeDelivery(); unsubscribeDelivery = null; }
             if (!currentUserId) return;
@@ -989,7 +991,6 @@
             }
         }
 
-        // CHAT & UTILIZADORES
         async function updateMyName() {
             const nameInput = document.getElementById('myCustomNameInput');
             if (!nameInput) return;
@@ -1074,14 +1075,13 @@
             }).join('');
         }
 
-        // CONTROLO DE ATIVIDADE EM TEMPO REAL ("A ESCREVER..." / "A GRAVAR ÁUDIO...")
         async function setTypingStatus(action) {
             if (!activeChatUserId || !currentUserId) return;
             const chatId = [currentUserId, activeChatUserId].sort().join('_');
             const presenceRef = doc(db, "chats", chatId, "presence", currentUserId);
             try {
                 await setDoc(presenceRef, {
-                    action: action, // 'typing' | 'recording' | null
+                    action: action,
                     updatedAt: serverTimestamp()
                 }, { merge: true });
             } catch (e) {}
@@ -1159,14 +1159,11 @@
             listenToChatMessages();
         }
 
-        // CONFIRMAÇÃO DE LEITURA EM TRÊS ESTÁGIOS (ENVIADO, ENTREGUE, LIDO)
         function listenToChatMessages() {
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (!activeChatUserId || !currentUserId) return;
 
             const chatId = [currentUserId, activeChatUserId].sort().join('_');
-            
-            // Ouvir estado em tempo real da outra pessoa ("a escrever...", "a gravar áudio...")
             listenToPeerActivity(chatId, activeChatUserId);
 
             const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(100));
@@ -1174,7 +1171,6 @@
             unsubscribeChat = onSnapshot(q, async (snapshot) => {
                 const messages = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 
-                // Atualizar mensagens recebidas não lidas para 'read' (Lido - 2 riscos azuis)
                 const batch = writeBatch(db);
                 let needsBatchUpdate = false;
 
@@ -1280,7 +1276,7 @@
                     receiverId: activeChatUserId,
                     text: text,
                     type: 'text',
-                    status: 'sent', // 'sent' -> 'delivered' -> 'read'
+                    status: 'sent',
                     createdAt: serverTimestamp()
                 });
             } catch (err) {
@@ -1330,7 +1326,6 @@
             if (chatMain) chatMain.classList.add('hidden');
         }
 
-        // GRAVAÇÃO DE ÁUDIO COM SINALIZADOR EM TEMPO REAL ("A GRAVAR ÁUDIO...")
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
@@ -1412,7 +1407,6 @@
             recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
         }
 
-        // CHAMADAS WEBRTC
         function listenToIncomingCalls() {
             if (!currentUserId) return;
             const q = query(collection(db, "calls"));
@@ -1731,11 +1725,24 @@
             }
         }
 
-        // GESTÃO DE RECURSOS / CONTEÚDOS
         function listenToDatabaseChanges() {
             const q = query(collection(db, "contents"), orderBy("createdAt", "desc"));
             unsubscribeContents = onSnapshot(q, (snapshot) => {
                 contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                
+                // Injetar o canal de Filmes e Séries automaticamente se ainda não existir localmente
+                const hasEntertainment = contents.some(c => c.category === 'entertainment');
+                if (!hasEntertainment) {
+                    contents.unshift({
+                        id: 'default-entertainment-channel',
+                        title: 'Filmes e Séries',
+                        category: 'entertainment',
+                        description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
+                        url: 'https://vialacteafilmes.com',
+                        isVirtualChannel: true
+                    });
+                }
+
                 renderContents();
             });
         }
@@ -1792,18 +1799,27 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                const isOwner = item.createdBy === currentUserId;
+                const isOwner = item.createdBy === currentUserId && !item.isVirtualChannel;
                 let catIcon = "fa-file";
                 let catBadge = "Documento";
 
                 if (item.category === 'image') { catIcon = "fa-image"; catBadge = "Imagem"; }
                 else if (item.category === 'video') { catIcon = "fa-video"; catBadge = "Vídeo"; }
                 else if (item.category === 'document') { catIcon = "fa-file-pdf"; catBadge = "PDF/Doc"; }
+                else if (item.category === 'entertainment') { catIcon = "fa-film"; catBadge = "Filmes e Séries"; }
                 else if (item.category === 'link') { catIcon = "fa-link"; catBadge = "Link"; }
 
                 let previewHtml = '';
                 if (item.category === 'image' && item.url) {
                     previewHtml = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-40 object-cover rounded-t-2xl">`;
+                } else if (item.category === 'entertainment') {
+                    previewHtml = `
+                        <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 rounded-t-2xl flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <i class="fa-solid fa-clapperboard text-4xl text-brand-400 mb-2"></i>
+                            <span class="font-extrabold text-base tracking-wider">Mundo Filmes</span>
+                        </div>
+                    `;
                 } else {
                     previewHtml = `
                         <div class="w-full h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-t-2xl flex items-center justify-center text-slate-400">
@@ -1831,7 +1847,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">${escapeHTML(item.description || 'Sem descrição.')}</p>
                             </div>
                             <button onclick="window.viewContent('${item.id}')" class="w-full py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-eye"></i> Visualizar Recurso
+                                <i class="fa-solid fa-play"></i> Aceder ao Conteúdo
                             </button>
                         </div>
                     </div>
@@ -1958,7 +1974,7 @@
 
                     await addDoc(collection(db, "contents"), {
                         title,
-                        category: 'link',
+                        category,
                         description,
                         url,
                         createdBy: currentUserId,
@@ -1992,8 +2008,10 @@
 
             document.getElementById('viewTitle').innerText = item.title;
             document.getElementById('viewDescription').innerText = item.description || "Sem descrição disponível.";
-            document.getElementById('viewDownloadBtn').href = item.url;
-
+            
+            const downloadBtn = document.getElementById('viewDownloadBtn');
+            const actionContainer = document.getElementById('viewActionContainer');
+            
             const categoryDate = document.getElementById('viewCategoryDate');
             const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-PT') : 'Recente';
             if (categoryDate) categoryDate.innerText = `${item.category.toUpperCase()} • ${dateStr}`;
@@ -2004,24 +2022,42 @@
             if (item.category === 'image') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-image text-lg"></i>`;
                 container.innerHTML = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-lg">`;
+                downloadBtn.href = item.url;
+                actionContainer.style.display = 'flex';
             } else if (item.category === 'video') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-video text-lg"></i>`;
                 container.innerHTML = `<video src="${item.url}" controls class="max-h-[60vh] w-full rounded-lg shadow-lg"></video>`;
+                downloadBtn.href = item.url;
+                actionContainer.style.display = 'flex';
             } else if (item.category === 'document') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-file-pdf text-lg"></i>`;
                 container.innerHTML = `<iframe src="${item.url}" class="w-full h-[60vh] rounded-lg border border-slate-700"></iframe>`;
+                downloadBtn.href = item.url;
+                actionContainer.style.display = 'flex';
+            } else if (item.category === 'entertainment') {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-film text-lg"></i>`;
+                // Ocultar botão externo para isolar inteiramente o conteúdo no iframe embutido
+                actionContainer.style.display = 'none';
+                container.innerHTML = `
+                    <div class="w-full h-[65vh] flex flex-col rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-2xl relative">
+                        <div class="bg-slate-950 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-400"></i> Reprodutor Seguro de Conteúdos</span>
+                            <span class="text-[10px] text-brand-400">Transmissão Protegida</span>
+                        </div>
+                        <iframe src="${item.url}" class="w-full flex-1 border-0 bg-slate-950" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                    </div>
+                `;
             } else {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-link text-lg"></i>`;
                 container.innerHTML = `
                     <div class="text-center p-8">
                         <i class="fa-solid fa-globe text-6xl text-brand-500 mb-4 animate-pulse"></i>
                         <h4 class="font-bold text-lg text-white mb-2">${escapeHTML(item.title)}</h4>
-                        <p class="text-xs text-slate-400 mb-6 max-w-md mx-auto">${escapeHTML(item.url)}</p>
-                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition inline-flex items-center gap-2">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Link no Navegador
-                        </a>
+                        <p class="text-xs text-slate-400 mb-6 max-w-md mx-auto">Recurso web incorporado.</p>
                     </div>
                 `;
+                downloadBtn.href = item.url;
+                actionContainer.style.display = 'flex';
             }
 
             openModal('viewContentModal');
@@ -2042,7 +2078,6 @@
             }
         }
 
-        // BIND DE FUNÇÕES AO WINDOW OBJETO PARA COMPATIBILIDADE HTML
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.toggleTheme = toggleTheme;
@@ -2077,7 +2112,6 @@
         window.viewContent = viewContent;
         window.deleteContent = deleteContent;
 
-        // INICIALIZAR TEMA SALVO
         const savedTheme = localStorage.getItem('mundo_digital_theme');
         if (savedTheme === 'light') {
             document.documentElement.classList.remove('dark');
