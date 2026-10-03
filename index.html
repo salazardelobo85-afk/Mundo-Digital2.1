@@ -373,7 +373,7 @@
             </div>
 
             <div class="flex-1 flex overflow-hidden relative min-h-0">
-                <div id="chatSidebar" class="w-full sm:w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/20 min-h-0">
+                <div id="chatSidebar" class="w-full sm:w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0 shrink-0">
                     <div class="p-3 border-b border-slate-200 dark:border-slate-700 space-y-2">
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
@@ -393,9 +393,9 @@
                     </div>
                 </div>
 
-                <!-- ÁREA PRINCIPAL DO CHAT -->
-                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col bg-slate-100/50 dark:bg-slate-900/40 absolute sm:relative inset-0 bg-white dark:bg-slate-800 sm:bg-transparent z-20 sm:z-auto">
-                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden flex items-center justify-between">
+                <!-- ÁREA PRINCIPAL DO CHAT (fundo opaco no mobile para não ver a lista por baixo) -->
+                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col absolute sm:relative inset-0 z-30 sm:z-auto bg-white dark:bg-slate-800">
+                    <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hidden items-center justify-between shrink-0">
                         <div class="flex items-center gap-2.5">
                             <button onclick="window.backToUsersList()" class="sm:hidden text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 p-1">
                                 <i class="fa-solid fa-arrow-left"></i>
@@ -419,7 +419,7 @@
                         </div>
                     </div>
 
-                    <div id="chatMessages" class="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar space-y-2.5 flex flex-col min-h-0">
+                    <div id="chatMessages" class="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar space-y-2.5 flex flex-col min-h-0 bg-slate-100 dark:bg-slate-900/80">
                         <div class="text-center my-auto text-slate-400 text-xs px-4">
                             <i class="fa-solid fa-paper-plane text-3xl mb-2 opacity-50"></i>
                             <p>Selecione um utilizador na lista para iniciar o chat.</p>
@@ -909,9 +909,16 @@
             modal.classList.add('opacity-0', 'pointer-events-none');
             const inner = modal.firstElementChild;
             if (inner) inner.classList.add('scale-95');
-            // Ao fechar chat, limpar typing para não ficar “a escrever” eternamente
+            // Ao fechar chat, limpar typing e restaurar lista de utilizadores
             if (id === 'chatModal') {
                 setTypingStatus(null);
+                const chatSidebar = document.getElementById('chatSidebar');
+                const chatMain = document.getElementById('chatMainArea');
+                if (chatSidebar) chatSidebar.classList.remove('hidden');
+                if (chatMain && window.innerWidth < 640) {
+                    chatMain.classList.add('hidden');
+                    chatMain.classList.remove('flex');
+                }
             }
         }
 
@@ -998,19 +1005,30 @@
             if (unsubscribeDelivery) { unsubscribeDelivery(); unsubscribeDelivery = null; }
             if (!currentUserId) return;
 
-            const q = query(
-                collectionGroup(db, "messages"),
-                where("receiverId", "==", currentUserId),
-                where("status", "==", "sent")
-            );
+            // collectionGroup + 2 where exige índice composto no Firestore.
+            // Se falhar (falta de índice / regras), o erro é engolido para não poluir a consola.
+            try {
+                const q = query(
+                    collectionGroup(db, "messages"),
+                    where("receiverId", "==", currentUserId),
+                    where("status", "==", "sent")
+                );
 
-            unsubscribeDelivery = onSnapshot(q, (snapshot) => {
-                snapshot.docs.forEach(async (docSnap) => {
-                    try {
-                        await updateDoc(docSnap.ref, { status: 'delivered' });
-                    } catch (e) {}
+                unsubscribeDelivery = onSnapshot(q, (snapshot) => {
+                    snapshot.docs.forEach(async (docSnap) => {
+                        try {
+                            await updateDoc(docSnap.ref, { status: 'delivered' });
+                        } catch (e) {}
+                    });
+                }, (err) => {
+                    // Índice em falta ou regras: não derruba a app
+                    if (err && err.code !== 'failed-precondition') {
+                        console.warn('Delivery listener:', err.code || err.message);
+                    }
                 });
-            });
+            } catch (e) {
+                console.warn('Delivery query setup failed:', e.message || e);
+            }
         }
 
         function updateAuthUI(user) {
@@ -1300,7 +1318,10 @@
             const chatActiveName = document.getElementById('chatActiveName');
             const chatActiveAvatar = document.getElementById('chatActiveAvatar');
 
-            if (activeHeader) activeHeader.classList.remove('hidden');
+            if (activeHeader) {
+                activeHeader.classList.remove('hidden');
+                activeHeader.classList.add('flex');
+            }
             if (chatForm) chatForm.classList.remove('hidden');
 
             const name = getDisplayName(user);
@@ -1310,12 +1331,19 @@
             updateActiveHeaderStatus();
 
             const chatMain = document.getElementById('chatMainArea');
-            if (chatMain) chatMain.classList.remove('hidden');
+            const chatSidebar = document.getElementById('chatSidebar');
+            if (chatMain) {
+                chatMain.classList.remove('hidden');
+                chatMain.classList.add('flex');
+            }
+            // No telemóvel: esconder a lista para não aparecer por trás da conversa
+            if (chatSidebar && window.innerWidth < 640) {
+                chatSidebar.classList.add('hidden');
+            }
 
             lastMessageCount = 0;
             renderUsersList();
             listenToChatMessages();
-            // Foco no input e limpar badge
             const badge = document.getElementById('chatBadge');
             if (badge) badge.classList.add('hidden');
             setTimeout(() => document.getElementById('chatInput')?.focus(), 120);
@@ -1381,7 +1409,9 @@
             yesterday.setDate(today.getDate() - 1);
             if (d.toDateString() === today.toDateString()) return 'Hoje';
             if (d.toDateString() === yesterday.toDateString()) return 'Ontem';
-            return d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+            const opts = { day: '2-digit', month: 'short' };
+            if (d.getFullYear() !== today.getFullYear()) opts.year = 'numeric';
+            return d.toLocaleDateString('pt-PT', opts);
         }
 
         function renderMessages(messages) {
@@ -1538,7 +1568,22 @@
         function backToUsersList() {
             setTypingStatus(null);
             const chatMain = document.getElementById('chatMainArea');
-            if (chatMain) chatMain.classList.add('hidden');
+            const chatSidebar = document.getElementById('chatSidebar');
+            const activeHeader = document.getElementById('chatActiveHeader');
+            const chatForm = document.getElementById('chatForm');
+            if (chatMain) {
+                chatMain.classList.add('hidden');
+                chatMain.classList.remove('flex');
+            }
+            if (chatSidebar) chatSidebar.classList.remove('hidden');
+            if (activeHeader) {
+                activeHeader.classList.add('hidden');
+                activeHeader.classList.remove('flex');
+            }
+            if (chatForm) chatForm.classList.add('hidden');
+            activeChatUserId = null;
+            if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+            if (peerActivityUnsubscribe) { peerActivityUnsubscribe(); peerActivityUnsubscribe = null; }
         }
 
         let mediaRecorder = null;
@@ -1628,26 +1673,40 @@
                 unsubscribeIncomingCalls = null;
             }
             if (!currentUserId) return;
-            // Filtrar no servidor para reduzir leituras e tráfego
-            const q = query(
+
+            const handleCallSnap = (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type !== 'added') return;
+                    const data = change.doc.data();
+                    if (data.receiverId !== currentUserId || data.status !== 'offered') return;
+                    if (activeCallId === change.doc.id) return;
+                    incomingCallData = { id: change.doc.id, ...data };
+                    const nameEl = document.getElementById('incomingCallerName');
+                    const typeEl = document.getElementById('incomingCallType');
+                    if (nameEl) nameEl.innerText = data.callerName || "Contacto";
+                    if (typeEl) typeEl.innerText = `A receber chamada de ${data.type === 'video' ? 'vídeo' : 'áudio'}...`;
+                    playNotificationSound();
+                    openModal('incomingCallModal');
+                });
+            };
+
+            // Preferência: filtro no servidor (precisa de índice composto receiverId + status)
+            // Fallback: ouvir a coleção e filtrar no cliente se o índice não existir
+            const qFiltered = query(
                 collection(db, "calls"),
                 where("receiverId", "==", currentUserId),
                 where("status", "==", "offered")
             );
-            unsubscribeIncomingCalls = onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const data = change.doc.data();
-                        // Evitar reabrir a mesma chamada se já estiver em curso
-                        if (activeCallId === change.doc.id) return;
-                        incomingCallData = { id: change.doc.id, ...data };
-                        document.getElementById('incomingCallerName').innerText = data.callerName || "Contacto";
-                        document.getElementById('incomingCallType').innerText = `A receber chamada de ${data.type === 'video' ? 'vídeo' : 'áudio'}...`;
-                        playNotificationSound();
-                        openModal('incomingCallModal');
-                    }
-                });
-            }, (err) => console.warn('Incoming calls listener:', err));
+            unsubscribeIncomingCalls = onSnapshot(qFiltered, handleCallSnap, (err) => {
+                if (err && (err.code === 'failed-precondition' || err.code === 'permission-denied')) {
+                    // Fallback sem índice composto
+                    if (unsubscribeIncomingCalls) { try { unsubscribeIncomingCalls(); } catch (_) {} }
+                    const qAll = query(collection(db, "calls"));
+                    unsubscribeIncomingCalls = onSnapshot(qAll, handleCallSnap, () => {});
+                } else if (err) {
+                    console.warn('Incoming calls listener:', err.code || err.message);
+                }
+            });
         }
 
         function startCallTimer() {
@@ -1950,11 +2009,18 @@
         }
 
         function listenToDatabaseChanges() {
-            const q = query(collection(db, "contents"), orderBy("createdAt", "desc"));
-            unsubscribeContents = onSnapshot(q, (snapshot) => {
+            if (unsubscribeContents) {
+                try { unsubscribeContents(); } catch (_) {}
+                unsubscribeContents = null;
+            }
+            const applyContents = (snapshot) => {
                 contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-                
-                // Injetar o canal de Filmes e Séries automaticamente se ainda não existir localmente
+                // Ordenar localmente se necessário
+                contents.sort((a, b) => {
+                    const ta = a.createdAt?.seconds || 0;
+                    const tb = b.createdAt?.seconds || 0;
+                    return tb - ta;
+                });
                 const hasEntertainment = contents.some(c => c.category === 'entertainment');
                 if (!hasEntertainment) {
                     contents.unshift({
@@ -1966,9 +2032,21 @@
                         isVirtualChannel: true
                     });
                 }
-
                 renderContents();
-            });
+            };
+            try {
+                const q = query(collection(db, "contents"), orderBy("createdAt", "desc"));
+                unsubscribeContents = onSnapshot(q, applyContents, (err) => {
+                    // Fallback sem orderBy (evita erro de índice na consola)
+                    if (unsubscribeContents) { try { unsubscribeContents(); } catch (_) {} }
+                    unsubscribeContents = onSnapshot(collection(db, "contents"), applyContents, () => {});
+                    if (err && err.code !== 'failed-precondition') {
+                        console.warn('Contents listener:', err.code || err.message);
+                    }
+                });
+            } catch (e) {
+                unsubscribeContents = onSnapshot(collection(db, "contents"), applyContents, () => {});
+            }
         }
 
         function setFilter(filterType) {
@@ -2258,6 +2336,10 @@
             const badge = document.getElementById('viewersBadge');
             if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
 
+            // Texto padrão do botão (pode ter sido alterado no entretenimento)
+            downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar`;
+            downloadBtn.onclick = null;
+
             if (item.category === 'image') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-image text-lg"></i>`;
                 container.innerHTML = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-lg">`;
@@ -2278,24 +2360,35 @@
                 actionContainer.style.display = 'flex';
             } else if (item.category === 'entertainment') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-film text-lg"></i>`;
-                downloadBtn.classList.add('hidden');
+                downloadBtn.href = item.url || '#';
+                downloadBtn.innerHTML = `<i class="fa-solid fa-expand"></i> Ecrã Completo`;
+                downloadBtn.classList.remove('hidden');
+                downloadBtn.onclick = (ev) => {
+                    ev.preventDefault();
+                    const frame = document.getElementById('entertainmentFrame');
+                    if (frame && frame.requestFullscreen) frame.requestFullscreen().catch(() => window.open(item.url, '_blank'));
+                    else if (frame && frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
+                    else window.open(item.url, '_blank');
+                };
                 actionContainer.style.display = 'flex';
                 if (toggleChatBtn) {
                     toggleChatBtn.classList.remove('hidden');
                     toggleChatBtn.classList.add('inline-flex');
                 }
+                const safeUrl = escapeHTML(item.url || '');
+                // Incorporar directamente no Mundo Digital (sem sandbox, ecrã máximo)
                 container.innerHTML = `
-                    <div class="w-full h-[60vh] sm:h-[65vh] flex flex-col rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-2xl relative">
-                        <div class="bg-slate-950 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                            <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-400"></i> Reprodutor Seguro de Conteúdos</span>
-                            <span class="text-[10px] text-brand-400">Transmissão Protegida</span>
-                        </div>
-                        <iframe src="${item.url}" class="w-full flex-1 border-0 bg-slate-950" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                    <div class="w-full h-[72vh] sm:h-[75vh] flex flex-col rounded-xl overflow-hidden bg-slate-950 border border-slate-700 shadow-2xl relative">
+                        <iframe id="entertainmentFrame"
+                            src="${safeUrl}"
+                            class="w-full h-full border-0 bg-white dark:bg-slate-950"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
+                            allowfullscreen
+                            referrerpolicy="origin"
+                            importance="high"></iframe>
                     </div>
                 `;
-                // join viewers + live chat for this content
                 joinEntertainmentViewers(item.id);
-                // auto-open chat on desktop
                 if (window.innerWidth >= 640) {
                     entertainmentChatOpen = true;
                     if (chatPanel) {
