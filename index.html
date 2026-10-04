@@ -448,6 +448,51 @@
         </div>
     </div>
 
+    <!-- PERFIL DO UTILIZADOR -->
+    <div id="profileModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div><h3 class="font-bold text-lg" id="profileModalTitle">O meu perfil</h3><p class="text-xs text-slate-500">Personalize como aparece nas conversas.</p></div>
+                <button onclick="window.closeModal('profileModal')" class="text-slate-400 p-2"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="profileForm" onsubmit="window.saveMyProfile(event)" class="p-5 space-y-4">
+                <div class="flex justify-center">
+                    <label class="relative cursor-pointer group">
+                        <img id="profilePreview" class="w-24 h-24 rounded-full object-cover border-4 border-brand-500 bg-slate-100 dark:bg-slate-700 hidden" alt="Perfil">
+                        <div id="profileFallback" class="w-24 h-24 rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div>
+                        <span class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-camera text-xs"></i></span>
+                        <input id="profileImageInput" type="file" accept="image/*" class="hidden" onchange="window.previewProfileImage(event)">
+                    </label>
+                </div>
+                <div><label class="text-xs font-semibold">Nome</label><input id="profileNameInput" required maxlength="60" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <div><label class="text-xs font-semibold">Bio</label><textarea id="profileBioInput" maxlength="180" rows="3" placeholder="Fale um pouco sobre si..." class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none"></textarea></div>
+                <div><label class="text-xs font-semibold">Telefone</label><input id="profilePhoneInput" maxlength="30" placeholder="Opcional" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <button class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar perfil</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CRIAR GRUPO -->
+    <div id="createGroupModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col">
+            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between"><div><h3 class="font-bold text-lg">Criar grupo</h3><p class="text-xs text-slate-500">Escolha os participantes da conversa.</p></div><button onclick="window.closeModal('createGroupModal')" class="text-slate-400 p-2"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="p-5 space-y-4 overflow-y-auto">
+                <div class="flex gap-3 items-center"><label class="relative cursor-pointer"><div id="groupAvatarPreview" class="w-16 h-16 rounded-full bg-brand-600 text-white flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-users"></i></div><input id="groupImageInput" type="file" accept="image/*" class="hidden" onchange="window.previewGroupImage(event)"></label><div class="flex-1"><input id="groupNameInput" required maxlength="60" placeholder="Nome do grupo" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"><p class="text-[10px] text-slate-400 mt-1">Toque na imagem para escolher um ícone.</p></div></div>
+                <input id="groupSearchInput" oninput="window.renderGroupMembersPicker()" placeholder="Pesquisar participantes..." class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+                <div id="groupMembersPicker" class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 rounded-xl border border-slate-200 dark:border-slate-700"></div>
+                <button onclick="window.createGroup()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm"><i class="fa-solid fa-users mr-2"></i>Criar grupo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERFIL DO CONTACTO / GRUPO -->
+    <div id="contactProfileModal" class="fixed inset-0 z-[155] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-6 text-center"><img id="contactProfileAvatarImg" class="w-24 h-24 mx-auto rounded-full object-cover hidden" alt="Perfil"><div id="contactProfileFallback" class="w-24 h-24 mx-auto rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div><h3 id="contactProfileName" class="font-bold text-xl mt-3">Utilizador</h3><p id="contactProfileBio" class="text-sm text-slate-500 mt-1 whitespace-pre-wrap"></p><p id="contactProfilePhone" class="text-xs text-slate-400 mt-2"></p></div>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700"><button onclick="window.closeModal('contactProfileModal')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm">Fechar</button></div>
+        </div>
+    </div>
+
     <!-- MODAL DE CHAT -->
     <div id="chatModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] sm:h-[80vh] max-h-[92dvh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
@@ -476,12 +521,14 @@
                                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
                         </div>
                         <div class="flex gap-1.5 items-center">
-                            <input type="text" id="myCustomNameInput" placeholder="O seu nome..." 
-                                   class="flex-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px] focus:outline-none focus:ring-1 focus:ring-brand-500">
-                            <button onclick="window.updateMyName()" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[11px] font-medium transition shrink-0">
-                                Gravar
+                            <button onclick="window.openMyProfile()" class="px-2.5 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-[11px] font-semibold transition shrink-0" title="Editar o meu perfil">
+                                <i class="fa-solid fa-user-pen mr-1"></i>Perfil
+                            </button>
+                            <button onclick="window.openCreateGroup()" class="flex-1 px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[11px] font-semibold transition">
+                                <i class="fa-solid fa-users mr-1"></i>Novo grupo
                             </button>
                         </div>
+                        <div class="px-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Conversas e grupos</div>
                     </div>
                     <div id="usersList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
                         <div class="p-4 text-center text-xs text-slate-400">A carregar utilizadores...</div>
@@ -499,7 +546,7 @@
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
                                     <span class="font-bold text-sm block truncate" id="chatActiveName">Nome do Utilizador</span>
-                                    <button onclick="window.openNicknameModal()" class="text-[10px] text-brand-500 hover:underline shrink-0" title="Definir Alcunha"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="window.openContactProfile()" class="text-[10px] text-brand-500 hover:underline shrink-0" title="Ver perfil"><i class="fa-solid fa-circle-info"></i></button>
                                 </div>
                                 <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
                             </div>
@@ -508,10 +555,10 @@
                             <button type="button" onclick="window.openWallpaperModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Papel de parede">
                                 <i class="fa-solid fa-image text-sm"></i>
                             </button>
-                            <button onclick="window.startCall('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Áudio">
+                            <button id="chatAudioCallBtn" onclick="window.startCall('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Áudio">
                                 <i class="fa-solid fa-phone text-sm"></i>
                             </button>
-                            <button onclick="window.startCall('video')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Vídeo">
+                            <button id="chatVideoCallBtn" onclick="window.startCall('video')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Chamada de Vídeo">
                                 <i class="fa-solid fa-video text-sm"></i>
                             </button>
                         </div>
@@ -897,6 +944,10 @@
         let currentUserId = null;
         let currentUserName = "Utilizador Anónimo";
         let activeChatUserId = null;
+        let activeChatType = 'private'; // private | group
+        let activeGroup = null;
+        let groups = [];
+        let unsubscribeGroups = null;
         let unsubscribeChat = null;
         let unsubscribeUsers = null;
         let unsubscribeContents = null;
@@ -1255,6 +1306,7 @@
                 }, { merge: true });
 
                 listenToUsersRealtime();
+                listenToGroupsRealtime();
                 listenToDatabaseChanges();
                 listenToIncomingCalls();
                 listenForIncomingDelivery();
@@ -1529,7 +1581,18 @@
                 return 0;
             });
 
-            if (filtered.length === 0) {
+            const filteredGroups = groups.filter(g => (g.name || g.groupName || '').toLowerCase().includes(filterVal));
+            const groupHtml = filteredGroups.map(g => {
+                const isActive = activeChatType === 'group' && g.id === activeChatUserId;
+                const last = lastMessagesCache[g.id];
+                const title = g.name || g.groupName || 'Grupo';
+                return `<div onclick="window.startGroupChat('${g.id}')" class="p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 transition ${isActive ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''}">
+                    <div class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0"><i class="fa-solid fa-users"></i></div>
+                    <div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-2"><h4 class="text-xs truncate">${escapeHTML(title)}</h4>${last?.at ? `<span class="text-[9px] text-slate-400">${new Date(last.at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})}</span>` : ''}</div><p class="text-[10px] text-slate-400 truncate">${escapeHTML(last?.text || `${(g.members||[]).length} participantes`)}</p></div>
+                </div>`;
+            }).join('');
+
+            if (filtered.length === 0 && filteredGroups.length === 0) {
                 usersList.innerHTML = `
                     <div class="p-6 text-center text-xs text-slate-400">
                         <i class="fa-solid fa-user-slash text-2xl mb-2 opacity-50"></i>
@@ -1539,7 +1602,7 @@
                 return;
             }
 
-            usersList.innerHTML = filtered.map(u => {
+            usersList.innerHTML = groupHtml + filtered.map(u => {
                 const displayName = getDisplayName(u);
                 const isOnline = u.online;
                 const isActive = u.id === activeChatUserId;
@@ -1577,6 +1640,7 @@
 
         async function setTypingStatus(action) {
             if (!activeChatUserId || !currentUserId) return;
+            if (activeChatType === 'group') return;
             const chatId = [currentUserId, activeChatUserId].sort().join('_');
             const presenceRef = doc(db, "chats", chatId, "presence", currentUserId);
             try {
@@ -1634,6 +1698,8 @@
                 setTypingStatus(null);
             }
             activeChatUserId = userId;
+            activeChatType = 'private';
+            activeGroup = null;
             const user = allUsers.find(u => u.id === userId);
             if (!user) return;
 
@@ -1648,6 +1714,8 @@
             }
             if (chatForm) chatForm.classList.remove('hidden');
 
+            document.getElementById('chatAudioCallBtn')?.classList.remove('hidden');
+            document.getElementById('chatVideoCallBtn')?.classList.remove('hidden');
             const name = getDisplayName(user);
             if (chatActiveName) chatActiveName.innerText = name;
             if (chatActiveAvatar) chatActiveAvatar.innerText = name.charAt(0).toUpperCase();
@@ -1685,8 +1753,8 @@
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (!activeChatUserId || !currentUserId) return;
 
-            const chatId = [currentUserId, activeChatUserId].sort().join('_');
-            listenToPeerActivity(chatId, activeChatUserId);
+            const chatId = activeChatType === 'group' ? activeChatUserId : [currentUserId, activeChatUserId].sort().join('_');
+            if (activeChatType === 'private') listenToPeerActivity(chatId, activeChatUserId);
 
             const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(120));
 
@@ -1696,7 +1764,7 @@
 
                 const unread = snapshot.docs.filter(d => {
                     const m = d.data();
-                    return m.receiverId === currentUserId && m.status !== 'read';
+                    return activeChatType === 'group' ? (m.senderId !== currentUserId) : (m.receiverId === currentUserId && m.status !== 'read');
                 });
                 if (unread.length > 0) {
                     const batch = writeBatch(db);
@@ -1722,13 +1790,8 @@
                 // Atualizar pré-visualização na lista
                 if (messages.length > 0 && activeChatUserId) {
                     const lastMsg = messages[messages.length - 1];
-                    const peer = lastMsg.senderId === currentUserId ? lastMsg.receiverId : lastMsg.senderId;
-                    updateLastMessagePreview(
-                        peer,
-                        lastMsg.text || '',
-                        lastMsg.type || 'text',
-                        lastMsg.senderId === currentUserId
-                    );
+                    const peer = activeChatType === 'group' ? activeChatUserId : (lastMsg.senderId === currentUserId ? lastMsg.receiverId : lastMsg.senderId);
+                    updateLastMessagePreview(peer, lastMsg.text || '', lastMsg.type || 'text', lastMsg.senderId === currentUserId);
                     // Limpar pending que já chegaram ao servidor (mesmo texto recente)
                     pendingMessages = pendingMessages.filter(p => {
                         if (p.peerId !== activeChatUserId) return true;
@@ -1884,6 +1947,17 @@
             const text = input.value.trim();
             if (!text) return;
 
+            // Grupos usam uma coleção própria, mantendo a mesma interface de conversa.
+            if (activeChatType === 'group') {
+                input.value = '';
+                try {
+                    await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), { senderId: currentUserId, senderName: currentUserName, text, type: 'text', createdAt: serverTimestamp() });
+                    updateLastMessagePreview(activeChatUserId, text, 'text', true);
+                    renderUsersList();
+                } catch (err) { showToast('Não foi possível enviar para o grupo.', 'error'); }
+                return;
+            }
+
             input.value = '';
             setTypingStatus(null);
 
@@ -1932,6 +2006,10 @@
             if (!p || !currentUserId) return;
             p.status = 'pending';
             renderMessages(serverMessagesSnapshot);
+            if (activeChatType === 'group') {
+                try { await addDoc(collection(db, 'groups', p.peerId, 'messages'), { senderId: currentUserId, senderName: currentUserName, text: p.text, type: 'text', createdAt: serverTimestamp() }); pendingMessages = pendingMessages.filter(x => x.tempId !== tempId); showToast('Mensagem reenviada.', 'success'); } catch (_) { p.status='failed'; renderMessages(serverMessagesSnapshot); }
+                return;
+            }
             const chatId = [currentUserId, p.peerId].sort().join('_');
             try {
                 if (!navigator.onLine) throw new Error('offline');
@@ -2005,6 +2083,8 @@
             }
             if (chatForm) chatForm.classList.add('hidden');
             activeChatUserId = null;
+            activeChatType = 'private';
+            activeGroup = null;
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (peerActivityUnsubscribe) { peerActivityUnsubscribe(); peerActivityUnsubscribe = null; }
             // Sincronizar histórico se o utilizador usou o botão da UI (não o do telemóvel)
@@ -2015,6 +2095,66 @@
                     }
                 } catch (_) {}
             }
+        }
+
+        // ========== PERFIS E GRUPOS ==========
+        let selectedGroupMembers = new Set();
+        let selectedProfileImageFile = null;
+        let selectedGroupImageFile = null;
+
+        async function openMyProfile() {
+            if (!currentUserId) return;
+            const snap = await getDoc(doc(db, 'users', currentUserId));
+            const d = snap.exists() ? snap.data() : {};
+            document.getElementById('profileNameInput').value = d.name || currentUserName || '';
+            document.getElementById('profileBioInput').value = d.bio || '';
+            document.getElementById('profilePhoneInput').value = d.phone || '';
+            selectedProfileImageFile = null;
+            setProfilePreview(d.photoURL || '', d.name || currentUserName);
+            openModal('profileModal');
+        }
+
+        function setProfilePreview(url, name) {
+            const img=document.getElementById('profilePreview'), fb=document.getElementById('profileFallback');
+            if (url) { img.src=url; img.classList.remove('hidden'); fb.classList.add('hidden'); }
+            else { img.classList.add('hidden'); fb.classList.remove('hidden'); fb.textContent=(name||'U').charAt(0).toUpperCase(); }
+        }
+        function previewProfileImage(e) { selectedProfileImageFile=e.target.files?.[0]||null; if(selectedProfileImageFile) setProfilePreview(URL.createObjectURL(selectedProfileImageFile), 'U'); }
+        async function saveMyProfile(e) {
+            e.preventDefault(); if(!currentUserId) return;
+            const name=document.getElementById('profileNameInput').value.trim(); const bio=document.getElementById('profileBioInput').value.trim(); const phone=document.getElementById('profilePhoneInput').value.trim();
+            let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
+            try {
+                if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
+                await setDoc(doc(db,'users',currentUserId),{uid:currentUserId,name,bio,phone,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()},{merge:true});
+                currentUserName=name; localStorage.setItem('mundo_digital_username',name); updateAuthUI(auth.currentUser); setProfilePreview(photoURL,name); showToast('Perfil atualizado com sucesso!','success'); closeModal('profileModal');
+            } catch(err){ console.error(err); showToast('Não foi possível guardar o perfil.','error'); }
+        }
+        async function openContactProfile(){
+            if(!activeChatUserId) return;
+            const u=activeChatType==='group'?activeGroup:allUsers.find(x=>x.id===activeChatUserId); if(!u) return;
+            const img=document.getElementById('contactProfileAvatarImg'), fb=document.getElementById('contactProfileFallback'); const name=u.name||u.groupName||'Grupo';
+            document.getElementById('contactProfileName').textContent=name; document.getElementById('contactProfileBio').textContent=u.bio||u.description||''; document.getElementById('contactProfilePhone').textContent=u.phone||'';
+            if(u.photoURL||u.avatar){img.src=u.photoURL||u.avatar;img.classList.remove('hidden');fb.classList.add('hidden');} else {img.classList.add('hidden');fb.classList.remove('hidden');fb.textContent=name.charAt(0).toUpperCase();}
+            openModal('contactProfileModal');
+        }
+        async function openCreateGroup(){ selectedGroupMembers=new Set(); selectedGroupImageFile=null; document.getElementById('groupNameInput').value=''; document.getElementById('groupSearchInput').value=''; renderGroupMembersPicker(); openModal('createGroupModal'); }
+        function previewGroupImage(e){ selectedGroupImageFile=e.target.files?.[0]||null; if(selectedGroupImageFile){ const p=document.getElementById('groupAvatarPreview'); p.innerHTML=''; const im=document.createElement('img'); im.src=URL.createObjectURL(selectedGroupImageFile); im.className='w-16 h-16 rounded-full object-cover'; p.replaceWith(im); im.id='groupAvatarPreview'; } }
+        function renderGroupMembersPicker(){
+            const box=document.getElementById('groupMembersPicker'); if(!box) return; const term=(document.getElementById('groupSearchInput')?.value||'').toLowerCase();
+            const list=allUsers.filter(u=>getDisplayName(u).toLowerCase().includes(term));
+            box.innerHTML=list.map(u=>{const checked=selectedGroupMembers.has(u.id);const n=getDisplayName(u);return `<label class="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"><input type="checkbox" ${checked?'checked':''} onchange="window.toggleGroupMember('${u.id}',this.checked)" class="accent-brand-600"><div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">${escapeHTML(n.charAt(0).toUpperCase())}</div><div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${escapeHTML(n)}</p><p class="text-[10px] text-slate-400">${u.online?'Online':'Offline'}</p></div></label>`}).join('') || '<p class="p-4 text-xs text-slate-400 text-center">Ainda não há outros utilizadores.</p>';
+        }
+        function toggleGroupMember(id,checked){if(checked)selectedGroupMembers.add(id);else selectedGroupMembers.delete(id);}
+        async function createGroup(){
+            if(!currentUserId)return; const name=document.getElementById('groupNameInput').value.trim(); if(!name)return showToast('Dê um nome ao grupo.','error'); if(selectedGroupMembers.size<1)return showToast('Escolha pelo menos um participante.','error');
+            try{let avatar='';if(selectedGroupImageFile){const r=ref(storage,`groups/${currentUserId}/avatar_${Date.now()}`);const task=await uploadBytesResumable(r,selectedGroupImageFile);avatar=await getDownloadURL(task.ref);}const members=[currentUserId,...selectedGroupMembers];const g=await addDoc(collection(db,'groups'),{name,groupName:name,avatar,photoURL:avatar,createdBy:currentUserId,admins:[currentUserId],members,createdAt:serverTimestamp()});closeModal('createGroupModal');showToast('Grupo criado!','success');setTimeout(()=>startGroupChat(g.id),250);}catch(err){console.error(err);showToast('Erro ao criar o grupo. Verifique as regras do Firestore.','error');}
+        }
+        function listenToGroupsRealtime(){
+            if(unsubscribeGroups)unsubscribeGroups(); if(!currentUserId)return; const q=query(collection(db,'groups'),where('members','array-contains',currentUserId)); unsubscribeGroups=onSnapshot(q,snap=>{groups=snap.docs.map(d=>({id:d.id,...d.data()}));renderUsersList();},err=>console.warn('Groups listener:',err));
+        }
+        function startGroupChat(groupId){
+            const g=groups.find(x=>x.id===groupId);if(!g)return; activeChatUserId=groupId;activeChatType='group';activeGroup=g;const activeHeader=document.getElementById('chatActiveHeader'),form=document.getElementById('chatForm');activeHeader.classList.remove('hidden');activeHeader.classList.add('flex');form.classList.remove('hidden');document.getElementById('chatActiveName').textContent=g.name||g.groupName||'Grupo';document.getElementById('chatActiveStatus').textContent=`${(g.members||[]).length} participantes`;document.getElementById('chatAudioCallBtn')?.classList.add('hidden');document.getElementById('chatVideoCallBtn')?.classList.add('hidden');const av=document.getElementById('chatActiveAvatar');av.textContent=(g.name||'G').charAt(0).toUpperCase();document.getElementById('chatMainArea').classList.remove('hidden');document.getElementById('chatMainArea').classList.add('flex');if(window.innerWidth<640)document.getElementById('chatSidebar').classList.add('hidden');lastMessageCount=0;listenToChatMessages();renderUsersList();try{if(!history.state||!history.state.chatOpen)history.pushState({chatOpen:true,groupId},'')}catch(_){} setTimeout(()=>document.getElementById('chatInput')?.focus(),120);
         }
 
         // ========== PAPÉIS DE PAREDE DO CHAT (14) ==========
@@ -3715,6 +3855,16 @@
         window.handleAnonymousLogin = handleAnonymousLogin;
         window.switchAuthTab = switchAuthTab;
         window.updateMyName = updateMyName;
+        window.openMyProfile = openMyProfile;
+        window.saveMyProfile = saveMyProfile;
+        window.previewProfileImage = previewProfileImage;
+        window.openCreateGroup = openCreateGroup;
+        window.previewGroupImage = previewGroupImage;
+        window.renderGroupMembersPicker = renderGroupMembersPicker;
+        window.toggleGroupMember = toggleGroupMember;
+        window.createGroup = createGroup;
+        window.startGroupChat = startGroupChat;
+        window.openContactProfile = openContactProfile;
         window.searchUsers = searchUsers;
         window.startChatWith = startChatWith;
         window.sendChatMessage = sendChatMessage;
