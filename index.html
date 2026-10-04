@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mundo Digital - Gestão, Conteúdo, Chat & Chamadas</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -166,14 +167,17 @@
             </div>
 
             <div class="flex-1 relative flex items-center justify-center bg-slate-950 overflow-hidden">
-                <!-- Jitsi embutido -->
-                <div id="jitsiContainer" class="w-full h-full absolute inset-0 z-[5]"></div>
-
-                <div id="audioCallPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 hidden z-10 pointer-events-none">
+                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                
+                <div id="audioCallPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 hidden">
                     <div class="w-24 h-24 rounded-full bg-brand-600/30 text-brand-400 flex items-center justify-center text-4xl mb-4 animate-pulse">
                         <i class="fa-solid fa-microphone"></i>
                     </div>
                     <p class="text-slate-300 font-semibold text-lg" id="audioCallName">Em chamada de áudio</p>
+                </div>
+
+                <div class="absolute bottom-28 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
+                    <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 </div>
             </div>
 
@@ -399,6 +403,10 @@
                         <i class="fa-solid fa-right-to-bracket"></i> Entrar na Conta
                     </button>
 
+                    <button type="button" onclick="window.handleGoogleLogin()" class="w-full py-2.5 mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-100 font-semibold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-google text-red-500"></i> Entrar com Google + Drive
+                    </button>
+
                     <div class="relative my-4">
                         <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
                         <div class="relative flex justify-center text-xs uppercase"><span class="bg-white dark:bg-slate-800 px-2 text-slate-400 font-medium">Ou continuar como</span></div>
@@ -439,6 +447,10 @@
 
                     <button type="submit" id="registerSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-md transition text-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-user-plus"></i> Criar Nova Conta
+                    </button>
+
+                    <button type="button" onclick="window.handleGoogleLogin()" class="w-full py-2.5 mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-100 font-semibold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-google text-red-500"></i> Registar com Google + Drive
                     </button>
                 </form>
             </div>
@@ -611,6 +623,21 @@
                 </div>
 
                 <div id="uploadSection" class="space-y-2">
+                    <div class="rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-950/20 p-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                <i class="fa-brands fa-google-drive text-blue-600 text-lg"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-bold text-slate-800 dark:text-slate-100">Armazenar no Google Drive</p>
+                                <p id="googleDriveStatus" class="text-[10px] text-slate-500 dark:text-slate-400">Não conectado — o upload usará o armazenamento configurado no site.</p>
+                            </div>
+                            <button type="button" id="googleDriveConnectBtn" onclick="window.connectGoogleDrive()"
+                                    class="shrink-0 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-[10px] font-bold">
+                                <i class="fa-brands fa-google-drive mr-1"></i> Conectar
+                            </button>
+                        </div>
+                    </div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Ficheiro do dispositivo</label>
                     <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50"
                          onclick="document.getElementById('fileInput').click()">
@@ -720,6 +747,9 @@
                     <button id="toggleChatBtn" onclick="window.toggleEntertainmentChat()" class="hidden items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-brand-600 hover:text-white text-slate-700 dark:text-slate-200 font-medium rounded-lg text-xs transition">
                         <i class="fa-solid fa-comments"></i> Comentários
                     </button>
+                    <button id="viewCreatorBtn" onclick="window.openContentCreatorChat()" class="hidden items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-brand-600 hover:text-white text-slate-700 dark:text-slate-200 font-medium rounded-lg text-xs transition">
+                        <i class="fa-solid fa-user"></i> Perfil / Mensagem
+                    </button>
                     <a id="viewDownloadBtn" target="_blank" rel="noopener noreferrer" href="#" class="flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg text-sm shadow transition text-center inline-flex">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar
                     </a>
@@ -813,9 +843,6 @@
         </div>
     </div>
 
-    <!-- Jitsi Meet External API -->
-    <script src="https://meet.jit.si/external_api.js"></script>
-
     <!-- SCRIPT FIREBASE E LÓGICA COMPLETA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -823,6 +850,8 @@
             getAuth, 
             signInAnonymously, 
             signInWithEmailAndPassword, 
+            signInWithPopup,
+            GoogleAuthProvider,
             createUserWithEmailAndPassword, 
             sendPasswordResetEmail,
             signOut,
@@ -854,6 +883,22 @@
             deleteObject 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // ========== GOOGLE DRIVE ==========
+        // Crie um OAuth 2.0 Client ID do tipo "Web application" no Google Cloud
+        // e coloque-o abaixo. O domínio do site também precisa estar nos
+        // "Authorized JavaScript origins".
+        const GOOGLE_DRIVE_CLIENT_ID = "COLOQUE_AQUI_O_SEU_GOOGLE_OAUTH_CLIENT_ID";
+        // Conta Google-base do armazenamento do Mundo Digital.
+        // O e-mail identifica a conta esperada, mas o acesso real é feito pelo OAuth do Google.
+        const GOOGLE_DRIVE_ACCOUNT_EMAIL = "salazardelobo85@gmail.com";
+        const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email";
+        let googleDriveAccessToken = null;
+        let googleDriveTokenClient = null;
+        let googleDriveFolderId = null;
+        const GOOGLE_DRIVE_FOLDER_NAME = "Mundo Digital - Publicações";
+        const GOOGLE_DRIVE_ROOT_FOLDER_NAME = "Mundo Digital";
+        let googleDriveAccountEmail = null;
 
         const firebaseConfig = {
             apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
@@ -895,6 +940,7 @@
         }
 
         let currentUserId = null;
+        let currentUserEmail = null;
         let currentUserName = "Utilizador Anónimo";
         let activeChatUserId = null;
         let unsubscribeChat = null;
@@ -922,10 +968,12 @@
         let typingTimeout = null;
         let currentPeerStatus = { action: null };
 
-        // ===== Chamadas via Jitsi (embutido no modal) =====
-        let jitsiApi = null;
+        let peerConnection = null;
+        let localStream = null;
+        let remoteStream = null;
         let activeCallId = null;
         let unsubscribeCall = null;
+        let unsubscribeCandidates = null;
         let unsubscribeIncomingCalls = null;
         let callTimerInterval = null;
         let searchDebounceTimer = null;
@@ -935,6 +983,7 @@
         let incomingCallData = null;
         let callAnswerTimeout = null;
         let callCleanupRunning = false;
+        let pendingIceCandidates = [];
         let callConnectedOnce = false;
 
         // Admin
@@ -948,95 +997,18 @@
         let unsubscribeEntertainmentChat = null;
         let entertainmentChatOpen = false;
 
-        function getJitsiRoomName(userId1, userId2) {
-            const ids = [String(userId1 || ''), String(userId2 || '')].sort();
-            return 'MundoDigital' + ids.join('').replace(/[^a-zA-Z0-9]/g, '').slice(0, 48);
-        }
-
-        function startJitsiCall(roomName, isVideo = true) {
-            if (typeof JitsiMeetExternalAPI === 'undefined') {
-                showToast('Jitsi não carregou. Verifique a ligação à internet.', 'error');
-                return;
-            }
-            if (jitsiApi) {
-                try { jitsiApi.dispose(); } catch (_) {}
-                jitsiApi = null;
-            }
-            const container = document.getElementById('jitsiContainer');
-            if (container) container.innerHTML = '';
-
-            const options = {
-                roomName: roomName,
-                width: '100%',
-                height: '100%',
-                parentNode: container,
-                configOverwrite: {
-                    startWithAudioMuted: false,
-                    startWithVideoMuted: !isVideo,
-                    prejoinPageEnabled: false,
-                    disableDeepLinking: true,
-                    enableWelcomePage: false,
-                    enableClosePage: false,
-                    disableInviteFunctions: true,
-                    notifications: []
-                },
-                interfaceConfigOverwrite: {
-                    TOOLBAR_BUTTONS: ['microphone', 'camera', 'hangup', 'tileview', 'fullscreen'],
-                    SHOW_JITSI_WATERMARK: false,
-                    SHOW_WATERMARK_FOR_GUESTS: false,
-                    SHOW_BRAND_WATERMARK: false,
-                    DEFAULT_BACKGROUND: '#0f172a',
-                    DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-                    MOBILE_APP_PROMO: false,
-                    HIDE_INVITE_MORE_HEADER: true
-                },
-                userInfo: {
-                    displayName: currentUserName || 'Utilizador'
-                }
-            };
-
-            try {
-                jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', options);
-                jitsiApi.addEventListener('videoConferenceJoined', () => {
-                    callConnectedOnce = true;
-                    clearCallAnswerTimeout();
-                    setCallStatus('Conectado', 'text-emerald-400');
-                    startCallTimer();
-                });
-                jitsiApi.addEventListener('readyToClose', () => { endCall(); });
-                jitsiApi.addEventListener('audioMuteStatusChanged', (e) => {
-                    isMuted = !!(e && e.muted);
-                    const btn = document.getElementById('muteBtn');
-                    if (btn) {
-                        btn.innerHTML = isMuted
-                            ? '<i class="fa-solid fa-microphone-slash text-lg text-red-400"></i>'
-                            : '<i class="fa-solid fa-microphone text-lg"></i>';
-                    }
-                });
-                jitsiApi.addEventListener('videoMuteStatusChanged', (e) => {
-                    isVideoOff = !!(e && e.muted);
-                    const btn = document.getElementById('videoToggleBtn');
-                    if (btn) {
-                        btn.innerHTML = isVideoOff
-                            ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>'
-                            : '<i class="fa-solid fa-video text-lg"></i>';
-                    }
-                });
-                setCallStatus('A conectar via Jitsi...', 'text-amber-400');
-            } catch (err) {
-                console.error('Jitsi error:', err);
-                showToast('Erro ao iniciar a chamada Jitsi.', 'error');
-            }
-        }
-
-        function stopJitsiCall() {
-            if (jitsiApi) {
-                try { jitsiApi.dispose(); } catch (_) {}
-                jitsiApi = null;
-            }
-            const container = document.getElementById('jitsiContainer');
-            if (container) container.innerHTML = '';
-        }
+        // Mais STUN = melhor descoberta de rede (sem TURN público gratuito fiável)
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:stun.cloudflare.com:3478' }
+            ],
+            iceCandidatePoolSize: 10
+        };
 
         function setCallStatus(text, colorClass) {
             const el = document.getElementById('callStatusText');
@@ -1049,6 +1021,89 @@
             if (callAnswerTimeout) {
                 clearTimeout(callAnswerTimeout);
                 callAnswerTimeout = null;
+            }
+        }
+
+        async function flushPendingIceCandidates() {
+            if (!peerConnection || !peerConnection.remoteDescription) return;
+            const queued = pendingIceCandidates.splice(0);
+            for (const c of queued) {
+                try {
+                    await peerConnection.addIceCandidate(c);
+                } catch (e) {
+                    console.warn('ICE candidate (queued):', e.message || e);
+                }
+            }
+        }
+
+        function wirePeerConnectionEvents(pc) {
+            callConnectedOnce = false;
+            pendingIceCandidates = [];
+
+            pc.oniceconnectionstatechange = () => {
+                const state = pc.iceConnectionState;
+                if (state === 'checking') {
+                    setCallStatus('A estabelecer ligação...', 'text-amber-400');
+                } else if (state === 'connected' || state === 'completed') {
+                    setCallStatus('Conectado', 'text-emerald-400');
+                    if (!callConnectedOnce) {
+                        callConnectedOnce = true;
+                        clearCallAnswerTimeout();
+                        startCallTimer();
+                    }
+                } else if (state === 'disconnected') {
+                    setCallStatus('Ligação instável… a recuperar', 'text-amber-400');
+                } else if (state === 'failed') {
+                    setCallStatus('Falha na ligação', 'text-red-400');
+                    showToast('A ligação de rede falhou. Tente novamente.', 'error');
+                    setTimeout(() => cleanupCall(), 2500);
+                } else if (state === 'closed') {
+                    setCallStatus('Chamada terminada', 'text-slate-400');
+                }
+            };
+
+            pc.onconnectionstatechange = () => {
+                const state = pc.connectionState;
+                if (state === 'connected' && !callConnectedOnce) {
+                    callConnectedOnce = true;
+                    clearCallAnswerTimeout();
+                    setCallStatus('Conectado', 'text-emerald-400');
+                    startCallTimer();
+                } else if (state === 'failed') {
+                    setCallStatus('Conexão falhou', 'text-red-400');
+                    showToast('Não foi possível manter a chamada.', 'error');
+                    setTimeout(() => cleanupCall(), 2500);
+                }
+            };
+
+            pc.onicegatheringstatechange = () => {
+                if (pc.iceGatheringState === 'gathering') {
+                    // silencioso — ICE a recolher candidatos
+                }
+            };
+        }
+
+        async function getMediaStream(type) {
+            const constraints = {
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                },
+                video: type === 'video' ? {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } : false
+            };
+            try {
+                return await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (e1) {
+                // Fallback mais simples (alguns dispositivos rejeitam constraints avançadas)
+                return await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: type === 'video'
+                });
             }
         }
 
@@ -1216,9 +1271,12 @@
             else updateUserStatus(true);
         });
 
+        initGoogleDriveUI();
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
+                currentUserEmail = user.email || null;
                 if (!user.isAnonymous) {
                     currentUserName = user.displayName || user.email.split('@')[0];
                 } else {
@@ -1249,6 +1307,7 @@
                 listenToDatabaseChanges();
                 listenToIncomingCalls();
                 listenForIncomingDelivery();
+                listenGlobalNotifications();
                 initHoldToRecordAudio();
             } else {
                 signInAnonymously(auth).catch(err => console.error("Erro Auth:", err));
@@ -1256,6 +1315,35 @@
         });
 
         setInterval(() => updateUserStatus(true), 60000);
+
+        let unsubscribeGlobalNotifications = null;
+        let notificationSeenIds = new Set();
+
+        async function showBrowserNotification(title, body) {
+            try {
+                if (!('Notification' in window)) return;
+                if (Notification.permission === 'default') await Notification.requestPermission();
+                if (Notification.permission === 'granted') new Notification(title, { body, icon: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg' });
+            } catch (_) {}
+        }
+
+        function listenGlobalNotifications() {
+            if (unsubscribeGlobalNotifications) { try { unsubscribeGlobalNotifications(); } catch (_) {} }
+            if (!currentUserId) return;
+            const q = query(collection(db, 'notifications'), where('userId', '==', currentUserId), limit(50));
+            unsubscribeGlobalNotifications = onSnapshot(q, snap => {
+                snap.docChanges().forEach(change => {
+                    if (change.type !== 'added' || notificationSeenIds.has(change.doc.id)) return;
+                    notificationSeenIds.add(change.doc.id);
+                    const n = change.doc.data();
+                    if (n.read) return;
+                    showToast(n.title || 'Nova informação', n.type === 'message' ? 'info' : 'success');
+                    playNotificationSound();
+                    const badge = document.getElementById('chatBadge'); if (badge) badge.classList.remove('hidden');
+                    showBrowserNotification(n.title || 'Mundo Digital', n.body || 'Tens uma nova notificação.');
+                });
+            }, err => console.warn('Notifications listener:', err?.message || err));
+        }
 
         function listenForIncomingDelivery() {
             if (unsubscribeDelivery) { unsubscribeDelivery(); unsubscribeDelivery = null; }
@@ -1310,6 +1398,19 @@
                 }
             } else {
                 openModal('authModal');
+            }
+        }
+
+        async function handleGoogleLogin() {
+            try {
+                const provider = new GoogleAuthProvider();
+                provider.addScope('https://www.googleapis.com/auth/drive.file');
+                const result = await signInWithPopup(auth, provider);
+                closeModal('authModal');
+                showToast('Conta Google ligada ao Mundo Digital. Agora podes usar o teu Drive.', 'success');
+                setTimeout(() => connectGoogleDrive().catch(() => {}), 500);
+            } catch (error) {
+                showToast(getAuthErrorMessage(error.code) || 'Não foi possível entrar com Google.', 'error');
             }
         }
 
@@ -1820,7 +1921,9 @@
 
                 let contentHtml = '';
                 if (msg.type === 'audio') {
-                    contentHtml = `<audio src="${escapeHTML(msg.audioUrl || '')}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>`;
+                    const audioSrc = escapeHTML(msg.audioUrl || '');
+                    contentHtml = `<audio src="${audioSrc}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>
+                        <a href="${audioSrc}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[10px] mt-1 underline opacity-90"><i class="fa-solid fa-download"></i> Baixar áudio</a>`;
                 } else {
                     contentHtml = `<p class="text-[13px] leading-snug break-words whitespace-pre-wrap">${escapeHTML(msg.text || '')}</p>`;
                     if (msg.status === 'failed') {
@@ -1902,6 +2005,15 @@
                     status: 'sent',
                     createdAt: serverTimestamp()
                 });
+                await addDoc(collection(db, "notifications"), {
+                    userId: peerId,
+                    type: 'message',
+                    senderId: currentUserId,
+                    title: `Mensagem de ${currentUserName || 'Utilizador'}`,
+                    body: text.slice(0, 120),
+                    createdAt: serverTimestamp(),
+                    read: false
+                }).catch(() => {});
                 // Remove pending; o snapshot do servidor substitui
                 pendingMessages = pendingMessages.filter(p => p.tempId !== tempId);
             } catch (err) {
@@ -2108,19 +2220,26 @@
 
                         showToast("A enviar áudio...", "info");
                         try {
-                            const storagePath = `audios/${Date.now()}_${currentUserId}.webm`;
-                            const fileRef = ref(storage, storagePath);
-                            const uploadTask = await uploadBytesResumable(fileRef, audioBlob);
-                            const audioUrl = await getDownloadURL(uploadTask.ref);
-
+                            const driveAudio = await uploadAudioToUserGoogleDrive(audioBlob);
                             const chatId = [currentUserId, activeChatUserId].sort().join('_');
                             await addDoc(collection(db, "chats", chatId, "messages"), {
                                 senderId: currentUserId,
                                 receiverId: activeChatUserId,
-                                audioUrl: audioUrl,
+                                audioUrl: driveAudio.url,
+                                audioViewUrl: driveAudio.viewUrl,
+                                driveFileId: driveAudio.id,
                                 type: 'audio',
                                 status: 'sent',
                                 createdAt: serverTimestamp()
+                            });
+                            await addDoc(collection(db, "notifications"), {
+                                userId: activeChatUserId,
+                                type: 'message',
+                                senderId: currentUserId,
+                                title: 'Novo áudio',
+                                body: `${currentUserName || 'Alguém'} enviou-te um áudio.`,
+                                createdAt: serverTimestamp(),
+                                read: false
                             });
                             updateLastMessagePreview(activeChatUserId, '', 'audio', true);
                             renderUsersList();
@@ -2231,21 +2350,42 @@
             callCleanupRunning = true;
             clearCallAnswerTimeout();
             stopCallTimer();
+            pendingIceCandidates = [];
             callConnectedOnce = false;
             isMuted = false;
             isVideoOff = false;
 
             if (unsubscribeCall) { try { unsubscribeCall(); } catch (_) {} unsubscribeCall = null; }
+            if (unsubscribeCandidates) { try { unsubscribeCandidates(); } catch (_) {} unsubscribeCandidates = null; }
 
-            stopJitsiCall();
+            if (localStream) {
+                localStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
+                remoteStream = null;
+            }
+            if (peerConnection) {
+                try {
+                    peerConnection.ontrack = null;
+                    peerConnection.onicecandidate = null;
+                    peerConnection.oniceconnectionstatechange = null;
+                    peerConnection.onconnectionstatechange = null;
+                    peerConnection.close();
+                } catch (_) {}
+                peerConnection = null;
+            }
+
+            const localVideo = document.getElementById('localVideo');
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (localVideo) localVideo.srcObject = null;
+            if (remoteVideo) remoteVideo.srcObject = null;
 
             const muteBtn = document.getElementById('muteBtn');
             const videoBtn = document.getElementById('videoToggleBtn');
             if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-microphone text-lg"></i>';
             if (videoBtn) videoBtn.innerHTML = '<i class="fa-solid fa-video text-lg"></i>';
-
-            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
-            if (audioPlaceholder) audioPlaceholder.classList.add('hidden');
 
             closeModal('callModal');
             closeModal('incomingCallModal');
@@ -2268,11 +2408,33 @@
         }
 
         function toggleMute() {
-            if (jitsiApi) jitsiApi.executeCommand('toggleAudio');
+            if (!localStream) return;
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                isMuted = !audioTrack.enabled;
+                const btn = document.getElementById('muteBtn');
+                if (btn) {
+                    btn.innerHTML = isMuted 
+                        ? '<i class="fa-solid fa-microphone-slash text-lg text-red-400"></i>' 
+                        : '<i class="fa-solid fa-microphone text-lg"></i>';
+                }
+            }
         }
 
         function toggleVideo() {
-            if (jitsiApi) jitsiApi.executeCommand('toggleVideo');
+            if (!localStream) return;
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                isVideoOff = !videoTrack.enabled;
+                const btn = document.getElementById('videoToggleBtn');
+                if (btn) {
+                    btn.innerHTML = isVideoOff 
+                        ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>' 
+                        : '<i class="fa-solid fa-video text-lg"></i>';
+                }
+            }
         }
 
         async function startCall(type) {
@@ -2280,7 +2442,7 @@
                 showToast("Selecione um utilizador para ligar.", "error");
                 return;
             }
-            if (activeCallId || jitsiApi) {
+            if (activeCallId || peerConnection) {
                 showToast("Já existe uma chamada em curso.", "info");
                 return;
             }
@@ -2293,20 +2455,68 @@
             setCallStatus('A chamar...', 'text-brand-400');
 
             const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const remoteVid = document.getElementById('remoteVideo');
+
             if (type === 'audio') {
-                if (audioPlaceholder) audioPlaceholder.classList.remove('hidden');
-                const audioName = document.getElementById('audioCallName');
-                if (audioName) audioName.innerText = `Em chamada de áudio com ${targetName}`;
+                audioPlaceholder.classList.remove('hidden');
+                remoteVid.classList.add('hidden');
+                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${targetName}`;
             } else {
-                if (audioPlaceholder) audioPlaceholder.classList.add('hidden');
+                audioPlaceholder.classList.add('hidden');
+                remoteVid.classList.remove('hidden');
             }
 
             openModal('callModal');
 
             try {
+                localStream = await getMediaStream(type);
+
+                const localVid = document.getElementById('localVideo');
+                if (localVid) {
+                    localVid.srcObject = localStream;
+                    localVid.muted = true;
+                    localVid.playsInline = true;
+                    localVid.play().catch(() => {});
+                }
+
+                peerConnection = new RTCPeerConnection(rtcConfig);
+                wirePeerConnectionEvents(peerConnection);
+                remoteStream = new MediaStream();
+                if (remoteVid) {
+                    remoteVid.srcObject = remoteStream;
+                    remoteVid.playsInline = true;
+                    remoteVid.play().catch(() => {});
+                }
+
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                peerConnection.ontrack = (e) => {
+                    e.streams[0].getTracks().forEach(track => {
+                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                            remoteStream.addTrack(track);
+                        }
+                    });
+                    if (remoteVid) remoteVid.play().catch(() => {});
+                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
+                };
+
                 const callDocRef = doc(collection(db, "calls"));
                 activeCallId = callDocRef.id;
-                const roomName = getJitsiRoomName(currentUserId, activeChatUserId);
+
+                const callerCandidates = collection(callDocRef, "callerCandidates");
+                const receiverCandidates = collection(callDocRef, "receiverCandidates");
+
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        addDoc(callerCandidates, e.candidate.toJSON()).catch(() => {});
+                    }
+                };
+
+                const offerDescription = await peerConnection.createOffer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: type === 'video'
+                });
+                await peerConnection.setLocalDescription(offerDescription);
 
                 await setDoc(callDocRef, {
                     callerId: currentUserId,
@@ -2314,12 +2524,11 @@
                     receiverId: activeChatUserId,
                     type: type,
                     status: 'offered',
-                    roomName: roomName,
+                    offer: { type: offerDescription.type, sdp: offerDescription.sdp },
                     createdAt: serverTimestamp()
                 });
 
-                startJitsiCall(roomName, type === 'video');
-
+                // Timeout se ninguém atender em 45s
                 clearCallAnswerTimeout();
                 callAnswerTimeout = setTimeout(() => {
                     if (!callConnectedOnce) {
@@ -2328,26 +2537,57 @@
                     }
                 }, 45000);
 
-                unsubscribeCall = onSnapshot(callDocRef, (snap) => {
+                unsubscribeCall = onSnapshot(callDocRef, async (snap) => {
                     const data = snap.data();
                     if (!data) return;
+
+                    if (data.status === 'accepted' && peerConnection && !peerConnection.currentRemoteDescription && data.answer) {
+                        try {
+                            setCallStatus('A conectar...', 'text-amber-400');
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            await flushPendingIceCandidates();
+                        } catch (e) {
+                            console.warn('setRemoteDescription answer:', e);
+                            showToast('Erro ao estabelecer a chamada.', 'error');
+                            cleanupCall();
+                        }
+                    }
+
                     if (data.status === 'rejected') {
                         showToast('Chamada recusada.', 'info');
                         cleanupCall();
                     }
-                    if (data.status === 'ended') {
-                        if (callConnectedOnce) {
-                            showToast('O outro utilizador terminou a chamada.', 'info');
-                        }
+
+                    if (data.status === 'ended' && callConnectedOnce) {
+                        showToast('O outro utilizador terminou a chamada.', 'info');
+                        cleanupCall();
+                    } else if (data.status === 'ended' && !callConnectedOnce) {
                         cleanupCall();
                     }
-                    if (data.status === 'accepted') {
-                        setCallStatus('Conectado', 'text-emerald-400');
-                    }
                 });
+
+                unsubscribeCandidates = onSnapshot(receiverCandidates, (snap) => {
+                    snap.docChanges().forEach(async (change) => {
+                        if (change.type !== 'added' || !peerConnection) return;
+                        try {
+                            const candidate = new RTCIceCandidate(change.doc.data());
+                            if (peerConnection.remoteDescription) {
+                                await peerConnection.addIceCandidate(candidate);
+                            } else {
+                                pendingIceCandidates.push(candidate);
+                            }
+                        } catch (e) {
+                            console.warn('ICE add (receiver):', e.message || e);
+                        }
+                    });
+                });
+
             } catch (err) {
                 console.error(err);
-                showToast('Erro ao iniciar a chamada.', 'error');
+                const msg = (err && err.name === 'NotAllowedError')
+                    ? 'Permissão de microfone/câmara negada.'
+                    : 'Impossível aceder aos dispositivos de mídia.';
+                showToast(msg, 'error');
                 cleanupCall();
             }
         }
@@ -2355,35 +2595,107 @@
         async function acceptIncomingCall() {
             closeModal('incomingCallModal');
             if (!incomingCallData) return;
-            if (activeCallId || jitsiApi) {
+            if (activeCallId || peerConnection) {
                 showToast('Já existe uma chamada em curso.', 'info');
                 return;
             }
 
             const callDocRef = doc(db, "calls", incomingCallData.id);
             activeCallId = incomingCallData.id;
-            const callType = incomingCallData.type || 'video';
-            const roomName = incomingCallData.roomName
-                || getJitsiRoomName(currentUserId, incomingCallData.callerId);
+            const callType = incomingCallData.type || 'audio';
 
             document.getElementById('callPeerName').innerText = incomingCallData.callerName || 'Contacto';
             document.getElementById('callPeerAvatar').innerText = (incomingCallData.callerName || 'U').charAt(0).toUpperCase();
             setCallStatus('A ligar...', 'text-brand-400');
 
             const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const remoteVid = document.getElementById('remoteVideo');
+
             if (callType === 'audio') {
-                if (audioPlaceholder) audioPlaceholder.classList.remove('hidden');
-                const audioName = document.getElementById('audioCallName');
-                if (audioName) audioName.innerText = `Em chamada de áudio com ${incomingCallData.callerName || 'Contacto'}`;
+                audioPlaceholder.classList.remove('hidden');
+                remoteVid.classList.add('hidden');
+                document.getElementById('audioCallName').innerText = `Em chamada de áudio com ${incomingCallData.callerName || 'Contacto'}`;
             } else {
-                if (audioPlaceholder) audioPlaceholder.classList.add('hidden');
+                audioPlaceholder.classList.add('hidden');
+                remoteVid.classList.remove('hidden');
             }
 
             openModal('callModal');
 
             try {
-                await updateDoc(callDocRef, { status: 'accepted' });
-                startJitsiCall(roomName, callType === 'video');
+                localStream = await getMediaStream(callType);
+
+                const localVid = document.getElementById('localVideo');
+                if (localVid) {
+                    localVid.srcObject = localStream;
+                    localVid.muted = true;
+                    localVid.playsInline = true;
+                    localVid.play().catch(() => {});
+                }
+
+                peerConnection = new RTCPeerConnection(rtcConfig);
+                wirePeerConnectionEvents(peerConnection);
+                remoteStream = new MediaStream();
+                if (remoteVid) {
+                    remoteVid.srcObject = remoteStream;
+                    remoteVid.playsInline = true;
+                    remoteVid.play().catch(() => {});
+                }
+
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                peerConnection.ontrack = (e) => {
+                    e.streams[0].getTracks().forEach(track => {
+                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                            remoteStream.addTrack(track);
+                        }
+                    });
+                    if (remoteVid) remoteVid.play().catch(() => {});
+                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
+                };
+
+                const callerCandidates = collection(callDocRef, "callerCandidates");
+                const receiverCandidates = collection(callDocRef, "receiverCandidates");
+
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        addDoc(receiverCandidates, e.candidate.toJSON()).catch(() => {});
+                    }
+                };
+
+                // Ouvir candidatos do caller ANTES de setRemoteDescription/answer
+                unsubscribeCandidates = onSnapshot(callerCandidates, (snap) => {
+                    snap.docChanges().forEach(async (change) => {
+                        if (change.type !== 'added' || !peerConnection) return;
+                        try {
+                            const candidate = new RTCIceCandidate(change.doc.data());
+                            if (peerConnection.remoteDescription) {
+                                await peerConnection.addIceCandidate(candidate);
+                            } else {
+                                pendingIceCandidates.push(candidate);
+                            }
+                        } catch (e) {
+                            console.warn('ICE add (caller):', e.message || e);
+                        }
+                    });
+                });
+
+                if (!incomingCallData.offer) {
+                    throw new Error('Oferta de chamada em falta');
+                }
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+                await flushPendingIceCandidates();
+
+                const answerDescription = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answerDescription);
+
+                await updateDoc(callDocRef, {
+                    answer: { type: answerDescription.type, sdp: answerDescription.sdp },
+                    status: 'accepted'
+                });
+
+                setCallStatus('A conectar...', 'text-amber-400');
 
                 unsubscribeCall = onSnapshot(callDocRef, (snap) => {
                     const data = snap.data();
@@ -2392,9 +2704,13 @@
                         cleanupCall();
                     }
                 });
+
             } catch (err) {
                 console.error(err);
-                showToast('Erro ao atender chamada.', 'error');
+                const msg = (err && err.name === 'NotAllowedError')
+                    ? 'Permissão de microfone/câmara negada.'
+                    : 'Erro ao atender chamada.';
+                showToast(msg, 'error');
                 try {
                     await updateDoc(doc(db, 'calls', incomingCallData.id), { status: 'ended' });
                 } catch (_) {}
@@ -2520,9 +2836,26 @@
                 else if (item.category === 'link') { catIcon = "fa-link"; catBadge = "Link"; }
 
                 let previewHtml = '';
-                if (item.category === 'image' && item.url) {
-                    previewHtml = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-40 object-cover rounded-t-2xl">`;
-                } else if (item.category === 'entertainment') {
+                const isGoogleDriveContent = !!(item.driveFileId || extractGoogleDriveFileId(item.url || '') || item.storageProvider === 'google-drive');
+                if (isGoogleDriveContent) {
+                    const drivePreviewIcon = item.category === 'image' ? 'fa-image' : item.category === 'video' ? 'fa-video' : item.category === 'document' ? 'fa-file-lines' : 'fa-cloud';
+                    const driveLabel = item.category === 'image' ? 'Imagem no Google Drive' : item.category === 'video' ? 'Vídeo no Google Drive' : 'Ficheiro no Google Drive';
+                    previewHtml = `<div class="w-full h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-t-2xl flex flex-col items-center justify-center text-slate-500 dark:text-slate-300 gap-2">
+                        <i class="fa-solid ${drivePreviewIcon} text-4xl text-brand-500"></i>
+                        <span class="text-xs font-semibold">${driveLabel}</span>
+                        <span class="text-[10px] opacity-70">Clique em “Visualizar” para abrir no Mundo Digital</span>
+                    </div>`;
+                } else if (item.category === 'image' && item.url) {
+                    previewHtml = `<div class="w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-t-2xl flex flex-col items-center justify-center text-slate-400 gap-2"><i class="fa-solid fa-image text-4xl"></i><span class="text-xs">Imagem</span></div>`;
+                } else if (detectSocialPlatform(url)) {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-circle-play text-lg"></i>`;
+                container.innerHTML = renderSocialInternalViewer(url, item.title);
+                downloadBtn.href = url;
+                downloadBtn.innerHTML = `<i class="fa-solid fa-link"></i> Abrir publicação`;
+                downloadBtn.classList.remove('hidden');
+                actionContainer.style.display = 'flex';
+                joinEntertainmentViewers(item.id);
+            } else if (item.category === 'entertainment') {
                     previewHtml = `
                         <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 rounded-t-2xl flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
                             <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
@@ -2687,6 +3020,14 @@
             applySelectedFile(file || null);
         }
 
+        function initGoogleDriveUI() {
+            if (!googleDriveConfigured()) {
+                updateGoogleDriveUI(`Configure o GOOGLE_DRIVE_CLIENT_ID. A conta-base será ${GOOGLE_DRIVE_ACCOUNT_EMAIL}.`, false);
+                return;
+            }
+            updateGoogleDriveUI('Disponível — clique em “Conectar” para autorizar o Google Drive.', false);
+        }
+
         function initDropZone() {
             const zone = document.getElementById('dropZone');
             if (!zone || zone.dataset.dropInit) return;
@@ -2710,6 +3051,340 @@
                 if (file) applySelectedFile(file);
             });
         }
+
+        // ---------------- Google Drive: OAuth + upload ----------------
+        function googleDriveConfigured() {
+            return GOOGLE_DRIVE_CLIENT_ID &&
+                   !GOOGLE_DRIVE_CLIENT_ID.includes("COLOQUE_AQUI");
+        }
+
+        function updateGoogleDriveUI(message, connected = false) {
+            const status = document.getElementById('googleDriveStatus');
+            const btn = document.getElementById('googleDriveConnectBtn');
+            if (status) {
+                status.textContent = message || (connected
+                    ? 'Conectado — novos ficheiros serão enviados para o Google Drive.'
+                    : 'Não conectado — o upload usará o armazenamento configurado no site.');
+                status.className = connected
+                    ? 'text-[10px] text-emerald-600 dark:text-emerald-400'
+                    : 'text-[10px] text-slate-500 dark:text-slate-400';
+            }
+            if (btn) {
+                btn.innerHTML = connected
+                    ? '<i class="fa-solid fa-check mr-1"></i> Ligado'
+                    : '<i class="fa-brands fa-google-drive mr-1"></i> Conectar';
+                btn.className = connected
+                    ? 'shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 text-[10px] font-bold'
+                    : 'shrink-0 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-[10px] font-bold';
+            }
+        }
+
+        async function ensureGoogleDriveFolder() {
+            if (!googleDriveAccessToken) throw new Error('Google Drive não está conectado.');
+            if (googleDriveFolderId) return googleDriveFolderId;
+
+            const headers = { Authorization: `Bearer ${googleDriveAccessToken}` };
+            const esc = (name) => name.replace(/'/g, "\\'");
+
+            // Pasta raiz da aplicação.
+            const rootQuery = encodeURIComponent(
+                `name='${esc(GOOGLE_DRIVE_ROOT_FOLDER_NAME)}' and ` +
+                `mimeType='application/vnd.google-apps.folder' and trashed=false`
+            );
+            const rootResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q=${rootQuery}&spaces=drive&fields=files(id,name)`,
+                { headers }
+            );
+            if (!rootResponse.ok) throw new Error('Não foi possível localizar a pasta raiz do Mundo Digital.');
+            const rootResult = await rootResponse.json();
+            let rootId = rootResult.files?.[0]?.id;
+
+            if (!rootId) {
+                const createRoot = await fetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+                    method: 'POST',
+                    headers: { ...headers, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: GOOGLE_DRIVE_ROOT_FOLDER_NAME,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    })
+                });
+                if (!createRoot.ok) throw new Error('Não foi possível criar a pasta raiz do Mundo Digital.');
+                rootId = (await createRoot.json()).id;
+            }
+
+            // Pasta onde ficam as publicações.
+            const folderQuery = encodeURIComponent(
+                `name='${esc(GOOGLE_DRIVE_FOLDER_NAME)}' and ` +
+                `'${rootId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`
+            );
+            const folderResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&spaces=drive&fields=files(id,name)`,
+                { headers }
+            );
+            if (!folderResponse.ok) throw new Error('Não foi possível localizar a pasta de publicações.');
+            const result = await folderResponse.json();
+
+            if (result.files?.length) {
+                googleDriveFolderId = result.files[0].id;
+                return googleDriveFolderId;
+            }
+
+            const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: GOOGLE_DRIVE_FOLDER_NAME,
+                    mimeType: 'application/vnd.google-apps.folder',
+                    parents: [rootId]
+                })
+            });
+            if (!createResponse.ok) throw new Error('Não foi possível criar a pasta de publicações.');
+            const folder = await createResponse.json();
+            googleDriveFolderId = folder.id;
+            return googleDriveFolderId;
+        }
+
+        async function verifyGoogleDriveAccount() {
+            if (!googleDriveAccessToken) return false;
+            const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${googleDriveAccessToken}` }
+            });
+            if (!response.ok) throw new Error('Não foi possível confirmar a conta Google autorizada.');
+            const profile = await response.json();
+            const authorizedEmail = String(profile.email || '').toLowerCase();
+            const expectedEmail = (currentUserEmail || GOOGLE_DRIVE_ACCOUNT_EMAIL).toLowerCase();
+            if (authorizedEmail !== expectedEmail) {
+                googleDriveAccessToken = null;
+                googleDriveFolderId = null;
+                updateGoogleDriveUI(`Conta incorreta. Autorize ${GOOGLE_DRIVE_ACCOUNT_EMAIL}.`, false);
+                throw new Error(`Use a conta Google ${GOOGLE_DRIVE_ACCOUNT_EMAIL} para o armazenamento do Mundo Digital.`);
+            }
+            updateGoogleDriveUI(`Conectado: ${GOOGLE_DRIVE_ACCOUNT_EMAIL}`, true);
+            return true;
+        }
+
+        function getGoogleDriveAccessToken() {
+            return new Promise((resolve, reject) => {
+                if (!googleDriveConfigured()) {
+                    reject(new Error('Configure GOOGLE_DRIVE_CLIENT_ID no código primeiro.'));
+                    return;
+                }
+
+                if (!window.google || !google.accounts || !google.accounts.oauth2) {
+                    reject(new Error('O Google Identity Services ainda não carregou. Aguarde alguns segundos e tente novamente.'));
+                    return;
+                }
+
+                if (!googleDriveTokenClient) {
+                    googleDriveTokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: GOOGLE_DRIVE_CLIENT_ID,
+                        scope: GOOGLE_DRIVE_SCOPE,
+                        callback: (response) => {
+                            if (response && response.access_token) {
+                                googleDriveAccessToken = response.access_token;
+                                fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${response.access_token}` } })
+                                    .then(r => r.ok ? r.json() : null)
+                                    .then(info => {
+                                        googleDriveAccountEmail = info?.email || null;
+                                        if (currentUserId && currentUserEmail && googleDriveAccountEmail && googleDriveAccountEmail.toLowerCase() !== currentUserEmail.toLowerCase()) {
+                                            googleDriveAccessToken = null;
+                                            googleDriveAccountEmail = null;
+                                            throw new Error(`Autoriza o Google Drive com a mesma conta da sessão: ${currentUserEmail}`);
+                                        }
+                                        updateGoogleDriveUI('Conectado — Drive pessoal autorizado.', true);
+                                        resolve(response.access_token);
+                                    })
+                                    .catch(err => reject(err));
+                            } else {
+                                reject(new Error('O Google não devolveu um token de acesso.'));
+                            }
+                        },
+                        error_callback: (error) => {
+                            console.error('Google OAuth error:', error);
+                            reject(new Error('A autorização do Google Drive foi cancelada ou recusada.'));
+                        }
+                    });
+                }
+
+                googleDriveTokenClient.requestAccessToken({ prompt: googleDriveAccessToken ? '' : 'consent' });
+            });
+        }
+
+        async function connectGoogleDrive() {
+            try {
+                if (!googleDriveConfigured()) {
+                    showToast('Primeiro configure GOOGLE_DRIVE_CLIENT_ID no código.', 'error');
+                    return;
+                }
+                showToast('A abrir autorização do Google Drive...', 'info');
+                await getGoogleDriveAccessToken();
+                await ensureGoogleDriveFolder();
+                showToast('Google Drive conectado com sucesso!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Não foi possível conectar ao Google Drive.', 'error');
+            }
+        }
+
+        async function ensureGoogleDriveUserFolder() {
+            if (!googleDriveAccessToken || !currentUserId) throw new Error('É necessário iniciar sessão e ligar o Google Drive.');
+            const headers = { Authorization: `Bearer ${googleDriveAccessToken}` };
+            const safeName = `Mundo Digital - ${currentUserId}`;
+            const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${safeName.replace(/'/g, "\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&spaces=drive&fields=files(id,name)`;
+            const response = await fetch(searchUrl, { headers });
+            if (!response.ok) throw new Error('Não foi possível verificar a pasta pessoal do Google Drive.');
+            const result = await response.json();
+            if (result.files && result.files.length) return result.files[0].id;
+            const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+                method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: safeName, mimeType: 'application/vnd.google-apps.folder' })
+            });
+            if (!createResponse.ok) throw new Error('Não foi possível criar a pasta pessoal do Google Drive.');
+            return (await createResponse.json()).id;
+        }
+
+        async function uploadAudioToUserGoogleDrive(audioBlob) {
+            if (!googleDriveAccessToken) await connectGoogleDrive();
+            if (!googleDriveAccessToken) throw new Error('Liga o teu Google Drive antes de gravar áudio.');
+            const folderId = await ensureGoogleDriveUserFolder();
+            const fileName = `audio-${Date.now()}-${currentUserId}.webm`;
+            const metadata = { name: fileName, parents: [folderId], mimeType: audioBlob.type || 'audio/webm' };
+            const initResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,webViewLink,webContentLink', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${googleDriveAccessToken}`, 'Content-Type': 'application/json', 'X-Upload-Content-Type': audioBlob.type || 'audio/webm', 'X-Upload-Content-Length': String(audioBlob.size) },
+                body: JSON.stringify(metadata)
+            });
+            if (!initResponse.ok) throw new Error('Não foi possível iniciar o upload do áudio para o Drive.');
+            const sessionUrl = initResponse.headers.get('Location');
+            if (!sessionUrl) throw new Error('O Google Drive não devolveu a sessão de áudio.');
+            const uploadResponse = await fetch(sessionUrl, { method: 'PUT', headers: { Authorization: `Bearer ${googleDriveAccessToken}`, 'Content-Type': audioBlob.type || 'audio/webm' }, body: audioBlob });
+            if (!uploadResponse.ok) throw new Error('Falha ao enviar o áudio para o Google Drive.');
+            const file = await uploadResponse.json();
+            // Permissão pública para que o destinatário consiga ouvir o áudio dentro da conversa.
+            await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/permissions`, {
+                method: 'POST', headers: { Authorization: `Bearer ${googleDriveAccessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'anyone', role: 'reader' })
+            });
+            return {
+                id: file.id,
+                url: `https://drive.google.com/uc?export=download&id=${encodeURIComponent(file.id)}`,
+                viewUrl: `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/preview`
+            };
+        }
+
+        async function uploadFileToGoogleDrive(file, onProgress) {
+            const token = await getGoogleDriveAccessToken();
+            const folderId = await ensureGoogleDriveFolder();
+
+            const metadata = {
+                name: file.name,
+                parents: [folderId],
+                mimeType: file.type || 'application/octet-stream'
+            };
+
+            // Upload retomável: adequado para ficheiros grandes e redes móveis.
+            const initResponse = await fetch(
+                'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,size,webViewLink,webContentLink',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        'X-Upload-Content-Type': file.type || 'application/octet-stream',
+                        'X-Upload-Content-Length': String(file.size)
+                    },
+                    body: JSON.stringify(metadata)
+                }
+            );
+
+            if (!initResponse.ok) {
+                const body = await initResponse.text();
+                throw new Error(`Falha ao iniciar upload no Drive (${initResponse.status}). ${body.slice(0, 180)}`);
+            }
+
+            const sessionUrl = initResponse.headers.get('Location');
+            if (!sessionUrl) throw new Error('O Google Drive não devolveu a sessão de upload.');
+
+            const uploaded = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', sessionUrl, true);
+                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable && typeof onProgress === 'function') {
+                        onProgress(Math.round((event.loaded / event.total) * 100));
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            resolve(JSON.parse(xhr.responseText));
+                        } catch (_) {
+                            reject(new Error('Resposta inválida do Google Drive.'));
+                        }
+                    } else {
+                        reject(new Error(`Upload para o Google Drive falhou (${xhr.status}). ${xhr.responseText.slice(0, 180)}`));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error('Erro de rede durante o upload para o Google Drive.'));
+                xhr.onabort = () => reject(new Error('Upload cancelado.'));
+                xhr.send(file);
+            });
+
+            // Tornar o ficheiro visível/publicável pelo Mundo Digital.
+            const permissionResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(uploaded.id)}/permissions`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'anyone',
+                        role: 'reader'
+                    })
+                }
+            );
+
+            if (!permissionResponse.ok) {
+                const body = await permissionResponse.text();
+                throw new Error(`O ficheiro foi enviado, mas não foi possível criar o link público (${permissionResponse.status}). ${body.slice(0, 180)}`);
+            }
+
+            const detailsResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(uploaded.id)}?fields=id,name,mimeType,size,webViewLink,webContentLink`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (!detailsResponse.ok) {
+                throw new Error('O ficheiro foi enviado, mas não foi possível obter os dados públicos.');
+            }
+
+            const details = await detailsResponse.json();
+
+            return {
+                id: details.id,
+                name: details.name,
+                mimeType: details.mimeType,
+                size: Number(details.size || file.size),
+                // URL de visualização para documentos e fallback.
+                viewUrl: details.webViewLink || `https://drive.google.com/file/d/${details.id}/view`,
+                // URL de download para o botão Download.
+                downloadUrl: details.webContentLink || `https://drive.google.com/uc?export=download&id=${details.id}`,
+                directUrl: `https://drive.google.com/uc?export=download&id=${details.id}`
+            };
+        }
+
+        window.connectGoogleDrive = connectGoogleDrive;
+        window.disconnectGoogleDrive = function() {
+            googleDriveAccessToken = null;
+            googleDriveFolderId = null;
+            updateGoogleDriveUI('Não conectado — o upload usará o armazenamento configurado no site.', false);
+            showToast('Google Drive desligado nesta sessão.', 'info');
+        };
 
         async function handleFormSubmit(e) {
             e.preventDefault();
@@ -2763,7 +3438,56 @@
                     const safeName = selectedFile.name.replace(/[^\w.\-() ]+/g, '_').slice(0, 120);
                     const objectPath = `${currentUserId || 'anon'}/${Date.now()}_${safeName}`;
 
-                    // —— Preferir Supabase Storage se configurado ——
+                    // —— Preferir Google Drive quando o utilizador o ligou ——
+                    if (googleDriveAccessToken || googleDriveConfigured()) {
+                        try {
+                            if (googleDriveConfigured()) {
+                                const progressContainer = document.getElementById('uploadProgressContainer');
+                                const progressBar = document.getElementById('uploadProgressBar');
+                                const percentText = document.getElementById('uploadPercent');
+                                if (progressContainer) progressContainer.classList.remove('hidden');
+
+                                const driveFile = await uploadFileToGoogleDrive(selectedFile, (progress) => {
+                                    if (progressBar) progressBar.style.width = `${progress}%`;
+                                    if (percentText) percentText.innerText = `${progress}%`;
+                                });
+
+                                if (progressBar) progressBar.style.width = '100%';
+                                if (percentText) percentText.innerText = '100%';
+
+                                await addDoc(collection(db, 'contents'), {
+                                    title,
+                                    category,
+                                    description,
+                                    url: driveFile.directUrl,
+                                    previewUrl: driveFile.viewUrl,
+                                    downloadUrl: driveFile.downloadUrl,
+                                    driveFileId: driveFile.id,
+                                    storageProvider: 'google-drive',
+                                    fileName: selectedFile.name,
+                                    fileSize: selectedFile.size,
+                                    mimeType: selectedFile.type || driveFile.mimeType || '',
+                                    createdBy: currentUserId,
+                                    createdByName: currentUserName || '',
+                                    createdAt: serverTimestamp()
+                                });
+
+                                if (progressContainer) progressContainer.classList.add('hidden');
+                                resetAddContentForm();
+                                closeModal('addContentModal');
+                                showToast('Publicado no Google Drive com sucesso!', 'success');
+                                submitBtn.disabled = false;
+                                submitBtn.classList.remove('opacity-50');
+                                submitBtn.innerHTML = 'Enviar Recurso';
+                                return;
+                            }
+                        } catch (err) {
+                            console.error('Google Drive upload:', err);
+                            showToast('Google Drive falhou. A tentar o armazenamento alternativo...', 'info');
+                        }
+                    }
+
+                    // —— Se o Drive não estiver configurado/conectado, manter Supabase como fallback ——
                     if (supabase) {
                         if (percentText) percentText.innerText = '…';
                         if (progressBar) progressBar.style.width = '30%';
@@ -2802,7 +3526,7 @@
                             if (progressContainer) progressContainer.classList.add('hidden');
                             resetAddContentForm();
                             closeModal('addContentModal');
-                            showToast('Publicado no Supabase! Todos podem ver.', 'success');
+                            showToast('Publicado no armazenamento alternativo. Todos podem ver.', 'success');
                         } catch (err) {
                             console.error(err);
                             const msg = (err && err.message) ? String(err.message) : 'Erro no upload Supabase.';
@@ -2927,9 +3651,36 @@
             switchAddTab('upload');
         }
 
+        function extractGoogleDriveFileId(url) {
+            if (!url) return null;
+            const value = String(url).trim();
+            const patterns = [
+                /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i,
+                /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/i,
+                /drive\.google\.com\/uc\?(?:[^#]*&)?id=([a-zA-Z0-9_-]+)/i,
+                /docs\.google\.com\/[^/]+\/d\/([a-zA-Z0-9_-]+)/i,
+                /[?&]id=([a-zA-Z0-9_-]+)/i
+            ];
+            for (const re of patterns) { const m = value.match(re); if (m) return m[1]; }
+            return null;
+        }
+
+        function isGoogleDriveUrl(url) { return !!extractGoogleDriveFileId(url); }
+
+        function googleDriveFileUrls(fileId) {
+            if (!fileId) return {};
+            return {
+                id: fileId,
+                viewUrl: `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`,
+                downloadUrl: `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`,
+                mediaUrl: `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
+            };
+        }
+
         function detectMediaFromUrl(url) {
             if (!url) return null;
             const u = String(url).toLowerCase();
+            if (isGoogleDriveUrl(url)) return 'google-drive';
             if (/terabox|1024terabox|teraboxapp|terashare|dubox|freeterabox|terafileshare/i.test(u)) return 'terabox';
             if (/\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|#|$)/i.test(u)) return 'image';
             if (/\.(mp4|webm|ogg|ogv|mov|m4v|mkv)(\?|#|$)/i.test(u)) return 'video';
@@ -2947,7 +3698,10 @@
             if (kind === 'image') setCategoryUI('image');
             else if (kind === 'video' || kind === 'terabox') setCategoryUI('video');
             else if (kind === 'document') setCategoryUI('document');
-            else if (url) setCategoryUI('link');
+            else if (kind === 'google-drive') {
+                // Link do Drive: o utilizador pode escolher Imagem/Vídeo/Documento para obter o leitor adequado.
+                setCategoryUI('link');
+            } else if (url) setCategoryUI('link');
         }
 
         function renderInternalImagePlayer(url, title) {
@@ -2956,12 +3710,23 @@
             </div>`;
         }
 
-        function renderInternalVideoPlayer(url, title) {
+        function renderInternalVideoPlayer(url, title, isDrive = false) {
             return `<div class="w-full max-w-4xl">
                 <video id="mdInternalVideo" src="${escapeHTML(url)}" controls playsinline preload="metadata"
-                    class="w-full max-h-[62vh] rounded-xl shadow-2xl bg-black"
-                    controlsList="nodownload"></video>
-                <p class="text-[10px] text-slate-400 text-center mt-2">Leitor interno · Mundo Digital</p>
+                    class="w-full max-h-[62vh] rounded-xl shadow-2xl bg-black"></video>
+                <p class="text-[10px] text-slate-400 text-center mt-2">${isDrive ? 'Vídeo Google Drive · leitor interno Mundo Digital' : 'Leitor interno · Mundo Digital'}</p>
+            </div>`;
+        }
+
+        function renderGoogleDrivePreview(fileId, title) {
+            const urls = googleDriveFileUrls(fileId);
+            if (!urls.viewUrl) return '';
+            return `<div class="w-full h-[62vh] flex flex-col rounded-xl overflow-hidden bg-slate-950 border border-slate-700">
+                <div class="px-3 py-2 bg-slate-900 border-b border-slate-700 flex items-center justify-between text-[11px] text-slate-300 shrink-0">
+                    <span><i class="fa-brands fa-google-drive mr-1.5 text-brand-400"></i> Conteúdo Google Drive · visualização no Mundo Digital</span>
+                    <span class="text-slate-500">${escapeHTML(title || '')}</span>
+                </div>
+                <iframe src="${escapeHTML(urls.viewUrl)}" title="${escapeHTML(title || 'Conteúdo Google Drive')}" class="w-full flex-1 border-0 bg-white" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>`;
         }
 
@@ -2980,6 +3745,7 @@
 
         function enableCommentsPanel(contentId) {
             const toggleChatBtn = document.getElementById('toggleChatBtn');
+            const creatorBtn = document.getElementById('viewCreatorBtn');
             const chatPanel = document.getElementById('entertainmentChatPanel');
             if (toggleChatBtn) {
                 toggleChatBtn.classList.remove('hidden');
@@ -2993,9 +3759,53 @@
             }
         }
 
+        function detectSocialPlatform(url) {
+            const u = String(url || '');
+            if (/tiktok\.com/i.test(u)) return 'tiktok';
+            if (/instagram\.com/i.test(u)) return 'instagram';
+            if (/(^|\.)x\.com|twitter\.com/i.test(u)) return 'x';
+            if (/t\.me|telegram\.me/i.test(u)) return 'telegram';
+            return null;
+        }
+
+        function renderSocialInternalViewer(url, title) {
+            const platform = detectSocialPlatform(url);
+            let embedUrl = url;
+            if (platform === 'tiktok') {
+                const m = url.match(/tiktok\.com\/(?:@[^/]+\/video\/)?(\d+)/i);
+                if (m) embedUrl = `https://www.tiktok.com/player/v1/${m[1]}?description=1&music_info=1&rel=1`;
+            } else if (platform === 'instagram') {
+                const m = url.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/i);
+                if (m) embedUrl = `https://www.instagram.com/${url.match(/instagram\.com\/([^/]+)/i)?.[1] || 'p'}/${m[1]}/embed`;
+            } else if (platform === 'x') {
+                const m = url.match(/status\/(\d+)/i);
+                if (m) embedUrl = `https://platform.twitter.com/embed/Tweet.html?id=${m[1]}`;
+            }
+            const label = platform === 'tiktok' ? 'TikTok' : platform === 'instagram' ? 'Instagram' : platform === 'x' ? 'X' : 'Telegram';
+            return `<div class="w-full h-[70vh] flex flex-col rounded-xl overflow-hidden bg-black border border-slate-700">
+                <div class="px-3 py-2 bg-slate-900 border-b border-slate-700 text-[11px] text-slate-300 flex items-center gap-2"><i class="fa-solid fa-circle-play text-brand-400"></i>${label} · leitor interno Mundo Digital</div>
+                <iframe src="${escapeHTML(embedUrl)}" class="w-full flex-1 border-0 bg-white" allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                <div class="p-2 bg-slate-900 text-center text-[10px] text-slate-400">Se a plataforma bloquear a incorporação, o conteúdo será mostrado como cartão interno com opção de abrir a publicação original.</div>
+            </div>`;
+        }
+
+        async function openContentCreatorChat() {
+            const item = window._activeViewedContent;
+            if (!item || !item.createdBy || item.createdBy === currentUserId) return;
+            let user = allUsers.find(u => u.id === item.createdBy);
+            if (!user) {
+                try { const snap = await getDoc(doc(db, 'users', item.createdBy)); if (snap.exists()) user = { id: snap.id, ...snap.data() }; } catch (_) {}
+            }
+            if (!user) return showToast('Perfil do autor não encontrado.', 'error');
+            closeModal('viewContentModal');
+            openModal('chatModal');
+            setTimeout(() => startChatWith(user.id), 50);
+        }
+
         function viewContent(id) {
             const item = contents.find(c => c.id === id);
             if (!item) return;
+            window._activeViewedContent = item;
 
             leaveEntertainmentViewers();
             leaveContentComments();
@@ -3006,6 +3816,7 @@
             const downloadBtn = document.getElementById('viewDownloadBtn');
             const actionContainer = document.getElementById('viewActionContainer');
             const toggleChatBtn = document.getElementById('toggleChatBtn');
+            const creatorBtn = document.getElementById('viewCreatorBtn');
             const chatPanel = document.getElementById('entertainmentChatPanel');
             
             const categoryDate = document.getElementById('viewCategoryDate');
@@ -3017,6 +3828,13 @@
 
             if (chatPanel) { chatPanel.classList.add('hidden'); chatPanel.classList.remove('flex'); }
             if (toggleChatBtn) toggleChatBtn.classList.add('hidden');
+            if (creatorBtn) {
+                if (item.createdBy && item.createdBy !== currentUserId) {
+                    const author = allUsers.find(u => u.id === item.createdBy);
+                    creatorBtn.classList.remove('hidden'); creatorBtn.classList.add('inline-flex');
+                    creatorBtn.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHTML(author?.name || item.createdByName || 'Perfil / Mensagem')}`;
+                } else { creatorBtn.classList.add('hidden'); creatorBtn.classList.remove('inline-flex'); }
+            }
             const badge = document.getElementById('viewersBadge');
             if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
 
@@ -3024,8 +3842,36 @@
             downloadBtn.onclick = null;
             downloadBtn.removeAttribute('download');
 
-            const url = item.url || '';
-            const mediaKind = detectMediaFromUrl(url);
+            const originalUrl = item.url || '';
+            const driveId = item.driveFileId || extractGoogleDriveFileId(originalUrl);
+            const driveUrls = driveId ? googleDriveFileUrls(driveId) : {};
+            const url = driveId ? (item.category === 'image' || item.category === 'video' ? driveUrls.mediaUrl : originalUrl) : originalUrl;
+            const mediaKind = detectMediaFromUrl(originalUrl);
+            // Conteúdo Google Drive: mantém a experiência dentro do Mundo Digital.
+            // Imagens e vídeos usam o ficheiro como media; documentos/ficheiros usam o preview do Drive.
+            if (driveId) {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-brands fa-google-drive text-lg"></i>`;
+                downloadBtn.href = driveUrls.downloadUrl || originalUrl;
+                downloadBtn.target = '_blank';
+                downloadBtn.rel = 'noopener noreferrer';
+                downloadBtn.innerHTML = `<i class="fa-solid fa-download"></i> Baixar para o dispositivo`;
+                downloadBtn.classList.remove('hidden');
+                actionContainer.style.display = 'flex';
+
+                if (item.category === 'image') {
+                    container.innerHTML = renderInternalImagePlayer(driveUrls.mediaUrl, item.title);
+                } else if (item.category === 'video') {
+                    container.innerHTML = renderInternalVideoPlayer(driveUrls.mediaUrl, item.title, true);
+                } else {
+                    container.innerHTML = renderGoogleDrivePreview(driveId, item.title);
+                }
+
+                enableCommentsPanel(item.id);
+                joinEntertainmentViewers(item.id);
+                openModal('viewContentModal');
+                return;
+            }
+
             // Categoria efetiva: se for link mas o URL for imagem/vídeo/terabox, usar leitor interno
             let viewAs = item.category;
             if (item.category === 'link' || item.category === 'entertainment') {
@@ -3062,6 +3908,14 @@
                 downloadBtn.href = url;
                 downloadBtn.classList.remove('hidden');
                 actionContainer.style.display = 'flex';
+            } else if (detectSocialPlatform(url)) {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-circle-play text-lg"></i>`;
+                container.innerHTML = renderSocialInternalViewer(url, item.title);
+                downloadBtn.href = url;
+                downloadBtn.innerHTML = `<i class="fa-solid fa-link"></i> Abrir publicação`;
+                downloadBtn.classList.remove('hidden');
+                actionContainer.style.display = 'flex';
+                joinEntertainmentViewers(item.id);
             } else if (item.category === 'entertainment') {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-film text-lg"></i>`;
                 downloadBtn.href = url || '#';
@@ -3106,8 +3960,9 @@
                 actionContainer.style.display = 'flex';
             }
 
-            // Comentários em todas as publicações
+            // Comentários + espectadores em todas as publicações
             enableCommentsPanel(item.id);
+            joinEntertainmentViewers(item.id);
 
             openModal('viewContentModal');
         }
@@ -3504,6 +4359,7 @@
         window.requestNotificationPermission = requestNotificationPermission;
         window.handleAuthAction = handleAuthAction;
         window.handleLogin = handleLogin;
+        window.handleGoogleLogin = handleGoogleLogin;
         window.handleRegister = handleRegister;
         window.handlePasswordReset = handlePasswordReset;
         window.handleAnonymousLogin = handleAnonymousLogin;
@@ -3542,6 +4398,7 @@
         window.saveEditedContent = saveEditedContent;
         window.sendEntertainmentMessage = sendEntertainmentMessage;
         window.sendContentComment = sendContentComment;
+        window.openContentCreatorChat = openContentCreatorChat;
         window.toggleEntertainmentChat = toggleEntertainmentChat;
         window.closeViewContent = closeViewContent;
         window.onLinkUrlInput = onLinkUrlInput;
