@@ -205,6 +205,26 @@
         .chat-row-enter {
             animation: messagePopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        .post-bg-swatch {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
+            flex-shrink: 0;
+        }
+        .post-bg-swatch:hover { transform: scale(1.12); }
+        .post-bg-swatch:active { transform: scale(0.95); }
+        .post-bg-swatch.selected {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35);
+            transform: scale(1.08);
+        }
+        #inputPostText.post-writing {
+            transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -333,7 +353,7 @@
             <div class="flex-1 max-w-md mx-2">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar publicações..." 
+                    <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar publicações, filmes..." 
                            class="w-full pl-10 pr-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
                 </div>
             </div>
@@ -376,7 +396,7 @@
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Mundo Digital</h1>
-                <p class="text-slate-300 text-sm sm:text-base">Partilhe textos, converse e ligue em tempo real com a comunidade.</p>
+                <p class="text-slate-300 text-sm sm:text-base">Publicações, entretenimento, chat e chamadas em tempo real.</p>
             </div>
             <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -386,7 +406,13 @@
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap w-full sm:w-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
                 <button onclick="window.setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white btn-press">
+                    <i class="fa-solid fa-border-all mr-1.5"></i>Todos
+                </button>
+                <button onclick="window.setFilter('text')" data-filter="text" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 btn-press">
                     <i class="fa-solid fa-align-left mr-1.5"></i>Publicações
+                </button>
+                <button onclick="window.setFilter('entertainment')" data-filter="entertainment" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 btn-press">
+                    <i class="fa-solid fa-film mr-1.5"></i>Filmes e Séries
                 </button>
             </div>
             
@@ -709,11 +735,17 @@
             </div>
 
             <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col">
-                <div class="p-4 sm:p-5">
-                    <textarea id="inputPostText" required maxlength="2000" rows="6" placeholder="O que está a pensar? Escreva a sua publicação..."
-                        class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar resize-none leading-relaxed"
+                <div class="p-4 sm:p-5 space-y-3">
+                    <textarea id="inputPostText" required maxlength="2000" rows="7" placeholder="O que está a pensar? Escreva a sua publicação..."
+                        class="post-writing w-full px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar resize-none leading-relaxed"
                         oninput="window.updatePostCharCount()"></textarea>
-                    <div class="flex items-center justify-between mt-2 px-1">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-palette text-brand-500"></i> Fundo da publicação
+                        </p>
+                        <div id="postBgPalette" class="flex flex-wrap gap-2 items-center"></div>
+                    </div>
+                    <div class="flex items-center justify-between px-1">
                         <span class="text-[11px] text-slate-400"><i class="fa-solid fa-users mr-1"></i>Visível para todos</span>
                         <span id="postCharCount" class="text-[11px] text-slate-400 font-medium">0 / 2000</span>
                     </div>
@@ -1286,6 +1318,8 @@
             }
             if (id === 'addContentModal') {
                 setTimeout(() => {
+                    renderPostBgPalette();
+                    applyPostBgToTextarea();
                     const ta = document.getElementById('inputPostText');
                     if (ta) { ta.focus(); updatePostCharCount(); }
                 }, 80);
@@ -3102,14 +3136,28 @@
             }
             const applyContents = (snapshot) => {
                 contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-                // Ordenar localmente se necessário
-                // Só publicações de texto
-                contents = contents.filter(c => c.category === 'text' || (!c.category && (c.text || c.description)));
+                // Manter textos e entretenimento
+                contents = contents.filter(c =>
+                    c.category === 'text' ||
+                    c.category === 'entertainment' ||
+                    (!c.category && (c.text || c.description))
+                );
                 contents.sort((a, b) => {
                     const ta = a.createdAt?.seconds || 0;
                     const tb = b.createdAt?.seconds || 0;
                     return tb - ta;
                 });
+                const hasEntertainment = contents.some(c => c.category === 'entertainment');
+                if (!hasEntertainment) {
+                    contents.unshift({
+                        id: 'default-entertainment-channel',
+                        title: 'Filmes e Séries',
+                        category: 'entertainment',
+                        description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
+                        url: 'https://vialacteafilmes.com',
+                        isVirtualChannel: true
+                    });
+                }
                 renderContents();
             };
             try {
@@ -3131,9 +3179,9 @@
             currentFilter = filterType;
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 if (btn.getAttribute('data-filter') === filterType) {
-                    btn.className = "filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white";
+                    btn.className = "filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white btn-press";
                 } else {
-                    btn.className = "filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+                    btn.className = "filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 btn-press";
                 }
             });
             renderContents();
@@ -3163,13 +3211,15 @@
             if (!grid) return;
 
             const filtered = contents.filter(item => {
+                const matchesFilter = currentFilter === 'all' || item.category === currentFilter ||
+                    (currentFilter === 'text' && !item.category && (item.text || item.description));
                 const body = (item.text || item.description || item.title || '').toLowerCase();
                 const matchesSearch = !searchQuery || body.includes(searchQuery);
-                return matchesSearch;
+                return matchesFilter && matchesSearch;
             });
 
             if (counter) {
-                counter.innerText = `${filtered.length} ${filtered.length === 1 ? 'publicação' : 'publicações'}`;
+                counter.innerText = `${filtered.length} ${filtered.length === 1 ? 'item' : 'itens'}`;
             }
 
             if (filtered.length === 0) {
@@ -3181,7 +3231,31 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                const isOwner = item.createdBy === currentUserId;
+                // Cartão de entretenimento
+                if (item.category === 'entertainment') {
+                    return `
+                    <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
+                        <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <i class="fa-solid fa-clapperboard text-4xl text-brand-400 mb-2 relative z-[1]"></i>
+                            <span class="font-extrabold text-base tracking-wider relative z-[1]">Mundo Filmes</span>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40">
+                                    <i class="fa-solid fa-film mr-1"></i>Filmes e Séries
+                                </span>
+                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mt-2 mb-1">${escapeHTML(item.title || 'Filmes e Séries')}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHTML(item.description || 'Canal de entretenimento')}</p>
+                            </div>
+                            <button onclick="window.viewContent('${item.id}')" class="w-full py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
+                                <i class="fa-solid fa-play"></i> Assistir
+                            </button>
+                        </div>
+                    </div>`;
+                }
+
+                const isOwner = item.createdBy === currentUserId && !item.isVirtualChannel;
                 const likes = item.likes || [];
                 const likeCount = Array.isArray(likes) ? likes.length : (item.likeCount || 0);
                 const likedByMe = Array.isArray(likes) && currentUserId && likes.includes(currentUserId);
@@ -3192,28 +3266,36 @@
                     dateStr = new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
                 }
 
+                const bgId = item.bgId || 'default';
+                const bgStyle = postBgInlineStyle(bgId);
+                const meta = postMetaClass(bgId);
+                const hasBg = !!getPostBg(bgId).bg;
+                const cardBase = hasBg
+                    ? 'post-card rounded-2xl border shadow-sm flex flex-col overflow-hidden'
+                    : 'post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden';
+
                 return `
-                    <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
+                    <div class="${cardBase}" style="${bgStyle}">
                         <div class="p-5 flex-1 flex flex-col">
                             <div class="flex items-center gap-3 mb-3">
-                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0">${escapeHTML(author.charAt(0).toUpperCase())}</div>
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow">${escapeHTML(author.charAt(0).toUpperCase())}</div>
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(author)}</p>
-                                    ${dateStr ? `<p class="text-[10px] text-slate-400">${dateStr}</p>` : ''}
+                                    <p class="text-xs font-semibold truncate ${meta.name}">${escapeHTML(author)}</p>
+                                    ${dateStr ? `<p class="text-[10px] ${meta.date}">${dateStr}</p>` : ''}
                                 </div>
                                 ${isOwner ? `
-                                    <button onclick="event.stopPropagation();window.deleteContent('${item.id}', '')" class="text-slate-400 hover:text-red-500 transition text-xs p-1.5 rounded-lg hover:bg-red-500/10 btn-press" title="Eliminar">
+                                    <button onclick="event.stopPropagation();window.deleteContent('${item.id}', '')" class="opacity-70 hover:opacity-100 transition text-xs p-1.5 rounded-lg btn-press ${hasBg ? '' : 'text-slate-400 hover:text-red-500 hover:bg-red-500/10'}" title="Eliminar">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 ` : ''}
                             </div>
-                            <p class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap flex-1 mb-4">${escapeHTML(body)}</p>
-                            <div class="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-700/60">
-                                <button type="button" onclick="event.stopPropagation();window.toggleLike('${item.id}')" class="like-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 dark:text-slate-300 text-xs font-semibold transition btn-press ${likedByMe ? 'active text-rose-500' : ''}">
+                            <p class="text-sm leading-relaxed whitespace-pre-wrap flex-1 mb-4 ${postTextClass(bgId)}" style="${hasBg ? 'color:inherit' : ''}">${escapeHTML(body)}</p>
+                            <div class="flex items-center gap-2 pt-3 border-t ${meta.border}">
+                                <button type="button" onclick="event.stopPropagation();window.toggleLike('${item.id}')" class="like-btn flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition btn-press ${meta.btn} ${likedByMe ? 'active text-rose-500' : ''}">
                                     <i class="fa-${likedByMe ? 'solid' : 'regular'} fa-heart"></i>
                                     <span>${likeCount}</span>
                                 </button>
-                                <button onclick="window.viewContent('${item.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
+                                <button onclick="window.viewContent('${item.id}')" class="flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 btn-press ${meta.btn}">
                                     <i class="fa-solid fa-comments"></i> Comentar
                                 </button>
                             </div>
@@ -3390,6 +3472,89 @@
             });
         }
 
+
+        // ========== FUNDOS COLORIDOS PARA PUBLICAÇÕES ==========
+        const POST_BACKGROUNDS = [
+            { id: 'default', name: 'Padrão', bg: '', text: '', border: '' },
+            { id: 'sky', name: 'Céu', bg: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%)', text: '#0c4a6e', border: 'rgba(14,165,233,0.25)' },
+            { id: 'sunset', name: 'Pôr do sol', bg: 'linear-gradient(135deg, #ffedd5 0%, #fdba74 45%, #fb7185 100%)', text: '#7c2d12', border: 'rgba(249,115,22,0.3)' },
+            { id: 'mint', name: 'Menta', bg: 'linear-gradient(135deg, #d1fae5 0%, #6ee7b7 50%, #34d399 100%)', text: '#064e3b', border: 'rgba(16,185,129,0.3)' },
+            { id: 'lavender', name: 'Lavanda', bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 50%, #a78bfa 100%)', text: '#4c1d95', border: 'rgba(139,92,246,0.3)' },
+            { id: 'rose', name: 'Rosa', bg: 'linear-gradient(135deg, #fce7f3 0%, #f9a8d4 50%, #f472b6 100%)', text: '#831843', border: 'rgba(236,72,153,0.3)' },
+            { id: 'amber', name: 'Âmbar', bg: 'linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #fbbf24 100%)', text: '#78350f', border: 'rgba(245,158,11,0.35)' },
+            { id: 'ocean', name: 'Oceano', bg: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 55%, #8b5cf6 100%)', text: '#ffffff', border: 'rgba(255,255,255,0.2)' },
+            { id: 'night', name: 'Noite', bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #312e81 100%)', text: '#e2e8f0', border: 'rgba(148,163,184,0.25)' },
+            { id: 'forest', name: 'Floresta', bg: 'linear-gradient(135deg, #14532d 0%, #166534 40%, #065f46 100%)', text: '#ecfdf5', border: 'rgba(167,243,208,0.2)' },
+            { id: 'coral', name: 'Coral', bg: 'linear-gradient(135deg, #fff1f2 0%, #fda4af 40%, #fb7185 100%)', text: '#881337', border: 'rgba(244,63,94,0.3)' },
+            { id: 'grape', name: 'Uva', bg: 'linear-gradient(135deg, #3b0764 0%, #6b21a8 50%, #9333ea 100%)', text: '#f3e8ff', border: 'rgba(216,180,254,0.25)' }
+        ];
+        let selectedPostBg = 'default';
+
+        function getPostBg(id) {
+            return POST_BACKGROUNDS.find(b => b.id === id) || POST_BACKGROUNDS[0];
+        }
+
+        function renderPostBgPalette() {
+            const box = document.getElementById('postBgPalette');
+            if (!box) return;
+            box.innerHTML = POST_BACKGROUNDS.map(b => {
+                const style = b.bg
+                    ? `background:${b.bg};`
+                    : 'background: linear-gradient(135deg, #f1f5f9, #e2e8f0);';
+                const isDark = document.documentElement.classList.contains('dark');
+                const defStyle = !b.bg && isDark ? 'background: linear-gradient(135deg, #1e293b, #334155);' : style;
+                return `<button type="button" class="post-bg-swatch ${selectedPostBg === b.id ? 'selected' : ''}" title="${b.name}"
+                    style="${b.bg ? style : defStyle}"
+                    onclick="window.selectPostBg('${b.id}')"></button>`;
+            }).join('');
+        }
+
+        function selectPostBg(id) {
+            selectedPostBg = id || 'default';
+            applyPostBgToTextarea();
+            renderPostBgPalette();
+        }
+
+        function applyPostBgToTextarea() {
+            const ta = document.getElementById('inputPostText');
+            if (!ta) return;
+            const b = getPostBg(selectedPostBg);
+            if (!b.bg) {
+                ta.style.background = '';
+                ta.style.color = '';
+                ta.style.borderColor = '';
+                ta.classList.add('bg-slate-50', 'dark:bg-slate-900');
+                return;
+            }
+            ta.classList.remove('bg-slate-50', 'dark:bg-slate-900');
+            ta.style.background = b.bg;
+            ta.style.color = b.text;
+            ta.style.borderColor = b.border || 'transparent';
+        }
+
+        function postBgInlineStyle(id) {
+            const b = getPostBg(id);
+            if (!b.bg) return '';
+            return `background:${b.bg};color:${b.text};border-color:${b.border || 'transparent'};`;
+        }
+
+        function postTextClass(id) {
+            const b = getPostBg(id);
+            return b.bg ? '' : 'text-slate-700 dark:text-slate-200';
+        }
+
+        function postMetaClass(id) {
+            const b = getPostBg(id);
+            if (!b.bg) return { name: 'text-slate-800 dark:text-slate-100', date: 'text-slate-400', border: 'border-slate-100 dark:border-slate-700/60', btn: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' };
+            const lightText = b.text === '#ffffff' || b.text.startsWith('#e') || b.text.startsWith('#f');
+            return {
+                name: lightText ? 'text-white/95' : '',
+                date: lightText ? 'text-white/70' : 'opacity-70',
+                border: lightText ? 'border-white/20' : 'border-black/10',
+                btn: lightText ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-black/10 hover:bg-black/15'
+            };
+        }
+
         function updatePostCharCount() {
             const el = document.getElementById('inputPostText');
             const counter = document.getElementById('postCharCount');
@@ -3431,6 +3596,7 @@
                     description: text,
                     text: text,
                     url: '',
+                    bgId: selectedPostBg || 'default',
                     likes: [],
                     likeCount: 0,
                     createdBy: currentUserId,
@@ -3456,6 +3622,9 @@
             if (form) form.reset();
             const ta = document.getElementById('inputPostText');
             if (ta) ta.value = '';
+            selectedPostBg = 'default';
+            applyPostBgToTextarea();
+            renderPostBgPalette();
             updatePostCharCount();
         }
 
@@ -3579,13 +3748,23 @@
                 const likes = item.likes || [];
                 const likeCount = Array.isArray(likes) ? likes.length : (item.likeCount || 0);
                 const likedByMe = Array.isArray(likes) && currentUserId && likes.includes(currentUserId);
+                const bgId = item.bgId || 'default';
+                const bgStyle = postBgInlineStyle(bgId);
+                const hasBg = !!getPostBg(bgId).bg;
+                const body = item.text || item.description || '';
+                const cardCls = hasBg
+                    ? 'rounded-2xl border shadow-lg p-6 sm:p-8'
+                    : 'bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg p-6 sm:p-8';
+                const textCls = hasBg ? '' : 'text-slate-800 dark:text-slate-100';
+                const metaCls = hasBg ? 'opacity-80' : 'text-slate-400';
+                const borderCls = hasBg ? 'border-black/10' : 'border-slate-100 dark:border-slate-700';
                 container.innerHTML = `
                     <div class="w-full max-w-2xl mx-auto p-6 sm:p-8">
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg p-6 sm:p-8">
-                            <p class="text-base sm:text-lg text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-wrap">${escapeHTML(item.description || '')}</p>
-                            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3">
-                                <span class="text-xs text-slate-400"><i class="fa-solid fa-user mr-1"></i>${escapeHTML(item.createdByName || 'Autor')}</span>
-                                <button type="button" onclick="window.toggleLike('${item.id}')" class="like-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-xs font-semibold btn-press ${likedByMe ? 'active text-rose-500' : 'text-slate-600 dark:text-slate-300'}">
+                        <div class="${cardCls}" style="${bgStyle}">
+                            <p class="text-base sm:text-lg leading-relaxed whitespace-pre-wrap ${textCls}" style="${hasBg ? 'color:inherit' : ''}">${escapeHTML(body)}</p>
+                            <div class="mt-6 pt-4 border-t ${borderCls} flex items-center justify-between gap-3">
+                                <span class="text-xs ${metaCls}"><i class="fa-solid fa-user mr-1"></i>${escapeHTML(item.createdByName || 'Autor')}</span>
+                                <button type="button" onclick="window.toggleLike('${item.id}')" class="like-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold btn-press ${likedByMe ? 'active text-rose-500' : ''} ${hasBg ? 'bg-black/10' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">
                                     <i class="fa-${likedByMe ? 'solid' : 'regular'} fa-heart"></i> <span>${likeCount}</span>
                                 </button>
                             </div>
@@ -4117,6 +4296,8 @@
         window.handleFileSelect = handleFileSelect;
         window.handleFormSubmit = handleFormSubmit;
         window.updatePostCharCount = updatePostCharCount;
+        window.selectPostBg = selectPostBg;
+        window.renderPostBgPalette = renderPostBgPalette;
         window.viewContent = viewContent;
         window.deleteContent = deleteContent;
         window.openAdminAccess = openAdminAccess;
