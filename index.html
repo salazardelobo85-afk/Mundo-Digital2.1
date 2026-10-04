@@ -136,10 +136,6 @@
         #offlineBanner { display: none; }
         #offlineBanner.show { display: flex; }
     </style>
-
-    <!-- Google Drive / Picker -->
-    <link rel="preconnect" href="https://www.googleapis.com">
-    <link rel="preconnect" href="https://accounts.google.com">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
 
@@ -567,12 +563,9 @@
 
             <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col flex-1 min-h-0">
             <div class="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-                <div class="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
                     <button type="button" id="tabUploadBtn" onclick="window.switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
                         <i class="fa-solid fa-upload mr-1"></i> Ficheiro Local
-                    </button>
-                    <button type="button" id="tabDriveBtn" onclick="window.switchAddTab('drive')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                        <i class="fa-brands fa-google-drive mr-1"></i> Google Drive
                     </button>
                     <button type="button" id="tabLinkBtn" onclick="window.switchAddTab('link')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
                         <i class="fa-solid fa-link mr-1"></i> Link Externo
@@ -645,36 +638,6 @@
                             <button type="button" onclick="window.clearSelectedFile()" class="px-2.5 py-1.5 text-[11px] font-medium text-red-500 hover:bg-red-500/10 rounded-lg shrink-0">Remover</button>
                         </div>
                     </div>
-                </div>
-
-                <div id="driveSection" class="hidden space-y-3">
-                    <div class="rounded-xl border border-brand-200 dark:border-brand-800/50 bg-brand-50/70 dark:bg-brand-950/20 p-3">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm shrink-0">
-                                <i class="fa-brands fa-google-drive text-brand-600 text-xl"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-xs font-bold text-slate-800 dark:text-slate-100">Publicar a partir do Google Drive</p>
-                                <p id="driveStatusText" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Autorize a sua conta Google e escolha um ficheiro.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" id="chooseDriveFileBtn" onclick="window.openGoogleDrivePicker()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-google-drive"></i> Escolher ficheiro do Google Drive
-                    </button>
-                    <div id="driveFilePreview" class="hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shrink-0">
-                                <i id="driveFileIcon" class="fa-solid fa-file text-slate-400"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p id="driveFileName" class="text-xs font-semibold truncate text-slate-800 dark:text-slate-100"></p>
-                                <p id="driveFileMeta" class="text-[10px] text-slate-500 mt-0.5 truncate"></p>
-                            </div>
-                            <button type="button" onclick="window.clearSelectedDriveFile()" class="text-red-500 text-[11px] font-medium px-2 py-1 rounded-lg hover:bg-red-500/10">Remover</button>
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>O MD guarda a referência do ficheiro e cria a publicação para os outros utilizadores. O ficheiro continua no teu Google Drive.</p>
                 </div>
 
                 <div id="linkSection" class="hidden space-y-2">
@@ -901,20 +864,6 @@
             appId: "1:1086109928706:web:a059fb44dcf8c9c4e5c61b"
         };
 
-        // ========== GOOGLE DRIVE / PICKER =nt=========
-        // Substitui apenas GOOGLE_API_KEY e GOOGLE_CLIENT_ID pelos valores
-        // criados no Google Cloud. Nunca coloques um Client Secret no frontend.
-        const 7vh = localStorage.getItem('mundo_digital_google_api_key') || 'AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8';
-        const GOOGLE_CLIENT_ID = localStorage.getItem('mundo_digital_google_client_id') || 'AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8';
-        const GOOGLE_APP_ID = '1086109928706'; // Project Number do projeto Mundo Digital
-        const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-        let googleAccessToken = null;
-        let googleTokenClient = null;
-        let googlePickerReady = false;
-        let selectedDriveFile = null;
-        let googleScriptsPromise = null;
-
-
         // ========== SUPABASE (Storage de ficheiros) ==========
         // 1. Cria projeto em https://supabase.com
         // 2. Settings → API → copia Project URL e anon public key
@@ -960,8 +909,6 @@
         let searchQuery = '';
         let currentAddTab = 'upload';
         let selectedFile = null;
-        // Ficheiro escolhido no Google Drive para a publicação atual
-        selectedDriveFile = null;
         let lastMessageCount = 0;
         let usersListLoaded = false;
         let lastMessagesCache = {}; // { userId: { text, type, at, fromMe } }
@@ -2827,41 +2774,22 @@
         function switchAddTab(tab) {
             currentAddTab = tab;
             const tabUploadBtn = document.getElementById('tabUploadBtn');
-            const tabDriveBtn = document.getElementById('tabDriveBtn');
             const tabLinkBtn = document.getElementById('tabLinkBtn');
             const uploadSection = document.getElementById('uploadSection');
-            const driveSection = document.getElementById('driveSection');
             const linkSection = document.getElementById('linkSection');
-            const active = "py-2 text-[11px] sm:text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
-            const inactive = "py-2 text-[11px] sm:text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-            [tabUploadBtn, tabDriveBtn, tabLinkBtn].forEach(b => { if (b) b.className = inactive; });
+
             if (tab === 'upload') {
-                uploadSection?.classList.remove('hidden');
-                driveSection?.classList.add('hidden');
-                linkSection?.classList.add('hidden');
-                if (tabUploadBtn) tabUploadBtn.className = active;
-            } else if (tab === 'drive') {
-                uploadSection?.classList.add('hidden');
-                driveSection?.classList.remove('hidden');
-                linkSection?.classList.add('hidden');
-                if (tabDriveBtn) tabDriveBtn.className = active;
-                setCategoryUI(driveCategoryFromFile(selectedDriveFile));
-                updateDriveStatus();
+                uploadSection.classList.remove('hidden');
+                linkSection.classList.add('hidden');
+                tabUploadBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabLinkBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
             } else {
-                uploadSection?.classList.add('hidden');
-                driveSection?.classList.add('hidden');
-                linkSection?.classList.remove('hidden');
-                if (tabLinkBtn) tabLinkBtn.className = active;
+                uploadSection.classList.add('hidden');
+                linkSection.classList.remove('hidden');
+                tabLinkBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition";
+                tabUploadBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
                 setCategoryUI('link');
             }
-        }
-
-        function driveCategoryFromFile(file) {
-            const mime = String(file?.mimeType || '').toLowerCase();
-            if (mime.startsWith('image/')) return 'image';
-            if (mime.startsWith('video/')) return 'video';
-            if (mime.includes('pdf') || mime.includes('document') || mime.includes('spreadsheet') || mime.includes('presentation') || mime.includes('text')) return 'document';
-            return 'document';
         }
 
         function setCategoryUI(cat) {
@@ -2989,144 +2917,6 @@
             });
         }
 
-        function loadGoogleScript(src) {
-            return new Promise((resolve, reject) => {
-                const existing = document.querySelector(`script[src="${src}"]`);
-                if (existing) {
-                    if (existing.dataset.loaded === '1') return resolve();
-                    existing.addEventListener('load', () => resolve(), { once: true });
-                    existing.addEventListener('error', reject, { once: true });
-                    return;
-                }
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.defer = true;
-                script.onload = () => { script.dataset.loaded = '1'; resolve(); };
-                script.onerror = () => reject(new Error('Não foi possível carregar os serviços Google.'));
-                document.head.appendChild(script);
-            });
-        }
-
-        async function ensureGooglePickerReady() {
-            if (googlePickerReady) return true;
-            if (!GOOGLE_API_KEY || GOOGLE_API_KEY.startsWith('COLOCA_AQUI')) throw new Error('Configure a GOOGLE_API_KEY no Mundo Digital.');
-            if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.startsWith('COLOCA_AQUI')) throw new Error('Configure o GOOGLE_CLIENT_ID no Mundo Digital.');
-            if (!googleScriptsPromise) {
-                googleScriptsPromise = (async () => {
-                    await Promise.all([
-                        loadGoogleScript('https://apis.google.com/js/api.js'),
-                        loadGoogleScript('https://accounts.google.com/gsi/client')
-                    ]);
-                    await new Promise((resolve, reject) => {
-                        if (!window.gapi) return reject(new Error('Google API não carregou.'));
-                        window.gapi.load('picker', { callback: resolve, onerror: reject });
-                    });
-                    googleTokenClient = window.google.accounts.oauth2.initTokenClient({
-                        client_id: GOOGLE_CLIENT_ID,
-                        scope: GOOGLE_DRIVE_SCOPE,
-                        callback: ''
-                    });
-                    googlePickerReady = true;
-                })();
-            }
-            await googleScriptsPromise;
-            return true;
-        }
-
-        function updateDriveStatus() {
-            const el = document.getElementById('driveStatusText');
-            if (!el) return;
-            if (selectedDriveFile) el.textContent = 'Ficheiro selecionado. Podes publicar agora.';
-            else if (googleAccessToken) el.textContent = 'Google Drive autorizado. Escolhe um ficheiro.';
-            else el.textContent = 'Autorize a sua conta Google e escolha um ficheiro.';
-        }
-
-        async function openGoogleDrivePicker() {
-            const btn = document.getElementById('chooseDriveFileBtn');
-            const old = btn?.innerHTML;
-            try {
-                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A ligar ao Google…'; }
-                await ensureGooglePickerReady();
-                await new Promise((resolve, reject) => {
-                    googleTokenClient.callback = response => {
-                        if (response?.error) return reject(response);
-                        googleAccessToken = response.access_token;
-                        resolve();
-                    };
-                    googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
-                });
-                const picker = new google.picker.PickerBuilder()
-                    .setDeveloperKey(GOOGLE_API_KEY)
-                    .setAppId(GOOGLE_APP_ID)
-                    .setOAuthToken(googleAccessToken)
-                    .addView(new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(false).setSelectFolderEnabled(false))
-                    .setTitle('Escolher ficheiro para publicar no Mundo Digital')
-                    .setCallback(googlePickerCallback)
-                    .enableFeature(google.picker.Feature.NAV_HIDDEN)
-                    .build();
-                picker.setVisible(true);
-            } catch (err) {
-                console.error('[MD] Google Drive:', err);
-                const msg = err?.error === 'popup_closed_by_user' ? 'Autorização cancelada.' : (err?.message || 'Não foi possível abrir o Google Drive.');
-                showToast(msg, 'error');
-            } finally {
-                if (btn) { btn.disabled = false; btn.innerHTML = old || '<i class="fa-brands fa-google-drive"></i> Escolher ficheiro do Google Drive'; }
-            }
-        }
-
-        async function googlePickerCallback(data) {
-            if (data.action !== google.picker.Action.PICKED) return;
-            const file = data.docs?.[0];
-            if (!file?.id) return;
-            try {
-                // Obtém metadados completos diretamente da Drive API.
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}?fields=id,name,mimeType,size,webViewLink,webContentLink,thumbnailLink,modifiedTime`, {
-                    headers: { Authorization: `Bearer ${googleAccessToken}` }
-                });
-                if (!res.ok) throw new Error('Não foi possível obter os dados do ficheiro do Drive.');
-                selectedDriveFile = await res.json();
-                if (!selectedDriveFile.webViewLink) selectedDriveFile.webViewLink = `https://drive.google.com/file/d/${selectedDriveFile.id}/view`;
-                document.getElementById('driveFileName').textContent = selectedDriveFile.name || 'Ficheiro do Google Drive';
-                document.getElementById('driveFileMeta').textContent = `${selectedDriveFile.mimeType || 'ficheiro'}${selectedDriveFile.size ? ' · ' + formatFileSize(Number(selectedDriveFile.size)) : ''}`;
-                document.getElementById('driveFilePreview').classList.remove('hidden');
-                const icon = document.getElementById('driveFileIcon');
-                if (icon) {
-                    icon.className = selectedDriveFile.mimeType?.startsWith('image/') ? 'fa-solid fa-image text-brand-500' : selectedDriveFile.mimeType?.startsWith('video/') ? 'fa-solid fa-video text-brand-500' : selectedDriveFile.mimeType?.includes('pdf') ? 'fa-solid fa-file-pdf text-red-500' : 'fa-brands fa-google-drive text-brand-500';
-                }
-                const titleInput = document.getElementById('inputTitle');
-                if (titleInput && !titleInput.value.trim()) titleInput.value = (selectedDriveFile.name || '').replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
-                setCategoryUI(driveCategoryFromFile(selectedDriveFile));
-                updateDriveStatus();
-                showToast('Ficheiro do Google Drive selecionado.', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast(err.message || 'Erro ao ler o ficheiro do Drive.', 'error');
-            }
-        }
-
-        function clearSelectedDriveFile() {
-            selectedDriveFile = null;
-            const preview = document.getElementById('driveFilePreview');
-            if (preview) preview.classList.add('hidden');
-            updateDriveStatus();
-        }
-
-        async function makeDriveFilePublic(fileId) {
-            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/permissions?supportsAllDrives=true`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${googleAccessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ type: 'anyone', role: 'reader' })
-            });
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || 'O Google não permitiu tornar este ficheiro público.');
-            }
-        }
-
         async function handleFormSubmit(e) {
             e.preventDefault();
             const title = document.getElementById('inputTitle').value.trim();
@@ -3148,50 +2938,6 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> A publicar...';
 
             try {
-                if (currentAddTab === 'drive') {
-                    if (!selectedDriveFile?.id) {
-                        showToast('Escolha primeiro um ficheiro do Google Drive.', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-                    try {
-                        await makeDriveFilePublic(selectedDriveFile.id);
-                    } catch (publicErr) {
-                        console.warn('[MD] Não foi possível tornar o ficheiro público:', publicErr);
-                        showToast('O ficheiro foi selecionado, mas o Google não permitiu publicação pública automática. Verifique as permissões do Drive.', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-                    const driveUrl = selectedDriveFile.webViewLink || `https://drive.google.com/file/d/${selectedDriveFile.id}/view`;
-                    await addDoc(collection(db, 'contents'), {
-                        title,
-                        category: driveCategoryFromFile(selectedDriveFile),
-                        description,
-                        url: driveUrl,
-                        driveFileId: selectedDriveFile.id,
-                        driveWebViewLink: driveUrl,
-                        driveMimeType: selectedDriveFile.mimeType || '',
-                        driveFileName: selectedDriveFile.name || '',
-                        driveFileSize: selectedDriveFile.size ? Number(selectedDriveFile.size) : null,
-                        storageProvider: 'google-drive',
-                        public: true,
-                        createdBy: currentUserId,
-                        createdByName: currentUserName || '',
-                        createdAt: serverTimestamp()
-                    });
-                    resetAddContentForm();
-                    closeModal('addContentModal');
-                    showToast('Publicado pelo Google Drive! Todos podem ver.', 'success');
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50');
-                    submitBtn.innerHTML = 'Enviar Recurso';
-                    return;
-                }
-
                 if (currentAddTab === 'upload') {
                     if (!selectedFile) {
                         showToast('Selecione um ficheiro do seu dispositivo.', 'error');
@@ -3379,7 +3125,6 @@
         function resetAddContentForm() {
             document.getElementById('addContentForm').reset();
             clearSelectedFile();
-            clearSelectedDriveFile();
             const progressContainer = document.getElementById('uploadProgressContainer');
             const progressBar = document.getElementById('uploadProgressBar');
             if (progressContainer) progressContainer.classList.add('hidden');
@@ -3990,8 +3735,6 @@
         window.handleSearchInput = handleSearchInput;
         window.resetFilters = resetFilters;
         window.switchAddTab = switchAddTab;
-        window.openGoogleDrivePicker = openGoogleDrivePicker;
-        window.clearSelectedDriveFile = clearSelectedDriveFile;
         window.setCategoryUI = setCategoryUI;
         window.handleFileSelect = handleFileSelect;
         window.handleFormSubmit = handleFormSubmit;
@@ -4030,8 +3773,8 @@
         const storageHint = document.getElementById('storageBackendHint');
         if (storageHint) {
             storageHint.innerHTML = supabase
-                ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ficheiros → <strong>Supabase Storage</strong> · Google Drive disponível'
-                : '<i class="fa-solid fa-database text-slate-400 mr-1"></i>Ficheiros → Firebase Storage · Google Drive disponível';
+                ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ficheiros → <strong>Supabase Storage</strong>'
+                : '<i class="fa-solid fa-database text-slate-400 mr-1"></i>Ficheiros → Firebase Storage (configure Supabase no código)';
         }
 
         // Banner offline / online
