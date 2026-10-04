@@ -275,6 +275,57 @@
             0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
             50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
         }
+
+        /* Emoji bounce in messages */
+        @keyframes emojiPop {
+            0% { transform: scale(0.3) rotate(-12deg); opacity: 0; }
+            55% { transform: scale(1.25) rotate(6deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .emoji-anim {
+            display: inline-block;
+            animation: emojiPop 0.45s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .emoji-only-msg {
+            font-size: 2.4rem;
+            line-height: 1.15;
+            letter-spacing: 0.06em;
+        }
+        .emoji-only-msg .emoji-anim {
+            animation: emojiPop 0.5s cubic-bezier(0.16,1,0.3,1) both, emojiFloat 2.8s ease-in-out 0.5s infinite;
+        }
+        .msg-reply-quote {
+            border-left: 3px solid rgba(2,132,199,0.8);
+            background: rgba(0,0,0,0.08);
+            border-radius: 0 0.5rem 0.5rem 0;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.3rem;
+            font-size: 11px;
+            opacity: 0.9;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .msg-bubble-me .msg-reply-quote { border-left-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.12); }
+        .msg-temp-badge {
+            font-size: 9px;
+            opacity: 0.75;
+            margin-right: 0.35rem;
+        }
+        #msgActionSheet {
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        #replyBar { display: none; }
+        #replyBar.show { display: flex; }
+        .bg-cat-btn.active {
+            background: #0284c7 !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -666,6 +717,57 @@
         </div>
     </div>
 
+
+    <!-- AÇÕES DA MENSAGEM (segurar 2s) -->
+    <div id="msgActionSheet" class="fixed inset-0 z-[160] flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 transform translate-y-4 sm:translate-y-0 transition-transform duration-200">
+            <div class="p-3 border-b border-slate-200 dark:border-slate-700">
+                <p class="text-xs text-slate-500 truncate px-1" id="msgActionPreview">Mensagem</p>
+            </div>
+            <div class="p-2 space-y-0.5">
+                <button type="button" onclick="window.msgActionReply()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-reply text-brand-500 w-5"></i> Responder
+                </button>
+                <button type="button" id="msgActionEditBtn" onclick="window.msgActionEdit()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-pen text-brand-500 w-5"></i> Editar
+                </button>
+                <button type="button" onclick="window.msgActionForward()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-share text-brand-500 w-5"></i> Reencaminhar
+                </button>
+                <button type="button" onclick="window.msgActionDelete()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-trash w-5"></i> Apagar
+                </button>
+            </div>
+            <div class="p-3 border-t border-slate-200 dark:border-slate-700">
+                <button type="button" onclick="window.closeMsgActionSheet()" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-sm font-semibold btn-press">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CRIADOR DE EMOJI -->
+    <div id="emojiMixerModal" class="fixed inset-0 z-[155] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-face-smile text-brand-500 mr-2"></i>Criar emoji</h3>
+                <button onclick="window.closeModal('emojiMixerModal')" class="text-slate-400 p-1 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+                <p class="text-xs text-slate-500">Escolha 2 emojis para misturar e enviar com animação.</p>
+                <div class="flex items-center justify-center gap-3 text-4xl">
+                    <button type="button" id="mixEmoji1" onclick="window.pickMixEmoji(1)" class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 btn-press">😀</button>
+                    <span class="text-slate-400 text-lg">+</span>
+                    <button type="button" id="mixEmoji2" onclick="window.pickMixEmoji(2)" class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 btn-press">✨</button>
+                    <span class="text-slate-400 text-lg">=</span>
+                    <div id="mixEmojiResult" class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center">🎉</div>
+                </div>
+                <div id="emojiPickGrid" class="grid grid-cols-8 gap-1 max-h-36 overflow-y-auto custom-scrollbar text-xl p-1"></div>
+                <button type="button" onclick="window.sendMixedEmoji()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm btn-press">
+                    <i class="fa-solid fa-paper-plane mr-2"></i>Enviar emoji criado
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE CHAT -->
     <div id="chatModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] sm:h-[80vh] max-h-[92dvh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
@@ -750,7 +852,20 @@
                     </div>
 
                     <!-- BARRA DE INPUT DE MENSAGEM -->
-                    <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-2.5 sm:p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 hidden chat-input-safe shrink-0">
+                    <div id="replyBar" class="hidden px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-700 items-center gap-2 shrink-0 relative z-10">
+                        <div class="flex-1 min-w-0 border-l-2 border-brand-500 pl-2">
+                            <p class="text-[10px] font-semibold text-brand-500">A responder</p>
+                            <p id="replyBarText" class="text-[11px] text-slate-500 truncate"></p>
+                        </div>
+                        <button type="button" onclick="window.clearReplyTarget()" class="p-1.5 text-slate-400 hover:text-slate-600 btn-press"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-2.5 sm:p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-1.5 hidden chat-input-safe shrink-0 relative z-10">
+                        <button type="button" onclick="window.openEmojiMixer()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Criar emoji">
+                            <i class="fa-solid fa-face-smile"></i>
+                        </button>
+                        <button type="button" id="tempMsgBtn" onclick="window.toggleTempMsg()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Mensagem temporária">
+                            <i class="fa-solid fa-clock"></i>
+                        </button>
                         <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off" oninput="window.handleTypingInput()"
                                class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                                maxlength="2000">
@@ -795,10 +910,9 @@
                             <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                                 <i class="fa-solid fa-palette text-brand-500"></i> Fundo
                             </p>
-                            <button type="button" onclick="window.shufflePostBgs()" class="text-[10px] font-semibold text-brand-600 hover:underline btn-press">
-                                <i class="fa-solid fa-shuffle mr-1"></i>Mais fundos
-                            </button>
+                            <span id="postBgRotateHint" class="text-[10px] text-slate-400">10 por categoria · roda a cada 30 min</span>
                         </div>
+                        <div id="postBgCategories" class="flex flex-wrap gap-1 mb-2"></div>
                         <div id="postBgPalette" class="flex flex-wrap gap-2 items-center custom-scrollbar"></div>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
@@ -1115,7 +1229,254 @@
             if (!peerId) return;
             unreadCounts[peerId] = (unreadCounts[peerId] || 0) + 1;
             saveUnreadCounts();
+            updateAppBadge();
+            showBrowserNotification(peerId);
         }
+
+        function updateAppBadge() {
+            const total = Object.values(unreadCounts).reduce((a, b) => a + (b || 0), 0);
+            const badge = document.getElementById('chatBadge');
+            if (badge) {
+                if (total > 0) badge.classList.remove('hidden');
+                else badge.classList.add('hidden');
+            }
+            try {
+                if (navigator.setAppBadge) {
+                    if (total > 0) navigator.setAppBadge(total);
+                    else if (navigator.clearAppBadge) navigator.clearAppBadge();
+                }
+            } catch (_) {}
+        }
+
+        function showBrowserNotification(peerId) {
+            try {
+                if (!('Notification' in window) || Notification.permission !== 'granted') return;
+                if (document.visibilityState === 'visible') {
+                    const chatModal = document.getElementById('chatModal');
+                    if (chatModal && !chatModal.classList.contains('opacity-0') && activeChatUserId === peerId) return;
+                }
+                const u = allUsers.find(x => x.id === peerId);
+                const name = u ? getDisplayName(u) : 'Nova mensagem';
+                const n = new Notification('Mundo Digital', {
+                    body: `Mensagem de ${name}`,
+                    tag: 'md-msg-' + peerId,
+                    renotify: true
+                });
+                n.onclick = () => { window.focus(); openModal('chatModal'); if (peerId) startChatWith(peerId); n.close(); };
+            } catch (_) {}
+        }
+
+        // Estado de mensagens avançadas
+        let replyTarget = null;
+        let msgActionTarget = null;
+        let tempMsgEnabled = false;
+        let tempMsgSeconds = 60;
+        let longPressTimer = null;
+        let mixPickSlot = 1;
+        let mixE1 = '😀';
+        let mixE2 = '✨';
+        const EMOJI_BASE = '😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕😟🙁☹️😮😯😲😳🥺😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾👋🤚🖐️✋🖖👌🤌🤏✌️🤞🤟🤘🤙👈👉👆🖕👇☝️👍👎✊👊🤛🤜👏🙌👐🤲🤝🙏✍️💅🤳💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁️👅👄💋🩸'.match(/./gu) || ['😀','🔥','❤️','✨','🎉','👍'];
+
+        function isEmojiHeavy(str) {
+            if (!str) return false;
+            const chars = Array.from(str.trim());
+            if (!chars.length) return false;
+            const emojiRe = /\p{Extended_Pictographic}/u;
+            let e = 0;
+            for (const c of chars) if (emojiRe.test(c)) e++;
+            return e > 0 && e >= chars.filter(c => c.trim()).length * 0.6;
+        }
+
+        function formatMessageTextHtml(text) {
+            if (!text) return '';
+            const esc = escapeHTML(text);
+            // Envolver cada emoji em span animado
+            return esc.replace(/\p{Extended_Pictographic}/gu, (m) => `<span class="emoji-anim">${m}</span>`);
+        }
+
+        function setReplyTarget(msg) {
+            if (!msg) return clearReplyTarget();
+            replyTarget = { id: msg.id, text: msg.text || (msg.type === 'audio' ? '🎤 Áudio' : ''), senderId: msg.senderId };
+            const bar = document.getElementById('replyBar');
+            const t = document.getElementById('replyBarText');
+            if (bar) { bar.classList.remove('hidden'); bar.classList.add('show', 'flex'); }
+            if (t) t.textContent = replyTarget.text;
+            document.getElementById('chatInput')?.focus();
+        }
+        function clearReplyTarget() {
+            replyTarget = null;
+            const bar = document.getElementById('replyBar');
+            if (bar) { bar.classList.add('hidden'); bar.classList.remove('show', 'flex'); }
+        }
+        function toggleTempMsg() {
+            tempMsgEnabled = !tempMsgEnabled;
+            const btn = document.getElementById('tempMsgBtn');
+            if (btn) {
+                btn.classList.toggle('bg-amber-500', tempMsgEnabled);
+                btn.classList.toggle('text-white', tempMsgEnabled);
+                btn.classList.toggle('bg-slate-100', !tempMsgEnabled);
+            }
+            if (tempMsgEnabled) {
+                const sec = prompt('Apagar automaticamente após quantos segundos? (15–3600)', String(tempMsgSeconds));
+                const n = parseInt(sec, 10);
+                if (n >= 15 && n <= 3600) tempMsgSeconds = n;
+                else if (sec !== null) showToast('Use entre 15 e 3600 segundos.', 'error');
+                showToast(`Mensagens temporárias: ${tempMsgSeconds}s`, 'info');
+            } else showToast('Mensagens temporárias desativadas.', 'info');
+        }
+
+        function openMsgActionSheet(msg) {
+            if (!msg || msg._local) return;
+            msgActionTarget = msg;
+            const prev = document.getElementById('msgActionPreview');
+            if (prev) prev.textContent = (msg.text || (msg.type === 'audio' ? 'Áudio' : 'Mensagem')).slice(0, 80);
+            const editBtn = document.getElementById('msgActionEditBtn');
+            if (editBtn) editBtn.classList.toggle('hidden', msg.senderId !== currentUserId || msg.type === 'audio');
+            openModal('msgActionSheet');
+        }
+        function closeMsgActionSheet() {
+            closeModal('msgActionSheet');
+            msgActionTarget = null;
+        }
+        function msgActionReply() {
+            if (msgActionTarget) setReplyTarget(msgActionTarget);
+            closeMsgActionSheet();
+        }
+        async function msgActionEdit() {
+            const msg = msgActionTarget;
+            closeMsgActionSheet();
+            if (!msg || msg.senderId !== currentUserId) return;
+            const neu = prompt('Editar mensagem:', msg.text || '');
+            if (neu === null || !neu.trim()) return;
+            try {
+                const path = activeChatType === 'group'
+                    ? doc(db, 'groups', activeChatUserId, 'messages', msg.id)
+                    : doc(db, 'chats', [currentUserId, activeChatUserId].sort().join('_'), 'messages', msg.id);
+                await updateDoc(path, { text: neu.trim(), edited: true });
+                showToast('Mensagem editada.', 'success');
+            } catch (e) { showToast('Não foi possível editar.', 'error'); }
+        }
+        function msgActionForward() {
+            const msg = msgActionTarget;
+            closeMsgActionSheet();
+            if (!msg) return;
+            const text = msg.text || '';
+            if (!text) return showToast('Só é possível reencaminhar texto.', 'info');
+            document.getElementById('chatInput').value = text;
+            clearReplyTarget();
+            showToast('Texto colocado no campo — escolha o contacto e envie.', 'info');
+            backToUsersList(true);
+        }
+        async function msgActionDelete() {
+            const msg = msgActionTarget;
+            closeMsgActionSheet();
+            if (!msg) return;
+            const isMe = msg.senderId === currentUserId;
+            let mode = 'me';
+            if (isMe) {
+                const choice = prompt('Apagar mensagem:\n1 = Só para mim\n2 = Para todos', '1');
+                if (choice === null) return;
+                mode = choice.trim() === '2' ? 'all' : 'me';
+            } else {
+                if (!confirm('Apagar esta mensagem só para si?')) return;
+                mode = 'me';
+            }
+            try {
+                const chatId = activeChatType === 'group' ? activeChatUserId : [currentUserId, activeChatUserId].sort().join('_');
+                const col = activeChatType === 'group' ? 'groups' : 'chats';
+                const ref = doc(db, col, chatId, 'messages', msg.id);
+                if (mode === 'all' && isMe) {
+                    await deleteDoc(ref);
+                } else {
+                    const hidden = Array.isArray(msg.hiddenFor) ? msg.hiddenFor : [];
+                    if (!hidden.includes(currentUserId)) hidden.push(currentUserId);
+                    await updateDoc(ref, { hiddenFor: hidden });
+                }
+                showToast('Mensagem apagada.', 'success');
+            } catch (e) {
+                showToast('Erro ao apagar mensagem.', 'error');
+            }
+        }
+
+        function bindMessageGestures(container) {
+            if (!container || container.dataset.gestures === '1') return;
+            container.dataset.gestures = '1';
+            let startX = 0, startY = 0, target = null;
+            container.addEventListener('pointerdown', (e) => {
+                const bubble = e.target.closest('[data-msgid]');
+                if (!bubble) return;
+                target = bubble;
+                startX = e.clientX; startY = e.clientY;
+                longPressTimer = setTimeout(() => {
+                    const id = bubble.getAttribute('data-msgid');
+                    const msg = serverMessagesSnapshot.find(m => m.id === id);
+                    if (msg) openMsgActionSheet(msg);
+                    longPressTimer = null;
+                }, 2000);
+            });
+            const cancel = (e) => {
+                if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+                if (!target) return;
+                if (e.type === 'pointerup' || e.type === 'pointercancel') {
+                    const dx = (e.clientX || 0) - startX;
+                    const dy = Math.abs((e.clientY || 0) - startY);
+                    if (dx > 60 && dy < 40) {
+                        const id = target.getAttribute('data-msgid');
+                        const msg = serverMessagesSnapshot.find(m => m.id === id);
+                        if (msg) setReplyTarget(msg);
+                    }
+                }
+                target = null;
+            };
+            container.addEventListener('pointerup', cancel);
+            container.addEventListener('pointercancel', cancel);
+            container.addEventListener('pointermove', (e) => {
+                if (!longPressTimer) return;
+                if (Math.abs(e.clientX - startX) > 12 || Math.abs(e.clientY - startY) > 12) {
+                    clearTimeout(longPressTimer); longPressTimer = null;
+                }
+            });
+        }
+
+        function openEmojiMixer() {
+            mixE1 = '😀'; mixE2 = '✨';
+            document.getElementById('mixEmoji1').textContent = mixE1;
+            document.getElementById('mixEmoji2').textContent = mixE2;
+            document.getElementById('mixEmojiResult').textContent = mixE1 + mixE2;
+            const grid = document.getElementById('emojiPickGrid');
+            if (grid) grid.innerHTML = EMOJI_BASE.map(em =>
+                `<button type="button" class="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 btn-press" onclick="window.setMixEmoji('${em}')">${em}</button>`
+            ).join('');
+            openModal('emojiMixerModal');
+        }
+        function pickMixEmoji(slot) { mixPickSlot = slot; showToast('Toque num emoji abaixo', 'info'); }
+        function setMixEmoji(em) {
+            if (mixPickSlot === 1) { mixE1 = em; document.getElementById('mixEmoji1').textContent = em; }
+            else { mixE2 = em; document.getElementById('mixEmoji2').textContent = em; }
+            document.getElementById('mixEmojiResult').textContent = mixE1 + mixE2;
+        }
+        function sendMixedEmoji() {
+            const input = document.getElementById('chatInput');
+            if (input) input.value = (mixE1 || '') + (mixE2 || '');
+            closeModal('emojiMixerModal');
+            sendChatMessage({ preventDefault() {} });
+        }
+
+        // Apagar mensagens temporárias expiradas
+        setInterval(() => {
+            if (!activeChatUserId || !serverMessagesSnapshot.length) return;
+            const now = Date.now();
+            serverMessagesSnapshot.forEach(async (m) => {
+                if (m.expiresAtMs && m.expiresAtMs < now && m.senderId === currentUserId) {
+                    try {
+                        const chatId = activeChatType === 'group' ? activeChatUserId : [currentUserId, activeChatUserId].sort().join('_');
+                        const col = activeChatType === 'group' ? 'groups' : 'chats';
+                        await deleteDoc(doc(db, col, chatId, 'messages', m.id));
+                    } catch (_) {}
+                }
+            });
+        }, 10000);
+
 
         let typingTimeout = null;
         let currentPeerStatus = { action: null };
@@ -2064,18 +2425,27 @@
 
             const wasNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
 
-            // Mensagens do servidor + pendentes deste peer
+            // Filtrar apagadas "para mim" e temporárias expiradas
+            const nowMs = Date.now();
+            const visible = messages.filter(m => {
+                if (Array.isArray(m.hiddenFor) && m.hiddenFor.includes(currentUserId)) return false;
+                if (m.expiresAtMs && m.expiresAtMs < nowMs) return false;
+                return true;
+            });
             const pendingForPeer = pendingMessages.filter(p => p.peerId === activeChatUserId);
-            const merged = messages.concat(pendingForPeer.map(p => ({
+            const merged = visible.concat(pendingForPeer.map(p => ({
                 id: p.tempId,
                 senderId: currentUserId,
                 receiverId: p.peerId,
                 text: p.text,
                 type: 'text',
                 status: p.status,
+                replyTo: p.replyTo || null,
+                expiresAtMs: p.expiresAtMs || null,
                 createdAt: { seconds: Math.floor((p.at || Date.now()) / 1000) },
                 _local: true
             })));
+            bindMessageGestures(container);
 
             if (merged.length === 0) {
                 container.innerHTML = `
@@ -2120,10 +2490,14 @@
                 }
 
                 let contentHtml = '';
+                if (msg.replyTo && (msg.replyTo.text || msg.replyTo.id)) {
+                    contentHtml += `<div class="msg-reply-quote">${escapeHTML((msg.replyTo.text || 'Mensagem').slice(0, 80))}</div>`;
+                }
                 if (msg.type === 'audio') {
-                    contentHtml = `<audio src="${escapeHTML(msg.audioUrl || '')}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>`;
+                    contentHtml += `<audio src="${escapeHTML(msg.audioUrl || '')}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>`;
                 } else {
-                    contentHtml = `<p class="text-[13px] leading-snug break-words whitespace-pre-wrap">${escapeHTML(msg.text || '')}</p>`;
+                    const heavy = isEmojiHeavy(msg.text || '');
+                    contentHtml += `<p class="${heavy ? 'emoji-only-msg' : 'text-[13px]'} leading-snug break-words whitespace-pre-wrap">${formatMessageTextHtml(msg.text || '')}${msg.edited ? ' <span class="text-[9px] opacity-60">(editada)</span>' : ''}</p>`;
                     if (msg.status === 'failed') {
                         contentHtml += `<p class="text-[10px] text-red-200 mt-0.5">Falha no envio · toque para reenviar</p>`;
                     }
@@ -2151,13 +2525,14 @@
                     senderLabel = `<p class="text-[10px] font-semibold text-brand-500 dark:text-brand-400 mb-0.5 px-0.5">${escapeHTML(sn)}</p>`;
                 }
 
+                const tempBadge = msg.expiresAtMs ? `<span class="msg-temp-badge" title="Temporária"><i class="fa-solid fa-clock"></i></span>` : '';
                 html += `
                     <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} ${samePrev ? 'mt-0.5' : 'mt-2.5'} msg-animate-in relative z-[1]">
                         ${senderLabel}
-                        <div ${clickRetry} class="max-w-[85%] sm:max-w-[75%] px-3.5 py-2 ${radius} ${bubbleClass}">
+                        <div data-msgid="${msg.id}" ${clickRetry} class="max-w-[85%] sm:max-w-[75%] px-3.5 py-2 ${radius} ${bubbleClass} select-none" style="touch-action:pan-y">
                             ${contentHtml}
                             <div class="flex items-center justify-end gap-0.5 mt-0.5 text-[9px] ${isMe ? 'text-white/75' : 'text-slate-400'}">
-                                <span>${timeFormatted}</span>
+                                ${tempBadge}<span>${timeFormatted}</span>
                                 ${statusTicks}
                             </div>
                         </div>
@@ -2184,10 +2559,17 @@
             if (!text) return;
 
             // Grupos usam uma coleção própria, mantendo a mesma interface de conversa.
+            const replyPayload = replyTarget ? { id: replyTarget.id, text: (replyTarget.text || '').slice(0, 120), senderId: replyTarget.senderId } : null;
+            const expiresAtMs = tempMsgEnabled ? (Date.now() + tempMsgSeconds * 1000) : null;
+            clearReplyTarget();
+
             if (activeChatType === 'group') {
                 input.value = '';
                 try {
-                    await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), { senderId: currentUserId, senderName: currentUserName, text, type: 'text', createdAt: serverTimestamp() });
+                    await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), {
+                        senderId: currentUserId, senderName: currentUserName, text, type: 'text',
+                        replyTo: replyPayload, expiresAtMs, createdAt: serverTimestamp()
+                    });
                     updateLastMessagePreview(activeChatUserId, text, 'text', true);
                     playSendSound();
                     renderUsersList();
@@ -2201,7 +2583,7 @@
 
             const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
             const peerId = activeChatUserId;
-            pendingMessages.push({ tempId, peerId, text, status: 'pending', at: Date.now() });
+            pendingMessages.push({ tempId, peerId, text, status: 'pending', at: Date.now(), replyTo: replyPayload, expiresAtMs });
             updateLastMessagePreview(peerId, text, 'text', true);
             renderMessages(serverMessagesSnapshot);
             renderUsersList();
@@ -2221,9 +2603,10 @@
                     text: text,
                     type: 'text',
                     status: 'sent',
+                    replyTo: replyPayload,
+                    expiresAtMs,
                     createdAt: serverTimestamp()
                 });
-                // Remove pending; o snapshot do servidor substitui
                 pendingMessages = pendingMessages.filter(p => p.tempId !== tempId);
             } catch (err) {
                 const p = pendingMessages.find(x => x.tempId === tempId);
@@ -2323,6 +2706,10 @@
             activeChatUserId = null;
             activeChatType = 'private';
             activeGroup = null;
+            clearReplyTarget();
+            tempMsgEnabled = false;
+            const tbtn = document.getElementById('tempMsgBtn');
+            if (tbtn) { tbtn.classList.remove('bg-amber-500', 'text-white'); tbtn.classList.add('bg-slate-100'); }
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (peerActivityUnsubscribe) { peerActivityUnsubscribe(); peerActivityUnsubscribe = null; }
             // Sincronizar histórico se o utilizador usou o botão da UI (não o do telemóvel)
@@ -3582,159 +3969,225 @@
 
 
 
-        // ========== FUNDOS PARA PUBLICAÇÕES (pool grande + rotação) ==========
-        const POST_BG_GRADIENTS = [
-            { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' },
-            { id: 'sky', name: 'Céu', bg: 'linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%)', text: '#0c4a6e', border: 'rgba(14,165,233,0.25)' },
-            { id: 'sunset', name: 'Pôr do sol', bg: 'linear-gradient(135deg, #ffedd5 0%, #fb7185 100%)', text: '#7c2d12', border: 'rgba(249,115,22,0.3)' },
-            { id: 'mint', name: 'Menta', bg: 'linear-gradient(135deg, #d1fae5 0%, #34d399 100%)', text: '#064e3b', border: 'rgba(16,185,129,0.3)' },
-            { id: 'lavender', name: 'Lavanda', bg: 'linear-gradient(135deg, #ede9fe 0%, #a78bfa 100%)', text: '#4c1d95', border: 'rgba(139,92,246,0.3)' },
-            { id: 'ocean', name: 'Oceano', bg: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)', text: '#ffffff', border: 'rgba(255,255,255,0.2)' },
-            { id: 'night', name: 'Noite', bg: 'linear-gradient(135deg, #0f172a 0%, #312e81 100%)', text: '#e2e8f0', border: 'rgba(148,163,184,0.25)' },
-            { id: 'forest', name: 'Floresta', bg: 'linear-gradient(135deg, #14532d 0%, #065f46 100%)', text: '#ecfdf5', border: 'rgba(167,243,208,0.2)' },
-            { id: 'coral', name: 'Coral', bg: 'linear-gradient(135deg, #fff1f2 0%, #fb7185 100%)', text: '#881337', border: 'rgba(244,63,94,0.3)' },
-            { id: 'grape', name: 'Uva', bg: 'linear-gradient(135deg, #3b0764 0%, #9333ea 100%)', text: '#f3e8ff', border: 'rgba(216,180,254,0.25)' },
-            { id: 'gold', name: 'Ouro', bg: 'linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%)', text: '#78350f', border: 'rgba(245,158,11,0.35)' },
-            { id: 'slate', name: 'Ardósia', bg: 'linear-gradient(135deg, #334155 0%, #0f172a 100%)', text: '#f1f5f9', border: 'rgba(148,163,184,0.25)' }
-        ];
 
-        // Pool de imagens Unsplash (cidades, carros, flores, natureza, etc.) — >100 combinações com overlays
-        const POST_BG_IMAGE_IDS = [
-            // Cidades
-            '1514565131-fce0801e5785','1480714378408-67cf0d13bc1b','1540959733332-eab4deabeeaf','1502602898657-3e91760cbb34',
-            '1496442226666-8d4d0e62e6e9','1512453979798-5ea266f8880c','1536599018102-9f803c140fc1','1513635269975-59663e0ac1ad',
-            '1525625293386-3f8f99389edd','1477959858617-67f85cf4f1df','1449824913935-59a10b8d2000','1467269204594-9661b134dd2b',
-            // Carros
-            '1492144534655-ae79c964c9d7','1503376780353-7e6692767b70','1494976388531-d1058494cdd8','1502877338532-05339d4c5b8f',
-            '1511919882258-1df1b29c8c2e','1542362567-b07e54358753','1553440569-bcc63803a83d','1552519507-da3b142c6e3d',
-            // Flores
-            '1490750967868-88aa4486c946','1499002234651-8c6e2f3e8c1c','1455659817273-f968077ca82a','1468327768854-36df5767f0ce',
-            '1487530811176-354243547fae','1519378058452-c1fa245d8757','1496062031456-07b21c72b2b3','1470506028280-a7438554c3c2',
-            // Natureza / praia / montanha
-            '1464822759023-fed622ff2c3b','1507525428034-b723cf961d3e','1506905925346-21bda4d32df4','1441974231531-c6227db76b6e',
-            '1470071459604-3b5ec3a7fe05','1439066615861-d1af74d74000','1509316785289-025f5b846b35','1531366936337-7c912a45b87a',
-            '1511497584788-876760111969','1476820865390-c52aeebb9891','1505142468610-359e7d316be0','1505118380757-91f5f5632de0',
-            // Espaço / abstract
-            '1419242902214-272b3f66ee7a','1462331940025-496dfbfc7564','1451187580459-43490279c0fa','1464802686167-b363b5d2b8f3',
-            '1557682250-33bd709cbe85','1579546929518-9e396f3cc809','1550684848-fac1c5b4e853','1558591710-4b4a1ae0f04d',
-            // Arquitetura / ruas
-            '1486325212027-8081c815af0b','1519501025264-29d6b9dfcb63','1449824913935-59a10b8d2001','1468433019198-5d1b1f4c8b1c',
-            '1479839672671-a8e1f9f4c1d1','1516483638262-f56c6d8e3e0c','1523906834658-6e24efc5f4e0','1533106497176-45ae19e68ba2',
-            // Mais variedade
-            '1506905925346-21bda4d32df5','1519681393784-d1202c3f5b0b','1475924156734-496f6cac6ec1','1501785888041-af3ef285b470',
-            '1469474968028-56623f02e42e','1472214103451-9374bd1c798e','1447752875215-b2761acb3c5d','1426604966848-d7adac402bff',
-            '1470252649378-9c29740c4ab0','1501854140801-50d0167340bb','1441974231531-c6227db76b6f','1518837695005-2083093ee35b',
-            '1470114715944-ae22d4b4c8a0','1493246507139-91d8b27f3a0c','1517248135467-4c7edcad34c4','1526772662000-3f88f10405ff',
-            '1534278942124-6d3f0c2c5d5e','1544551763-46a013bb70d5','1558618666-fcd25c85cd64','1563089145-5991074e6b4b',
-            '1571019613454-1cb2f99b2d8b','1582719478250-c89cae4dc85b','1590523277543-a1d3e5d0e0a0','1600585154340-be6161a56a0c',
-            '1605236812797-1c4f2e0e0e0e','1614850523459-5b2c0e0e0e0e','1620121693251-5b2c0e0e0e0f'
-        ].filter((id, i, a) => a.indexOf(id) === i);
+        // ========== FUNDOS POR CATEGORIA (10 aleatórios / 30 min) ==========
+        const POST_BG_CATEGORIES = {
+            gradiente: { name: 'Gradientes', icon: 'fa-fill-drip' },
+            cidades: { name: 'Cidades', icon: 'fa-city' },
+            futuro: { name: 'Futurista', icon: 'fa-robot' },
+            galaxias: { name: 'Galáxias', icon: 'fa-star' },
+            florestas: { name: 'Florestas', icon: 'fa-tree' },
+            montanhas: { name: 'Montanhas', icon: 'fa-mountain' },
+            oceanos: { name: 'Oceanos', icon: 'fa-water' },
+            ceus: { name: 'Céus', icon: 'fa-cloud' },
+            aurora: { name: 'Aurora', icon: 'fa-moon' }
+        };
+
+        const POST_BG_POOL = {
+            gradiente: [
+                { id: 'g_sky', name: 'Céu', bg: 'linear-gradient(135deg,#e0f2fe,#7dd3fc)', text: '#0c4a6e' },
+                { id: 'g_sunset', name: 'Pôr do sol', bg: 'linear-gradient(135deg,#ffedd5,#fb7185)', text: '#7c2d12' },
+                { id: 'g_mint', name: 'Menta', bg: 'linear-gradient(135deg,#d1fae5,#34d399)', text: '#064e3b' },
+                { id: 'g_ocean', name: 'Oceano', bg: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)', text: '#fff' },
+                { id: 'g_night', name: 'Noite', bg: 'linear-gradient(135deg,#0f172a,#312e81)', text: '#e2e8f0' },
+                { id: 'g_forest', name: 'Floresta', bg: 'linear-gradient(135deg,#14532d,#065f46)', text: '#ecfdf5' },
+                { id: 'g_grape', name: 'Uva', bg: 'linear-gradient(135deg,#3b0764,#9333ea)', text: '#f3e8ff' },
+                { id: 'g_gold', name: 'Ouro', bg: 'linear-gradient(135deg,#fef3c7,#f59e0b)', text: '#78350f' },
+                { id: 'g_coral', name: 'Coral', bg: 'linear-gradient(135deg,#fff1f2,#fb7185)', text: '#881337' },
+                { id: 'g_slate', name: 'Ardósia', bg: 'linear-gradient(135deg,#334155,#0f172a)', text: '#f1f5f9' },
+                { id: 'g_cyber', name: 'Cyber', bg: 'linear-gradient(135deg,#022c22,#0ea5e9 50%,#a855f7)', text: '#ecfeff' },
+                { id: 'g_neon', name: 'Neon', bg: 'linear-gradient(135deg,#1e1b4b,#db2777)', text: '#fdf2f8' }
+            ],
+            cidades: [
+                '1514565131-fce0801e5785','1480714378408-67cf0d13bc1b','1540959733332-eab4deabeeaf','1502602898657-3e91760cbb34',
+                '1496442226666-8d4d0e62e6e9','1512453979798-5ea266f8880c','1536599018102-9f803c140fc1','1513635269975-59663e0ac1ad',
+                '1525625293386-3f8f99389edd','1477959858617-67f85cf4f1df','1449824913935-59a10b8d2000','1519501025264-29d6b9dfcb63'
+            ],
+            futuro: [
+                '1451187580459-43490279c0fa','1518770660439-4636190af475','1550751827-4bd374c3f58b','1526374965328-7f61d4dc18c5',
+                '1485827404703-89b55fcc595e','1535223289814-23af8c1b1b2c','1516321318423-f06f85e504b3','1558618666-fcd25c85cd64',
+                '1518709268805-4e9042af2176','1563089145-5991074e6b4b','1579546929518-9e396f3cc809','1557682250-33bd709cbe85'
+            ],
+            galaxias: [
+                '1419242902214-272b3f66ee7a','1462331940025-496dfbfc7564','1464802686167-b363b5d2b8f3','1446776811953-b23d57bd21aa',
+                '1454783548815-0d0c1c8c1e0e','1516339901601-2e1b62dc0c45','1543722530-d2c3201371f7','1534796636912-3b95b2b8c0e0'
+            ],
+            florestas: [
+                '1441974231531-c6227db76b6e','1511497584788-876760111969','1470071459604-3b5ec3a7fe05','1476820865390-c52aeebb9891',
+                '1516026672322-bc52d61a55d5','1448375240586-876e2e1f5c8c','1469474968028-56623f02e42e','1447752875215-b2761acb3c5d'
+            ],
+            montanhas: [
+                '1464822759023-fed622ff2c3b','1506905925346-21bda4d32df4','1439066615861-d1af74d74000','1501785888041-af3ef285b470',
+                '1464822759023-fed622ff2c3c','1472214103451-9374bd1c798e','1426604966848-d7adac402bff','1501854140801-50d0167340bb'
+            ],
+            oceanos: [
+                '1507525428034-b723cf961d3e','1505142468610-359e7d316be0','1505118380757-91f5f5632de0','1518837695005-2083093ee35b',
+                '1505118380757-91f5f5632de1','1475924156734-496f6cac6ec1','1501785888041-af3ef285b471','1439066615861-d1af74d74001'
+            ],
+            ceus: [
+                '1495616811223-4d98c6e9c869','1509316785289-025f5b846b35','1470252649378-9c29740c4ab0','1519681393784-d1202c3f5b0b',
+                '1501854140801-50d0167340bc','1469474968028-56623f02e42f','1441974231531-c6227db76b6f','1470114715944-ae22d4b4c8a0'
+            ],
+            aurora: [
+                '1531366936337-7c912a45b87a','1483347756197-71ef80e95f73','1507400505-5e1e2e0e0e0e','1519681393784-d1202c3f5b0c',
+                '1464822759023-fed622ff2c3d','1506905925346-21bda4d32df6','1439066615861-d1af74d74002','1446776811953-b23d57bd21ab'
+            ]
+        };
 
         const POST_BG_OVERLAYS = [
             { key: 'dark', overlay: 'linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.72))', text: '#f8fafc' },
             { key: 'soft', overlay: 'linear-gradient(rgba(15,23,42,0.35), rgba(15,23,42,0.55))', text: '#ffffff' },
-            { key: 'warm', overlay: 'linear-gradient(rgba(120,53,15,0.4), rgba(69,26,3,0.65))', text: '#fff7ed' },
-            { key: 'cool', overlay: 'linear-gradient(rgba(12,74,110,0.45), rgba(15,23,42,0.7))', text: '#e0f2fe' }
+            { key: 'warm', overlay: 'linear-gradient(rgba(120,53,15,0.4), rgba(69,26,3,0.65))', text: '#fff7ed' }
         ];
 
-        let POST_BACKGROUNDS = [];
+        let selectedPostBgCat = 'gradiente';
         let selectedPostBg = 'default';
         let selectedPostFont = 'system-ui, sans-serif';
         let selectedPostSize = '16px';
         let selectedPostColor = '#0f172a';
-        let postBgSeed = Date.now();
+        let postBgRotationKey = '';
+        let visiblePostBgs = [];
+        let POST_BACKGROUNDS = []; // compat
 
-        function buildPostBackgrounds(seed) {
-            const list = [...POST_BG_GRADIENTS];
-            // Gerar muitas combinações imagem+overlay a partir do seed (rotação horária)
-            const hourBucket = Math.floor(seed / (1000 * 60 * 12)); // muda ~5x por hora
-            let idx = (hourBucket * 17 + (seed % 97)) % POST_BG_IMAGE_IDS.length;
-            const total = Math.min(120, POST_BG_IMAGE_IDS.length * POST_BG_OVERLAYS.length);
-            for (let i = 0; i < total; i++) {
-                const imgId = POST_BG_IMAGE_IDS[(idx + i) % POST_BG_IMAGE_IDS.length];
+        function seededShuffle(arr, seed) {
+            const a = arr.slice();
+            let s = seed % 2147483647;
+            if (s <= 0) s += 2147483646;
+            for (let i = a.length - 1; i > 0; i--) {
+                s = (s * 16807) % 2147483647;
+                const j = s % (i + 1);
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function getRotationBucket() {
+            // muda a cada 30 minutos
+            return Math.floor(Date.now() / (30 * 60 * 1000));
+        }
+
+        function expandCategoryPool(cat) {
+            const raw = POST_BG_POOL[cat] || [];
+            if (cat === 'gradiente') {
+                return raw.map(g => ({
+                    id: g.id,
+                    name: g.name,
+                    bg: g.bg,
+                    text: g.text,
+                    border: 'rgba(0,0,0,0.08)',
+                    image: false
+                }));
+            }
+            const out = [];
+            raw.forEach((imgId, i) => {
                 const ov = POST_BG_OVERLAYS[i % POST_BG_OVERLAYS.length];
                 const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
-                list.push({
+                out.push({
                     id: `img_${imgId}_${ov.key}`,
-                    name: `Foto ${i + 1}`,
+                    name: `${POST_BG_CATEGORIES[cat]?.name || cat} ${i + 1}`,
                     bg: `${ov.overlay}, url('${url}')`,
                     text: ov.text,
                     border: 'rgba(255,255,255,0.15)',
                     image: true,
                     thumb: url
                 });
+            });
+            return out;
+        }
+
+        function refreshVisiblePostBgs(force) {
+            const bucket = String(getRotationBucket());
+            if (!force && postBgRotationKey === bucket + ':' + selectedPostBgCat && visiblePostBgs.length) return;
+            postBgRotationKey = bucket + ':' + selectedPostBgCat;
+            const pool = expandCategoryPool(selectedPostBgCat);
+            const seed = getRotationBucket() * 31 + (selectedPostBgCat.charCodeAt(0) * 17);
+            const shuffled = seededShuffle(pool, seed);
+            visiblePostBgs = shuffled.slice(0, 10);
+            // sempre incluir default no início da lista global de lookup
+            POST_BACKGROUNDS = [
+                { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' },
+                ...visiblePostBgs
+            ];
+            if (!visiblePostBgs.some(b => b.id === selectedPostBg) && selectedPostBg !== 'default') {
+                selectedPostBg = visiblePostBgs[0]?.id || 'default';
             }
-            POST_BACKGROUNDS = list;
-            return list;
+        }
+
+        function selectPostBgCategory(cat) {
+            selectedPostBgCat = cat || 'gradiente';
+            refreshVisiblePostBgs(true);
+            renderPostBgPalette();
+            applyPostBgToTextarea();
         }
 
         function shufflePostBgs() {
-            postBgSeed = Date.now();
-            buildPostBackgrounds(postBgSeed);
-            // Manter seleção se ainda existir; senão default
-            if (!POST_BACKGROUNDS.some(b => b.id === selectedPostBg)) selectedPostBg = 'default';
+            // força nova amostra na categoria atual
+            const pool = expandCategoryPool(selectedPostBgCat);
+            const seed = Date.now();
+            visiblePostBgs = seededShuffle(pool, seed).slice(0, 10);
+            POST_BACKGROUNDS = [{ id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' }, ...visiblePostBgs];
+            selectedPostBg = visiblePostBgs[0]?.id || 'default';
             renderPostBgPalette();
             applyPostBgToTextarea();
-            showToast('Novos fundos gerados!', 'success');
+            showToast('10 novos fundos nesta categoria!', 'success');
         }
 
-        // Inicializar pool
-        buildPostBackgrounds(postBgSeed);
-
         function getPostBg(id) {
-            const found = POST_BACKGROUNDS.find(b => b.id === id);
+            const all = [
+                { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' },
+                ...visiblePostBgs,
+                ...expandCategoryPool('gradiente')
+            ];
+            const found = all.find(b => b.id === id) || POST_BACKGROUNDS.find(b => b.id === id);
             if (found) return found;
-            // Reconstruir fundos de imagem a partir do id (posts antigos / outras rotações)
             if (id && String(id).startsWith('img_')) {
                 const parts = String(id).replace(/^img_/, '').split('_');
                 const ovKey = parts.pop();
                 const imgId = parts.join('_');
                 const ov = POST_BG_OVERLAYS.find(o => o.key === ovKey) || POST_BG_OVERLAYS[0];
                 const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
-                return {
-                    id,
-                    name: 'Foto',
-                    bg: `${ov.overlay}, url('${url}')`,
-                    text: ov.text,
-                    border: 'rgba(255,255,255,0.15)',
-                    image: true,
-                    thumb: url
-                };
+                return { id, name: 'Foto', bg: `${ov.overlay}, url('${url}')`, text: ov.text, border: 'rgba(255,255,255,0.15)', image: true, thumb: url };
             }
-            return POST_BG_GRADIENTS.find(b => b.id === id) || POST_BG_GRADIENTS[0];
+            return { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' };
         }
 
         function renderPostBgPalette() {
+            refreshVisiblePostBgs(false);
+            const cats = document.getElementById('postBgCategories');
+            if (cats) {
+                cats.innerHTML = Object.entries(POST_BG_CATEGORIES).map(([key, c]) =>
+                    `<button type="button" onclick="window.selectPostBgCategory('${key}')" class="bg-cat-btn px-2 py-1 rounded-lg text-[10px] font-semibold transition btn-press ${selectedPostBgCat === key ? 'active bg-brand-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">
+                        <i class="fa-solid ${c.icon} mr-0.5"></i>${c.name}
+                    </button>`
+                ).join('');
+            }
             const box = document.getElementById('postBgPalette');
             if (!box) return;
-            // Mostrar gradientes + primeiras 36 imagens (scroll para mais)
-            const show = POST_BACKGROUNDS.slice(0, 48);
-            box.innerHTML = show.map(b => {
+            const list = [{ id: 'default', name: 'Padrão', bg: '', text: '#0f172a', thumb: null }, ...visiblePostBgs];
+            box.innerHTML = list.map(b => {
                 let style;
-                if (b.thumb) {
-                    style = `background-image: url('${b.thumb}');`;
-                } else if (b.bg) {
-                    style = `background:${b.bg};`;
-                } else {
+                if (b.thumb) style = `background-image:url('${b.thumb}');`;
+                else if (b.bg) style = `background:${b.bg};`;
+                else {
                     const isDark = document.documentElement.classList.contains('dark');
-                    style = isDark
-                        ? 'background: linear-gradient(135deg, #1e293b, #334155);'
-                        : 'background: linear-gradient(135deg, #f1f5f9, #e2e8f0);';
+                    style = isDark ? 'background:linear-gradient(135deg,#1e293b,#334155);' : 'background:linear-gradient(135deg,#f1f5f9,#e2e8f0);';
                 }
-                return `<button type="button" class="post-bg-swatch ${b.thumb ? 'img-swatch' : ''} ${selectedPostBg === b.id ? 'selected' : ''}" title="${escapeHTML(b.name)}"
-                    style="${style}"
-                    onclick="window.selectPostBg('${b.id}')"></button>`;
+                return `<button type="button" class="post-bg-swatch ${b.thumb ? 'img-swatch' : ''} ${selectedPostBg === b.id ? 'selected' : ''}" title="${escapeHTML(b.name || '')}" style="${style}" onclick="window.selectPostBg('${b.id}')"></button>`;
             }).join('');
+            const hint = document.getElementById('postBgRotateHint');
+            if (hint) {
+                const mins = 30 - (Math.floor(Date.now() / 60000) % 30);
+                hint.textContent = `10 fundos · novos em ~${mins} min`;
+            }
         }
 
         function selectPostBg(id) {
             selectedPostBg = id || 'default';
             const b = getPostBg(selectedPostBg);
-            // Auto-contraste: sugerir cor do texto do fundo
             if (b.text) {
-                selectedPostColor = b.text;
+                selectedPostColor = b.text === '#fff' ? '#ffffff' : b.text;
                 const colorInput = document.getElementById('postColorInput');
-                if (colorInput) colorInput.value = b.text.startsWith('#') && b.text.length === 7 ? b.text : (b.text === '#ffffff' ? '#ffffff' : '#0f172a');
+                if (colorInput && selectedPostColor.startsWith('#') && selectedPostColor.length === 7) colorInput.value = selectedPostColor;
             }
             applyPostBgToTextarea();
             renderPostBgPalette();
@@ -3765,7 +4218,7 @@
                 return;
             }
             ta.classList.remove('bg-slate-50', 'dark:bg-slate-900');
-            if (b.thumb) {
+            if (b.thumb || (b.bg && b.bg.includes('url('))) {
                 ta.style.backgroundImage = b.bg;
                 ta.style.backgroundSize = 'cover';
                 ta.style.backgroundPosition = 'center';
@@ -3800,8 +4253,8 @@
         function postMetaClass(id) {
             const b = getPostBg(id);
             if (!b.bg) return { name: 'text-slate-800 dark:text-slate-100', date: 'text-slate-400', border: 'border-slate-100 dark:border-slate-700/60', btn: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' };
-            const t = b.text || '#fff';
-            const lightText = t === '#ffffff' || t.startsWith('#e') || t.startsWith('#f') || t === '#f8fafc' || t === '#ecfdf5' || t === '#fff7ed' || t === '#e0f2fe' || t === '#f3e8ff';
+            const t = (b.text || '#fff').toLowerCase();
+            const lightText = t === '#ffffff' || t === '#fff' || t.startsWith('#e') || t.startsWith('#f') || t === '#f8fafc' || t === '#ecfdf5' || t === '#fff7ed' || t === '#ecfeff' || t === '#fdf2f8' || t === '#f3e8ff';
             return {
                 name: lightText ? 'text-white/95' : '',
                 date: lightText ? 'text-white/70' : 'opacity-70',
@@ -3809,6 +4262,18 @@
                 btn: lightText ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-black/10 hover:bg-black/15'
             };
         }
+
+        // Atualizar fundos quando o bucket de 30 min muda
+        setInterval(() => {
+            const key = String(getRotationBucket()) + ':' + selectedPostBgCat;
+            if (key !== postBgRotationKey) {
+                refreshVisiblePostBgs(true);
+                const box = document.getElementById('postBgPalette');
+                if (box && !document.getElementById('addContentModal')?.classList.contains('opacity-0')) {
+                    renderPostBgPalette();
+                }
+            }
+        }, 15000);
 
         function updatePostCharCount() {
             const el = document.getElementById('inputPostText');
@@ -4595,6 +5060,19 @@
         window.selectPostBg = selectPostBg;
         window.renderPostBgPalette = renderPostBgPalette;
         window.shufflePostBgs = shufflePostBgs;
+        window.msgActionReply = msgActionReply;
+        window.msgActionEdit = msgActionEdit;
+        window.msgActionForward = msgActionForward;
+        window.msgActionDelete = msgActionDelete;
+        window.closeMsgActionSheet = closeMsgActionSheet;
+        window.clearReplyTarget = clearReplyTarget;
+        window.toggleTempMsg = toggleTempMsg;
+        window.openEmojiMixer = openEmojiMixer;
+        window.pickMixEmoji = pickMixEmoji;
+        window.setMixEmoji = setMixEmoji;
+        window.sendMixedEmoji = sendMixedEmoji;
+        window.selectPostBgCategory = selectPostBgCategory;
+
         window.applyPostTextStyle = applyPostTextStyle;
         window.viewContent = viewContent;
         window.deleteContent = deleteContent;
