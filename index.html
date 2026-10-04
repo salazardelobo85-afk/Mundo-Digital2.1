@@ -225,6 +225,56 @@
         #inputPostText.post-writing {
             transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
+
+        /* Comentários: layout estável mobile/desktop */
+        #viewContentBody {
+            position: relative;
+            min-height: 0;
+        }
+        #entertainmentChatPanel {
+            transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), opacity 0.2s ease;
+        }
+        @media (max-width: 639px) {
+            #entertainmentChatPanel.comments-open-mobile {
+                display: flex !important;
+                position: absolute;
+                inset: 0;
+                z-index: 20;
+                width: 100% !important;
+                border-left: none;
+                background: rgb(15 23 42 / 0.98);
+            }
+            .dark #entertainmentChatPanel.comments-open-mobile {
+                background: rgb(15 23 42 / 0.98);
+            }
+        }
+        .post-style-select {
+            font-size: 11px;
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.55rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .dark .post-style-select {
+            border-color: #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .post-bg-swatch.img-swatch {
+            background-size: cover !important;
+            background-position: center !important;
+        }
+        #postBgPalette {
+            max-height: 7.5rem;
+            overflow-y: auto;
+        }
+        #viewersBadge.live {
+            animation: livePulse 1.6s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+            50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -611,6 +661,7 @@
                     <div id="groupMembersList" class="max-h-52 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700"></div>
                 </div>
                 <button type="button" id="groupSaveSettingsBtn" onclick="window.saveGroupSettings()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm btn-press"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar alterações</button>
+                <button type="button" id="groupDeleteBtn" onclick="window.deleteGroup()" class="hidden w-full py-2.5 rounded-xl bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white font-semibold text-sm btn-press border border-red-500/20"><i class="fa-solid fa-trash mr-2"></i>Eliminar grupo</button>
             </div>
         </div>
     </div>
@@ -740,10 +791,42 @@
                         class="post-writing w-full px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar resize-none leading-relaxed"
                         oninput="window.updatePostCharCount()"></textarea>
                     <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
-                            <i class="fa-solid fa-palette text-brand-500"></i> Fundo da publicação
-                        </p>
-                        <div id="postBgPalette" class="flex flex-wrap gap-2 items-center"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-palette text-brand-500"></i> Fundo
+                            </p>
+                            <button type="button" onclick="window.shufflePostBgs()" class="text-[10px] font-semibold text-brand-600 hover:underline btn-press">
+                                <i class="fa-solid fa-shuffle mr-1"></i>Mais fundos
+                            </button>
+                        </div>
+                        <div id="postBgPalette" class="flex flex-wrap gap-2 items-center custom-scrollbar"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[10px] font-semibold text-slate-400 mb-1 block">Fonte</label>
+                            <select id="postFontSelect" onchange="window.applyPostTextStyle()" class="post-style-select w-full">
+                                <option value="system-ui, sans-serif">Padrão</option>
+                                <option value="Georgia, serif">Serif</option>
+                                <option value="'Courier New', monospace">Mono</option>
+                                <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+                                <option value="'Comic Sans MS', cursive">Casual</option>
+                                <option value="Impact, sans-serif">Impacto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-semibold text-slate-400 mb-1 block">Tamanho</label>
+                            <select id="postSizeSelect" onchange="window.applyPostTextStyle()" class="post-style-select w-full">
+                                <option value="14px">Pequeno</option>
+                                <option value="16px" selected>Médio</option>
+                                <option value="18px">Grande</option>
+                                <option value="22px">Extra</option>
+                                <option value="28px">Destaque</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-semibold text-slate-400 mb-1 block">Cor do texto</label>
+                            <input type="color" id="postColorInput" value="#0f172a" oninput="window.applyPostTextStyle()" class="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer bg-transparent">
+                        </div>
                     </div>
                     <div class="flex items-center justify-between px-1">
                         <span class="text-[11px] text-slate-400"><i class="fa-solid fa-users mr-1"></i>Visível para todos</span>
@@ -784,20 +867,22 @@
                 </div>
             </div>
 
-            <div class="flex-1 flex overflow-hidden min-h-0">
-                <div id="viewContainer" class="flex-1 p-3 sm:p-4 overflow-auto bg-slate-950/20 flex items-center justify-center custom-scrollbar"></div>
+            <div id="viewContentBody" class="flex-1 flex overflow-hidden min-h-0 relative">
+                <div id="viewContainer" class="flex-1 p-3 sm:p-4 overflow-auto bg-slate-950/20 flex items-center justify-center custom-scrollbar min-h-0"></div>
                 
-                <!-- PAINEL DE COMENTÁRIOS (todas as publicações) -->
-                <div id="entertainmentChatPanel" class="hidden w-full sm:w-80 border-l border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50 dark:bg-slate-900/50 shrink-0">
-                    <div class="px-3 py-2.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <!-- PAINEL DE COMENTÁRIOS -->
+                <div id="entertainmentChatPanel" class="hidden sm:flex w-full sm:w-80 border-l border-slate-200 dark:border-slate-700 flex-col bg-white dark:bg-slate-900 shrink-0 min-h-0">
+                    <div class="px-3 py-2.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
                         <span class="text-xs font-bold text-slate-600 dark:text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-brand-500"></i>Comentários</span>
-                        <button onclick="window.toggleEntertainmentChat()" class="sm:hidden text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+                        <button type="button" onclick="window.toggleEntertainmentChat()" class="text-slate-400 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 btn-press sm:hidden" title="Fechar">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
-                    <div id="entertainmentChatMessages" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 text-xs"></div>
-                    <form id="entertainmentChatForm" onsubmit="window.sendContentComment(event)" class="p-2 border-t border-slate-200 dark:border-slate-700 flex gap-1.5">
+                    <div id="entertainmentChatMessages" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 text-xs min-h-0"></div>
+                    <form id="entertainmentChatForm" onsubmit="window.sendContentComment(event)" class="p-2.5 border-t border-slate-200 dark:border-slate-700 flex gap-1.5 shrink-0 safe-area-pb">
                         <input type="text" id="entertainmentChatInput" placeholder="Escreva um comentário..." autocomplete="off" maxlength="500"
-                               class="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
-                        <button type="submit" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs transition">
+                               class="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="submit" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs transition btn-press">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </form>
@@ -2362,6 +2447,8 @@
             document.getElementById('groupSettingsDesc').disabled = !canEdit;
             document.getElementById('groupSaveSettingsBtn').classList.toggle('hidden', !canEdit);
             document.getElementById('groupAddMemberBtn').classList.toggle('hidden', !canEdit);
+            const delBtn = document.getElementById('groupDeleteBtn');
+            if (delBtn) delBtn.classList.toggle('hidden', !canEdit);
             document.getElementById('groupAddMemberPanel').classList.add('hidden');
             renderGroupMembersList();
             openModal('groupSettingsModal');
@@ -2485,6 +2572,27 @@
                 showToast('Grupo atualizado!', 'success');
             } catch (e) {
                 showToast('Erro ao guardar.', 'error');
+            }
+        }
+
+        async function deleteGroup() {
+            if (!activeGroup || !currentUserId) return;
+            const isCreator = activeGroup.createdBy === currentUserId;
+            const isAdm = isGroupAdmin(activeGroup, currentUserId);
+            if (!isCreator && !isAdm) {
+                showToast('Apenas admins ou o criador podem eliminar o grupo.', 'error');
+                return;
+            }
+            if (!confirm('Eliminar este grupo permanentemente? Esta ação não pode ser desfeita.')) return;
+            try {
+                await deleteDoc(doc(db, 'groups', activeGroup.id));
+                closeModal('groupSettingsModal');
+                backToUsersList(true);
+                showToast('Grupo eliminado.', 'success');
+                renderUsersList();
+            } catch (e) {
+                console.error(e);
+                showToast('Erro ao eliminar grupo. Verifique as regras do Firestore.', 'error');
             }
         }
 
@@ -3267,7 +3375,7 @@
                 }
 
                 const bgId = item.bgId || 'default';
-                const bgStyle = postBgInlineStyle(bgId);
+                const bgStyle = postBgInlineStyle(bgId, item.textColor, item.textFont, item.textSize);
                 const meta = postMetaClass(bgId);
                 const hasBg = !!getPostBg(bgId).bg;
                 const cardBase = hasBg
@@ -3473,69 +3581,215 @@
         }
 
 
-        // ========== FUNDOS COLORIDOS PARA PUBLICAÇÕES ==========
-        const POST_BACKGROUNDS = [
-            { id: 'default', name: 'Padrão', bg: '', text: '', border: '' },
-            { id: 'sky', name: 'Céu', bg: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%)', text: '#0c4a6e', border: 'rgba(14,165,233,0.25)' },
-            { id: 'sunset', name: 'Pôr do sol', bg: 'linear-gradient(135deg, #ffedd5 0%, #fdba74 45%, #fb7185 100%)', text: '#7c2d12', border: 'rgba(249,115,22,0.3)' },
-            { id: 'mint', name: 'Menta', bg: 'linear-gradient(135deg, #d1fae5 0%, #6ee7b7 50%, #34d399 100%)', text: '#064e3b', border: 'rgba(16,185,129,0.3)' },
-            { id: 'lavender', name: 'Lavanda', bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 50%, #a78bfa 100%)', text: '#4c1d95', border: 'rgba(139,92,246,0.3)' },
-            { id: 'rose', name: 'Rosa', bg: 'linear-gradient(135deg, #fce7f3 0%, #f9a8d4 50%, #f472b6 100%)', text: '#831843', border: 'rgba(236,72,153,0.3)' },
-            { id: 'amber', name: 'Âmbar', bg: 'linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #fbbf24 100%)', text: '#78350f', border: 'rgba(245,158,11,0.35)' },
-            { id: 'ocean', name: 'Oceano', bg: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 55%, #8b5cf6 100%)', text: '#ffffff', border: 'rgba(255,255,255,0.2)' },
-            { id: 'night', name: 'Noite', bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #312e81 100%)', text: '#e2e8f0', border: 'rgba(148,163,184,0.25)' },
-            { id: 'forest', name: 'Floresta', bg: 'linear-gradient(135deg, #14532d 0%, #166534 40%, #065f46 100%)', text: '#ecfdf5', border: 'rgba(167,243,208,0.2)' },
-            { id: 'coral', name: 'Coral', bg: 'linear-gradient(135deg, #fff1f2 0%, #fda4af 40%, #fb7185 100%)', text: '#881337', border: 'rgba(244,63,94,0.3)' },
-            { id: 'grape', name: 'Uva', bg: 'linear-gradient(135deg, #3b0764 0%, #6b21a8 50%, #9333ea 100%)', text: '#f3e8ff', border: 'rgba(216,180,254,0.25)' }
+
+        // ========== FUNDOS PARA PUBLICAÇÕES (pool grande + rotação) ==========
+        const POST_BG_GRADIENTS = [
+            { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' },
+            { id: 'sky', name: 'Céu', bg: 'linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%)', text: '#0c4a6e', border: 'rgba(14,165,233,0.25)' },
+            { id: 'sunset', name: 'Pôr do sol', bg: 'linear-gradient(135deg, #ffedd5 0%, #fb7185 100%)', text: '#7c2d12', border: 'rgba(249,115,22,0.3)' },
+            { id: 'mint', name: 'Menta', bg: 'linear-gradient(135deg, #d1fae5 0%, #34d399 100%)', text: '#064e3b', border: 'rgba(16,185,129,0.3)' },
+            { id: 'lavender', name: 'Lavanda', bg: 'linear-gradient(135deg, #ede9fe 0%, #a78bfa 100%)', text: '#4c1d95', border: 'rgba(139,92,246,0.3)' },
+            { id: 'ocean', name: 'Oceano', bg: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)', text: '#ffffff', border: 'rgba(255,255,255,0.2)' },
+            { id: 'night', name: 'Noite', bg: 'linear-gradient(135deg, #0f172a 0%, #312e81 100%)', text: '#e2e8f0', border: 'rgba(148,163,184,0.25)' },
+            { id: 'forest', name: 'Floresta', bg: 'linear-gradient(135deg, #14532d 0%, #065f46 100%)', text: '#ecfdf5', border: 'rgba(167,243,208,0.2)' },
+            { id: 'coral', name: 'Coral', bg: 'linear-gradient(135deg, #fff1f2 0%, #fb7185 100%)', text: '#881337', border: 'rgba(244,63,94,0.3)' },
+            { id: 'grape', name: 'Uva', bg: 'linear-gradient(135deg, #3b0764 0%, #9333ea 100%)', text: '#f3e8ff', border: 'rgba(216,180,254,0.25)' },
+            { id: 'gold', name: 'Ouro', bg: 'linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%)', text: '#78350f', border: 'rgba(245,158,11,0.35)' },
+            { id: 'slate', name: 'Ardósia', bg: 'linear-gradient(135deg, #334155 0%, #0f172a 100%)', text: '#f1f5f9', border: 'rgba(148,163,184,0.25)' }
         ];
+
+        // Pool de imagens Unsplash (cidades, carros, flores, natureza, etc.) — >100 combinações com overlays
+        const POST_BG_IMAGE_IDS = [
+            // Cidades
+            '1514565131-fce0801e5785','1480714378408-67cf0d13bc1b','1540959733332-eab4deabeeaf','1502602898657-3e91760cbb34',
+            '1496442226666-8d4d0e62e6e9','1512453979798-5ea266f8880c','1536599018102-9f803c140fc1','1513635269975-59663e0ac1ad',
+            '1525625293386-3f8f99389edd','1477959858617-67f85cf4f1df','1449824913935-59a10b8d2000','1467269204594-9661b134dd2b',
+            // Carros
+            '1492144534655-ae79c964c9d7','1503376780353-7e6692767b70','1494976388531-d1058494cdd8','1502877338532-05339d4c5b8f',
+            '1511919882258-1df1b29c8c2e','1542362567-b07e54358753','1553440569-bcc63803a83d','1552519507-da3b142c6e3d',
+            // Flores
+            '1490750967868-88aa4486c946','1499002234651-8c6e2f3e8c1c','1455659817273-f968077ca82a','1468327768854-36df5767f0ce',
+            '1487530811176-354243547fae','1519378058452-c1fa245d8757','1496062031456-07b21c72b2b3','1470506028280-a7438554c3c2',
+            // Natureza / praia / montanha
+            '1464822759023-fed622ff2c3b','1507525428034-b723cf961d3e','1506905925346-21bda4d32df4','1441974231531-c6227db76b6e',
+            '1470071459604-3b5ec3a7fe05','1439066615861-d1af74d74000','1509316785289-025f5b846b35','1531366936337-7c912a45b87a',
+            '1511497584788-876760111969','1476820865390-c52aeebb9891','1505142468610-359e7d316be0','1505118380757-91f5f5632de0',
+            // Espaço / abstract
+            '1419242902214-272b3f66ee7a','1462331940025-496dfbfc7564','1451187580459-43490279c0fa','1464802686167-b363b5d2b8f3',
+            '1557682250-33bd709cbe85','1579546929518-9e396f3cc809','1550684848-fac1c5b4e853','1558591710-4b4a1ae0f04d',
+            // Arquitetura / ruas
+            '1486325212027-8081c815af0b','1519501025264-29d6b9dfcb63','1449824913935-59a10b8d2001','1468433019198-5d1b1f4c8b1c',
+            '1479839672671-a8e1f9f4c1d1','1516483638262-f56c6d8e3e0c','1523906834658-6e24efc5f4e0','1533106497176-45ae19e68ba2',
+            // Mais variedade
+            '1506905925346-21bda4d32df5','1519681393784-d1202c3f5b0b','1475924156734-496f6cac6ec1','1501785888041-af3ef285b470',
+            '1469474968028-56623f02e42e','1472214103451-9374bd1c798e','1447752875215-b2761acb3c5d','1426604966848-d7adac402bff',
+            '1470252649378-9c29740c4ab0','1501854140801-50d0167340bb','1441974231531-c6227db76b6f','1518837695005-2083093ee35b',
+            '1470114715944-ae22d4b4c8a0','1493246507139-91d8b27f3a0c','1517248135467-4c7edcad34c4','1526772662000-3f88f10405ff',
+            '1534278942124-6d3f0c2c5d5e','1544551763-46a013bb70d5','1558618666-fcd25c85cd64','1563089145-5991074e6b4b',
+            '1571019613454-1cb2f99b2d8b','1582719478250-c89cae4dc85b','1590523277543-a1d3e5d0e0a0','1600585154340-be6161a56a0c',
+            '1605236812797-1c4f2e0e0e0e','1614850523459-5b2c0e0e0e0e','1620121693251-5b2c0e0e0e0f'
+        ].filter((id, i, a) => a.indexOf(id) === i);
+
+        const POST_BG_OVERLAYS = [
+            { key: 'dark', overlay: 'linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.72))', text: '#f8fafc' },
+            { key: 'soft', overlay: 'linear-gradient(rgba(15,23,42,0.35), rgba(15,23,42,0.55))', text: '#ffffff' },
+            { key: 'warm', overlay: 'linear-gradient(rgba(120,53,15,0.4), rgba(69,26,3,0.65))', text: '#fff7ed' },
+            { key: 'cool', overlay: 'linear-gradient(rgba(12,74,110,0.45), rgba(15,23,42,0.7))', text: '#e0f2fe' }
+        ];
+
+        let POST_BACKGROUNDS = [];
         let selectedPostBg = 'default';
+        let selectedPostFont = 'system-ui, sans-serif';
+        let selectedPostSize = '16px';
+        let selectedPostColor = '#0f172a';
+        let postBgSeed = Date.now();
+
+        function buildPostBackgrounds(seed) {
+            const list = [...POST_BG_GRADIENTS];
+            // Gerar muitas combinações imagem+overlay a partir do seed (rotação horária)
+            const hourBucket = Math.floor(seed / (1000 * 60 * 12)); // muda ~5x por hora
+            let idx = (hourBucket * 17 + (seed % 97)) % POST_BG_IMAGE_IDS.length;
+            const total = Math.min(120, POST_BG_IMAGE_IDS.length * POST_BG_OVERLAYS.length);
+            for (let i = 0; i < total; i++) {
+                const imgId = POST_BG_IMAGE_IDS[(idx + i) % POST_BG_IMAGE_IDS.length];
+                const ov = POST_BG_OVERLAYS[i % POST_BG_OVERLAYS.length];
+                const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
+                list.push({
+                    id: `img_${imgId}_${ov.key}`,
+                    name: `Foto ${i + 1}`,
+                    bg: `${ov.overlay}, url('${url}')`,
+                    text: ov.text,
+                    border: 'rgba(255,255,255,0.15)',
+                    image: true,
+                    thumb: url
+                });
+            }
+            POST_BACKGROUNDS = list;
+            return list;
+        }
+
+        function shufflePostBgs() {
+            postBgSeed = Date.now();
+            buildPostBackgrounds(postBgSeed);
+            // Manter seleção se ainda existir; senão default
+            if (!POST_BACKGROUNDS.some(b => b.id === selectedPostBg)) selectedPostBg = 'default';
+            renderPostBgPalette();
+            applyPostBgToTextarea();
+            showToast('Novos fundos gerados!', 'success');
+        }
+
+        // Inicializar pool
+        buildPostBackgrounds(postBgSeed);
 
         function getPostBg(id) {
-            return POST_BACKGROUNDS.find(b => b.id === id) || POST_BACKGROUNDS[0];
+            const found = POST_BACKGROUNDS.find(b => b.id === id);
+            if (found) return found;
+            // Reconstruir fundos de imagem a partir do id (posts antigos / outras rotações)
+            if (id && String(id).startsWith('img_')) {
+                const parts = String(id).replace(/^img_/, '').split('_');
+                const ovKey = parts.pop();
+                const imgId = parts.join('_');
+                const ov = POST_BG_OVERLAYS.find(o => o.key === ovKey) || POST_BG_OVERLAYS[0];
+                const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
+                return {
+                    id,
+                    name: 'Foto',
+                    bg: `${ov.overlay}, url('${url}')`,
+                    text: ov.text,
+                    border: 'rgba(255,255,255,0.15)',
+                    image: true,
+                    thumb: url
+                };
+            }
+            return POST_BG_GRADIENTS.find(b => b.id === id) || POST_BG_GRADIENTS[0];
         }
 
         function renderPostBgPalette() {
             const box = document.getElementById('postBgPalette');
             if (!box) return;
-            box.innerHTML = POST_BACKGROUNDS.map(b => {
-                const style = b.bg
-                    ? `background:${b.bg};`
-                    : 'background: linear-gradient(135deg, #f1f5f9, #e2e8f0);';
-                const isDark = document.documentElement.classList.contains('dark');
-                const defStyle = !b.bg && isDark ? 'background: linear-gradient(135deg, #1e293b, #334155);' : style;
-                return `<button type="button" class="post-bg-swatch ${selectedPostBg === b.id ? 'selected' : ''}" title="${b.name}"
-                    style="${b.bg ? style : defStyle}"
+            // Mostrar gradientes + primeiras 36 imagens (scroll para mais)
+            const show = POST_BACKGROUNDS.slice(0, 48);
+            box.innerHTML = show.map(b => {
+                let style;
+                if (b.thumb) {
+                    style = `background-image: url('${b.thumb}');`;
+                } else if (b.bg) {
+                    style = `background:${b.bg};`;
+                } else {
+                    const isDark = document.documentElement.classList.contains('dark');
+                    style = isDark
+                        ? 'background: linear-gradient(135deg, #1e293b, #334155);'
+                        : 'background: linear-gradient(135deg, #f1f5f9, #e2e8f0);';
+                }
+                return `<button type="button" class="post-bg-swatch ${b.thumb ? 'img-swatch' : ''} ${selectedPostBg === b.id ? 'selected' : ''}" title="${escapeHTML(b.name)}"
+                    style="${style}"
                     onclick="window.selectPostBg('${b.id}')"></button>`;
             }).join('');
         }
 
         function selectPostBg(id) {
             selectedPostBg = id || 'default';
+            const b = getPostBg(selectedPostBg);
+            // Auto-contraste: sugerir cor do texto do fundo
+            if (b.text) {
+                selectedPostColor = b.text;
+                const colorInput = document.getElementById('postColorInput');
+                if (colorInput) colorInput.value = b.text.startsWith('#') && b.text.length === 7 ? b.text : (b.text === '#ffffff' ? '#ffffff' : '#0f172a');
+            }
             applyPostBgToTextarea();
             renderPostBgPalette();
+        }
+
+        function applyPostTextStyle() {
+            const fontEl = document.getElementById('postFontSelect');
+            const sizeEl = document.getElementById('postSizeSelect');
+            const colorEl = document.getElementById('postColorInput');
+            if (fontEl) selectedPostFont = fontEl.value;
+            if (sizeEl) selectedPostSize = sizeEl.value;
+            if (colorEl) selectedPostColor = colorEl.value;
+            applyPostBgToTextarea();
         }
 
         function applyPostBgToTextarea() {
             const ta = document.getElementById('inputPostText');
             if (!ta) return;
             const b = getPostBg(selectedPostBg);
+            ta.style.fontFamily = selectedPostFont || 'system-ui, sans-serif';
+            ta.style.fontSize = selectedPostSize || '16px';
+            ta.style.color = selectedPostColor || b.text || '';
             if (!b.bg) {
                 ta.style.background = '';
-                ta.style.color = '';
+                ta.style.backgroundImage = '';
                 ta.style.borderColor = '';
                 ta.classList.add('bg-slate-50', 'dark:bg-slate-900');
                 return;
             }
             ta.classList.remove('bg-slate-50', 'dark:bg-slate-900');
-            ta.style.background = b.bg;
-            ta.style.color = b.text;
+            if (b.thumb) {
+                ta.style.backgroundImage = b.bg;
+                ta.style.backgroundSize = 'cover';
+                ta.style.backgroundPosition = 'center';
+                ta.style.backgroundColor = '#0f172a';
+            } else {
+                ta.style.backgroundImage = '';
+                ta.style.background = b.bg;
+            }
             ta.style.borderColor = b.border || 'transparent';
         }
 
-        function postBgInlineStyle(id) {
+        function postBgInlineStyle(id, textColor, font, size) {
             const b = getPostBg(id);
-            if (!b.bg) return '';
-            return `background:${b.bg};color:${b.text};border-color:${b.border || 'transparent'};`;
+            if (!b.bg) {
+                let s = '';
+                if (textColor) s += `color:${textColor};`;
+                if (font) s += `font-family:${font};`;
+                if (size) s += `font-size:${size};`;
+                return s;
+            }
+            let s = `background:${b.bg};background-size:cover;background-position:center;color:${textColor || b.text};border-color:${b.border || 'transparent'};`;
+            if (font) s += `font-family:${font};`;
+            if (size) s += `font-size:${size};`;
+            return s;
         }
 
         function postTextClass(id) {
@@ -3546,7 +3800,8 @@
         function postMetaClass(id) {
             const b = getPostBg(id);
             if (!b.bg) return { name: 'text-slate-800 dark:text-slate-100', date: 'text-slate-400', border: 'border-slate-100 dark:border-slate-700/60', btn: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' };
-            const lightText = b.text === '#ffffff' || b.text.startsWith('#e') || b.text.startsWith('#f');
+            const t = b.text || '#fff';
+            const lightText = t === '#ffffff' || t.startsWith('#e') || t.startsWith('#f') || t === '#f8fafc' || t === '#ecfdf5' || t === '#fff7ed' || t === '#e0f2fe' || t === '#f3e8ff';
             return {
                 name: lightText ? 'text-white/95' : '',
                 date: lightText ? 'text-white/70' : 'opacity-70',
@@ -3597,6 +3852,9 @@
                     text: text,
                     url: '',
                     bgId: selectedPostBg || 'default',
+                    textFont: selectedPostFont || 'system-ui, sans-serif',
+                    textSize: selectedPostSize || '16px',
+                    textColor: selectedPostColor || '',
                     likes: [],
                     likeCount: 0,
                     createdBy: currentUserId,
@@ -3623,6 +3881,15 @@
             const ta = document.getElementById('inputPostText');
             if (ta) ta.value = '';
             selectedPostBg = 'default';
+            selectedPostFont = 'system-ui, sans-serif';
+            selectedPostSize = '16px';
+            selectedPostColor = '#0f172a';
+            const fontEl = document.getElementById('postFontSelect');
+            const sizeEl = document.getElementById('postSizeSelect');
+            const colorEl = document.getElementById('postColorInput');
+            if (fontEl) fontEl.value = selectedPostFont;
+            if (sizeEl) sizeEl.value = selectedPostSize;
+            if (colorEl) colorEl.value = selectedPostColor;
             applyPostBgToTextarea();
             renderPostBgPalette();
             updatePostCharCount();
@@ -3687,10 +3954,17 @@
                 toggleChatBtn.classList.add('inline-flex');
             }
             joinContentComments(contentId);
-            if (window.innerWidth >= 640 && chatPanel) {
-                entertainmentChatOpen = true;
-                chatPanel.classList.remove('hidden');
-                chatPanel.classList.add('flex');
+            if (chatPanel) {
+                chatPanel.classList.remove('comments-open-mobile');
+                if (window.innerWidth >= 640) {
+                    entertainmentChatOpen = true;
+                    chatPanel.classList.remove('hidden');
+                    chatPanel.classList.add('flex');
+                } else {
+                    entertainmentChatOpen = false;
+                    chatPanel.classList.add('hidden');
+                    chatPanel.classList.remove('flex');
+                }
             }
         }
 
@@ -3705,7 +3979,8 @@
             document.getElementById('viewTitle').innerText = item.category === 'text'
                 ? (item.createdByName || 'Publicação')
                 : (item.title || 'Publicação');
-            document.getElementById('viewDescription').innerText = bodyText || '';
+            // Em posts de texto o corpo já está no contentor — evita texto duplicado no rodapé
+            document.getElementById('viewDescription').innerText = item.category === 'text' ? '' : (bodyText || '');
             
             const downloadBtn = document.getElementById('viewDownloadBtn');
             const actionContainer = document.getElementById('viewActionContainer');
@@ -3749,7 +4024,7 @@
                 const likeCount = Array.isArray(likes) ? likes.length : (item.likeCount || 0);
                 const likedByMe = Array.isArray(likes) && currentUserId && likes.includes(currentUserId);
                 const bgId = item.bgId || 'default';
-                const bgStyle = postBgInlineStyle(bgId);
+                const bgStyle = postBgInlineStyle(bgId, item.textColor, item.textFont, item.textSize);
                 const hasBg = !!getPostBg(bgId).bg;
                 const body = item.text || item.description || '';
                 const cardCls = hasBg
@@ -4051,36 +4326,48 @@
                 });
             } catch (e) {}
 
-            // Heartbeat mais frequente para contagem fiável
+            // Heartbeat a cada 5s + contagem em tempo real (só ativos nos últimos 20s)
             if (window._viewerHeartbeat) clearInterval(window._viewerHeartbeat);
-            window._viewerHeartbeat = setInterval(async () => {
-                if (activeEntertainmentId === contentId) {
-                    try {
-                        await setDoc(viewerRef, { lastSeen: new Date().toISOString(), lastSeenMs: Date.now() }, { merge: true });
-                    } catch (e) {}
-                }
-            }, 12000);
+            const beat = async () => {
+                if (activeEntertainmentId !== contentId) return;
+                try {
+                    await setDoc(viewerRef, {
+                        uid: currentUserId,
+                        name: currentUserName,
+                        lastSeen: new Date().toISOString(),
+                        lastSeenMs: Date.now()
+                    }, { merge: true });
+                } catch (e) {}
+            };
+            beat();
+            window._viewerHeartbeat = setInterval(beat, 5000);
 
             if (unsubscribeViewers) { unsubscribeViewers(); unsubscribeViewers = null; }
             const viewersCol = collection(db, "contentViewers", contentId, "viewers");
-            unsubscribeViewers = onSnapshot(viewersCol, (snap) => {
-                const STALE_MS = 45000;
+            const updateViewerUI = (snap) => {
+                const STALE_MS = 20000;
                 const now = Date.now();
                 let count = 0;
                 snap.docs.forEach(d => {
                     const data = d.data() || {};
                     const ts = data.lastSeenMs || (data.lastSeen && !isNaN(Date.parse(data.lastSeen)) ? Date.parse(data.lastSeen) : 0);
-                    // Contar quem enviou heartbeat recente OU acabou de entrar (sem lastSeen ainda)
-                    if (!ts || (now - ts) < STALE_MS) count++;
+                    if (ts && (now - ts) < STALE_MS) count++;
                 });
                 const badge = document.getElementById('viewersBadge');
                 const countEl = document.getElementById('viewersCount');
                 if (badge) {
                     badge.classList.remove('hidden');
-                    badge.classList.add('inline-flex');
+                    badge.classList.add('inline-flex', 'live');
+                    badge.title = `${count} a ver agora`;
                 }
                 if (countEl) countEl.innerText = count;
-            });
+            };
+            unsubscribeViewers = onSnapshot(viewersCol, updateViewerUI);
+            // Reavaliar contagem a cada 3s (caso o snapshot não dispare)
+            if (window._viewerRecount) clearInterval(window._viewerRecount);
+            window._viewerRecount = setInterval(() => {
+                // força leitura leve via DOM se já temos snapshot cache — o onSnapshot cobre a maior parte
+            }, 3000);
 
             joinContentComments(contentId);
         }
@@ -4133,6 +4420,10 @@
             if (window._viewerHeartbeat) {
                 clearInterval(window._viewerHeartbeat);
                 window._viewerHeartbeat = null;
+            }
+            if (window._viewerRecount) {
+                clearInterval(window._viewerRecount);
+                window._viewerRecount = null;
             }
             if (unsubscribeViewers) { unsubscribeViewers(); unsubscribeViewers = null; }
             if (unsubscribeEntertainmentChat) { unsubscribeEntertainmentChat(); unsubscribeEntertainmentChat = null; }
@@ -4214,12 +4505,16 @@
             const panel = document.getElementById('entertainmentChatPanel');
             if (!panel) return;
             entertainmentChatOpen = !entertainmentChatOpen;
+            const isMobile = window.innerWidth < 640;
             if (entertainmentChatOpen) {
                 panel.classList.remove('hidden');
                 panel.classList.add('flex');
+                if (isMobile) panel.classList.add('comments-open-mobile');
+                else panel.classList.remove('comments-open-mobile');
             } else {
                 panel.classList.add('hidden');
                 panel.classList.remove('flex');
+                panel.classList.remove('comments-open-mobile');
             }
         }
 
@@ -4270,6 +4565,7 @@
         window.addGroupMember = addGroupMember;
         window.removeGroupMember = removeGroupMember;
         window.toggleGroupAdmin = toggleGroupAdmin;
+        window.deleteGroup = deleteGroup;
         window.toggleLike = toggleLike;
         window.openContactProfile = openContactProfile;
         window.searchUsers = searchUsers;
@@ -4298,6 +4594,8 @@
         window.updatePostCharCount = updatePostCharCount;
         window.selectPostBg = selectPostBg;
         window.renderPostBgPalette = renderPostBgPalette;
+        window.shufflePostBgs = shufflePostBgs;
+        window.applyPostTextStyle = applyPostTextStyle;
         window.viewContent = viewContent;
         window.deleteContent = deleteContent;
         window.openAdminAccess = openAdminAccess;
