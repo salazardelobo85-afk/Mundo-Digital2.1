@@ -38,19 +38,53 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 
-        @keyframes messagePopIn {
-            0% {
-                opacity: 0;
-                transform: translateY(8px) scale(0.97);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        @keyframes messageInMe {
+            0% { opacity: 0; transform: translate3d(22px, 10px, 0) scale(.94); filter: blur(2px); }
+            55% { opacity: 1; transform: translate3d(-2px, -1px, 0) scale(1.015); filter: blur(0); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
-        .msg-animate-in {
-            animation: messagePopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        @keyframes messageInThem {
+            0% { opacity: 0; transform: translate3d(-22px, 10px, 0) scale(.94); filter: blur(2px); }
+            55% { opacity: 1; transform: translate3d(2px, -1px, 0) scale(1.015); filter: blur(0); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
+        .msg-animate-in.msg-from-me {
+            animation: messageInMe .38s cubic-bezier(.16,1,.3,1) both;
+            animation-delay: var(--msg-delay, 0ms);
+            will-change: transform, opacity, filter;
+        }
+        .msg-animate-in.msg-from-them {
+            animation: messageInThem .38s cubic-bezier(.16,1,.3,1) both;
+            animation-delay: var(--msg-delay, 0ms);
+            will-change: transform, opacity, filter;
+        }
+        .msg-bubble-me, .msg-bubble-them {
+            transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+        }
+        @media (hover:hover) and (pointer:fine) {
+            .msg-bubble-me:hover, .msg-bubble-them:hover { transform: translateY(-1px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .msg-animate-in, .msg-animate-in.msg-from-me, .msg-animate-in.msg-from-them { animation: none !important; }
+            #chatMessages { scroll-behavior: auto; }
+        }
+        .viewer-live-dot {
+            width: 7px; height: 7px; border-radius: 999px; background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16,185,129,.45);
+            animation: viewerPulse 1.6s infinite;
+        }
+        @keyframes viewerPulse {
+            0% { box-shadow: 0 0 0 0 rgba(16,185,129,.45); }
+            70% { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+        .viewer-avatar {
+            width: 22px; height: 22px; border-radius: 999px; display:flex; align-items:center; justify-content:center;
+            font-size:9px; font-weight:800; border:2px solid white; margin-left:-6px;
+            background: #334155; color:white;
+        }
+        .dark .viewer-avatar { border-color:#1e293b; }
+        .viewer-avatar:first-child { margin-left:0; }
         /* Chat: scroll suave e área de mensagens estável */
         #chatMessages {
             scroll-behavior: smooth;
@@ -646,6 +680,19 @@
                             <button type="button" onclick="window.clearSelectedFile()" class="px-2.5 py-1.5 text-[11px] font-medium text-red-500 hover:bg-red-500/10 rounded-lg shrink-0">Remover</button>
                         </div>
                     </div>
+                    <div class="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/20 p-3 space-y-2.5">
+                        <div class="flex items-start gap-2.5">
+                            <i class="fa-brands fa-google-drive text-blue-600 dark:text-blue-400 text-lg mt-0.5"></i>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-bold text-blue-800 dark:text-blue-200">Transferir para o Google Drive</p>
+                                <p id="googleDriveDirectStatus" class="text-[10px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">Sem OAuth e sem API: o Google Drive é aberto dentro do Mundo Digital para o utilizador fazer a transferência para a pasta pública.</p>
+                            </div>
+                        </div>
+                        <button type="button" id="publishDriveDirectBtn" onclick="window.publishSelectedFileToGoogleDrive()" class="w-full px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-google-drive"></i> Transferir para o Google Drive
+                        </button>
+                        <p class="text-[9px] leading-relaxed text-blue-700/70 dark:text-blue-300/70">O MD não consegue escrever numa conta Google por código sem OAuth/API. Por isso, a transferência é feita no próprio Google Drive aberto dentro do MD.</p>
+                    </div>
                 </div>
 
                 <div id="linkSection" class="hidden space-y-2">
@@ -712,6 +759,32 @@
         </div>
     </div>
 
+    <!-- MODAL DE TRANSFERÊNCIA GOOGLE DRIVE (SEM OAUTH/API) -->
+    <div id="googleDriveTransferModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/85 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
+        <div data-drive-transfer-box class="bg-white dark:bg-slate-800 w-full max-w-6xl h-[92vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 shrink-0">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-sm sm:text-base truncate"><i class="fa-brands fa-google-drive text-blue-500 mr-2"></i>Google Drive · Mundo Digital</h3>
+                    <p id="googleDriveTransferStatus" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">A carregar a pasta pública…</p>
+                </div>
+                <button type="button" onclick="window.closeGoogleDriveTransfer()" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="px-4 py-2.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/50 text-[10px] text-blue-800 dark:text-blue-200">
+                <strong>Como transferir:</strong> dentro do Google Drive, adicione o ficheiro à pasta pública do Mundo Digital. O MD não usa OAuth nem Google Drive API. Se o Google bloquear o quadro incorporado, use “Abrir no Google Drive”.
+            </div>
+            <div class="flex-1 min-h-0 bg-white">
+                <iframe id="googleDriveTransferFrame" title="Google Drive - Mundo Digital" src="about:blank" class="w-full h-full border-0" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+                <span class="text-[10px] text-slate-500 dark:text-slate-400">Pasta central: 1V4KTXth-Wyz3cRPmVxoY4-F2ZoeWh_H2</span>
+                <div class="flex gap-2">
+                    <a href="https://drive.google.com/drive/folders/1V4KTXth-Wyz3cRPmVxoY4-F2ZoeWh_H2" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"><i class="fa-brands fa-google-drive mr-1"></i> Abrir no Google Drive</a>
+                    <button type="button" onclick="window.closeGoogleDriveTransfer()" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE VISUALIZAÇÃO -->
     <div id="viewContentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-6xl max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
@@ -725,8 +798,13 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <span id="viewersBadge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-semibold">
-                        <i class="fa-solid fa-eye"></i> <span id="viewersCount">0</span> a assistir
+                    <div id="viewersLive" class="hidden items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                        <span class="viewer-live-dot shrink-0" aria-hidden="true"></span>
+                        <div id="viewersAvatars" class="hidden sm:flex items-center shrink-0"></div>
+                        <span class="text-[11px] font-semibold whitespace-nowrap"><span id="viewersCount">0</span> a ver agora</span>
+                        <span id="viewersNames" class="hidden lg:inline text-[10px] opacity-75 max-w-[180px] truncate"></span>
+                    </div>
+                    <span id="viewersBadge" class="hidden">
                     </span>
                     <button onclick="window.closeViewContent()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl p-1">
                         <i class="fa-solid fa-xmark"></i>
@@ -891,7 +969,6 @@
             getDownloadURL, 
             deleteObject 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAP_lPj09ioIDY791M91pKQMOuHfOfOXf8",
@@ -902,35 +979,11 @@
             appId: "1:1086109928706:web:a059fb44dcf8c9c4e5c61b"
         };
 
-        // ========== SUPABASE (Storage de ficheiros) ==========
-        // 1. Cria projeto em https://supabase.com
-        // 2. Settings → API → copia Project URL e anon public key
-        // 3. Storage → New bucket "contents" (Public: ON)
-        // 4. Cola os valores abaixo (ou em localStorage: mundo_digital_supabase_url / mundo_digital_supabase_key)
-        const SUPABASE_URL = localStorage.getItem('mundo_digital_supabase_url') || "https://comjjxizcxhfoboamfqb.supabase.co";
-        const SUPABASE_ANON_KEY = localStorage.getItem('mundo_digital_supabase_key') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvbWpqeGl6Y3hoZm9ib2FtZnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4ODA0MzIsImV4cCI6MjEwNjQ1NjQzMn0.DkZc53FxJx8yo58IcKYcAsd79zBmh7kzY9ykTbj5wBU";
-        const SUPABASE_BUCKET = "contents";
-
-        const supabaseConfigured = SUPABASE_URL.includes("supabase.co")
-            && !SUPABASE_URL.includes("SEU_PROJECTO")
-            && SUPABASE_ANON_KEY
-            && SUPABASE_ANON_KEY.length > 20
-            && !SUPABASE_ANON_KEY.includes("SUA_ANON");
-
-        const supabase = supabaseConfigured
-            ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-            : null;
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        if (supabase) {
-            console.info("[MD] Supabase Storage ativo → bucket:", SUPABASE_BUCKET);
-        } else {
-            console.info("[MD] Supabase não configurado — uploads usam Firebase Storage. Define URL/key no código ou localStorage.");
-        }
 
         let currentUserId = null;
         let currentUserName = "Utilizador Anónimo";
@@ -946,6 +999,7 @@
         let currentFilter = 'all';
         let searchQuery = '';
         const MD_DEFAULT_GOOGLE_DRIVE_FOLDER = 'https://drive.google.com/drive/folders/1V4KTXth-Wyz3cRPmVxoY4-F2ZoeWh_H2';
+        const MD_DEFAULT_GOOGLE_DRIVE_FOLDER_ID = '1V4KTXth-Wyz3cRPmVxoY4-F2ZoeWh_H2';
         let currentAddTab = 'upload';
         let selectedFile = null;
         let lastMessageCount = 0;
@@ -953,6 +1007,7 @@
         let lastMessagesCache = {}; // { userId: { text, type, at, fromMe } }
         let pendingMessages = [];   // optimistic UI { tempId, peerId, text, status: pending|failed }
         let serverMessagesSnapshot = [];
+        let renderedMessageIds = new Set();
 
         try {
             lastMessagesCache = JSON.parse(localStorage.getItem('mundo_digital_last_msgs') || '{}') || {};
@@ -1259,9 +1314,27 @@
                 } catch (e) {}
             }
         });
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') updateUserStatus(false);
-            else updateUserStatus(true);
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'hidden') {
+                updateUserStatus(false);
+                if (activeEntertainmentId && currentUserId) {
+                    try {
+                        await setDoc(doc(db, "contentViewers", activeEntertainmentId, "viewers", currentUserId), {
+                            active: false, lastSeenMs: Date.now()
+                        }, { merge: true });
+                    } catch (_) {}
+                }
+            } else {
+                updateUserStatus(true);
+                if (activeEntertainmentId && currentUserId) {
+                    const id = activeEntertainmentId;
+                    try {
+                        await setDoc(doc(db, "contentViewers", id, "viewers", currentUserId), {
+                            active: true, lastSeenMs: Date.now()
+                        }, { merge: true });
+                    } catch (_) {}
+                }
+            }
         });
 
         onAuthStateChanged(auth, async (user) => {
@@ -1713,6 +1786,7 @@
 
             applyChatWallpaper(localStorage.getItem('mundo_digital_wallpaper'));
             lastMessageCount = 0;
+            renderedMessageIds = new Set();
             renderUsersList();
             listenToChatMessages();
             const badge = document.getElementById('chatBadge');
@@ -1891,9 +1965,12 @@
                 const clickRetry = msg.status === 'failed'
                     ? `onclick="window.retryPendingMessage('${msg.id}')"`
                     : '';
+                const isNewMessage = !renderedMessageIds.has(msg.id);
+                const animationClass = isNewMessage ? `msg-animate-in ${isMe ? 'msg-from-me' : 'msg-from-them'}` : '';
+                const animationDelay = isNewMessage ? `style="--msg-delay:${Math.min(idx, 7) * 28}ms"` : '';
 
                 html += `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} ${samePrev ? 'mt-0.5' : 'mt-2'} msg-animate-in relative z-[1]">
+                    <div ${animationDelay} class="flex flex-col ${isMe ? 'items-end' : 'items-start'} ${samePrev ? 'mt-0.5' : 'mt-2'} ${animationClass} relative z-[1]">
                         <div ${clickRetry} class="max-w-[85%] sm:max-w-[75%] px-3 py-1.5 ${radius} ${bubbleClass}">
                             ${contentHtml}
                             <div class="flex items-center justify-end gap-0.5 mt-0.5 text-[9px] ${isMe ? 'text-white/75' : 'text-slate-400'}">
@@ -1906,6 +1983,7 @@
             });
 
             container.innerHTML = html;
+            renderedMessageIds = new Set(merged.map(m => m.id));
 
             if (wasNearBottom || lastMessageCount <= 1 || pendingForPeer.length) {
                 requestAnimationFrame(() => {
@@ -2127,84 +2205,158 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
+        let audioRecordInitialized = false;
+        let audioRecordingStartedAt = 0;
 
-        function initHoldToRecordAudio() {
+        function getSupportedAudioMimeType() {
+            const types = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/ogg;codecs=opus',
+                'audio/mp4'
+            ];
+            return types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+        }
+
+        function setAudioRecordButtonState(recording) {
             const recordBtn = document.getElementById('audioRecordBtn');
             const recordIcon = document.getElementById('audioRecordIcon');
             if (!recordBtn) return;
+            if (recording) {
+                recordBtn.classList.add('bg-red-500', 'text-white', 'scale-105');
+                recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
+                if (recordIcon) recordIcon.className = 'fa-solid fa-square text-sm animate-pulse';
+                recordBtn.title = 'Solte para enviar o áudio';
+            } else {
+                recordBtn.classList.remove('bg-red-500', 'text-white', 'scale-105');
+                recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
+                if (recordIcon) recordIcon.className = 'fa-solid fa-microphone text-sm';
+                recordBtn.title = 'Segure para gravar áudio';
+            }
+        }
 
-            const startRecording = async () => {
-                if (!activeChatUserId) {
-                    showToast("Selecione um contacto para enviar áudio.", "error");
+        function initHoldToRecordAudio() {
+            if (audioRecordInitialized) return;
+            const recordBtn = document.getElementById('audioRecordBtn');
+            if (!recordBtn) return;
+            audioRecordInitialized = true;
+
+            const startRecording = async (event) => {
+                if (event?.type === 'touchstart') event.preventDefault();
+                if (isRecording) return;
+                if (!activeChatUserId || !currentUserId) {
+                    showToast('Selecione um contacto para enviar áudio.', 'error');
                     return;
                 }
+                if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+                    showToast('O seu navegador não suporta gravação de áudio.', 'error');
+                    return;
+                }
+
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
+                    const mimeType = getSupportedAudioMimeType();
+                    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
                     audioChunks = [];
+                    audioRecordingStartedAt = Date.now();
 
                     mediaRecorder.ondataavailable = (e) => {
-                        if (e.data.size > 0) audioChunks.push(e.data);
+                        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onerror = () => {
+                        stream.getTracks().forEach(track => track.stop());
+                        isRecording = false;
+                        setAudioRecordButtonState(false);
+                        showToast('Erro durante a gravação.', 'error');
                     };
 
                     mediaRecorder.onstop = async () => {
-                        setTypingStatus(null);
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const duration = Date.now() - audioRecordingStartedAt;
                         stream.getTracks().forEach(track => track.stop());
+                        isRecording = false;
+                        setAudioRecordButtonState(false);
+                        setTypingStatus(null);
 
-                        if (audioBlob.size < 1000) return;
+                        if (duration < 500 || audioChunks.length === 0) {
+                            audioChunks = [];
+                            return;
+                        }
 
-                        showToast("A enviar áudio...", "info");
+                        const actualType = mediaRecorder?.mimeType || mimeType || 'audio/webm';
+                        const audioBlob = new Blob(audioChunks, { type: actualType });
+                        audioChunks = [];
+                        if (audioBlob.size < 1000) {
+                            showToast('Áudio demasiado curto.', 'error');
+                            return;
+                        }
+
+                        const peerId = activeChatUserId;
+                        const senderId = currentUserId;
+                        const chatId = [senderId, peerId].sort().join('_');
+                        const extension = actualType.includes('ogg') ? 'ogg' : (actualType.includes('mp4') ? 'm4a' : 'webm');
+                        const storagePath = `audios/${chatId}/${Date.now()}_${senderId}.${extension}`;
+
+                        showToast('A enviar áudio...', 'info');
                         try {
-                            const storagePath = `audios/${Date.now()}_${currentUserId}.webm`;
+                            if (!navigator.onLine) throw new Error('offline');
                             const fileRef = ref(storage, storagePath);
-                            const uploadTask = await uploadBytesResumable(fileRef, audioBlob);
+                            const uploadTask = await uploadBytesResumable(fileRef, audioBlob, {
+                                contentType: actualType,
+                                cacheControl: '3600'
+                            });
                             const audioUrl = await getDownloadURL(uploadTask.ref);
 
-                            const chatId = [currentUserId, activeChatUserId].sort().join('_');
-                            await addDoc(collection(db, "chats", chatId, "messages"), {
-                                senderId: currentUserId,
-                                receiverId: activeChatUserId,
-                                audioUrl: audioUrl,
+                            await addDoc(collection(db, 'chats', chatId, 'messages'), {
+                                senderId,
+                                receiverId: peerId,
+                                audioUrl,
+                                audioPath: storagePath,
+                                audioMimeType: actualType,
+                                audioDurationMs: duration,
                                 type: 'audio',
+                                text: '',
                                 status: 'sent',
                                 createdAt: serverTimestamp()
                             });
-                            updateLastMessagePreview(activeChatUserId, '', 'audio', true);
+
+                            updateLastMessagePreview(peerId, '', 'audio', true);
                             renderUsersList();
-                            showToast("Áudio enviado!", "success");
+                            showToast('Áudio enviado!', 'success');
                         } catch (err) {
-                            showToast("Erro ao enviar áudio.", "error");
+                            console.error('Audio upload error:', err);
+                            showToast(navigator.onLine ? 'Erro ao enviar áudio.' : 'Sem internet. Tente novamente.', 'error');
                         }
                     };
 
-                    mediaRecorder.start();
+                    mediaRecorder.start(250);
                     isRecording = true;
                     setTypingStatus('recording');
-                    recordBtn.classList.add('bg-red-500', 'text-white');
-                    recordBtn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
-                    if (recordIcon) recordIcon.className = "fa-solid fa-square text-sm animate-pulse";
+                    setAudioRecordButtonState(true);
                 } catch (err) {
-                    showToast("Permissão de microfone necessária.", "error");
+                    console.error('Microphone error:', err);
+                    showToast(err?.name === 'NotAllowedError'
+                        ? 'Permita o acesso ao microfone para gravar áudio.'
+                        : 'Não foi possível iniciar o microfone.', 'error');
+                    isRecording = false;
+                    setAudioRecordButtonState(false);
                 }
             };
 
-            const stopRecording = () => {
-                if (mediaRecorder && isRecording) {
+            const stopRecording = (event) => {
+                if (event?.type === 'touchend' || event?.type === 'touchcancel') event.preventDefault();
+                if (mediaRecorder && isRecording && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
-                    isRecording = false;
-                    recordBtn.classList.remove('bg-red-500', 'text-white');
-                    recordBtn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-200');
-                    if (recordIcon) recordIcon.className = "fa-solid fa-microphone text-sm";
                 }
             };
 
             recordBtn.addEventListener('mousedown', startRecording);
             recordBtn.addEventListener('mouseup', stopRecording);
             recordBtn.addEventListener('mouseleave', stopRecording);
-
-            recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
-            recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
+            recordBtn.addEventListener('touchstart', startRecording, { passive: false });
+            recordBtn.addEventListener('touchend', stopRecording, { passive: false });
+            recordBtn.addEventListener('touchcancel', stopRecording, { passive: false });
+            recordBtn.addEventListener('contextmenu', e => e.preventDefault());
         }
 
         function listenToIncomingCalls() {
@@ -3023,61 +3175,6 @@
                     const safeName = selectedFile.name.replace(/[^\w.\-() ]+/g, '_').slice(0, 120);
                     const objectPath = `${currentUserId || 'anon'}/${Date.now()}_${safeName}`;
 
-                    // —— Preferir Supabase Storage se configurado ——
-                    if (supabase) {
-                        if (percentText) percentText.innerText = '…';
-                        if (progressBar) progressBar.style.width = '30%';
-                        try {
-                            const { data, error } = await supabase.storage
-                                .from(SUPABASE_BUCKET)
-                                .upload(objectPath, selectedFile, {
-                                    cacheControl: '3600',
-                                    upsert: false,
-                                    contentType: selectedFile.type || 'application/octet-stream'
-                                });
-                            if (error) throw error;
-                            if (progressBar) progressBar.style.width = '80%';
-                            if (percentText) percentText.innerText = '80%';
-
-                            const { data: pub } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(data.path);
-                            const downloadUrl = pub?.publicUrl || '';
-                            if (!downloadUrl) throw new Error('URL pública em falta — o bucket deve ser Public.');
-
-                            await addDoc(collection(db, 'contents'), {
-                                title,
-                                category,
-                                description,
-                                url: downloadUrl,
-                                storagePath: data.path,
-                                storageProvider: 'supabase',
-                                fileName: selectedFile.name,
-                                fileSize: selectedFile.size,
-                                mimeType: selectedFile.type || '',
-                                createdBy: currentUserId,
-                                createdByName: currentUserName || '',
-                                createdAt: serverTimestamp()
-                            });
-                            if (progressBar) progressBar.style.width = '100%';
-                            if (percentText) percentText.innerText = '100%';
-                            if (progressContainer) progressContainer.classList.add('hidden');
-                            resetAddContentForm();
-                            closeModal('addContentModal');
-                            showToast('Publicado no Supabase! Todos podem ver.', 'success');
-                        } catch (err) {
-                            console.error(err);
-                            const msg = (err && err.message) ? String(err.message) : 'Erro no upload Supabase.';
-                            showToast(msg.includes('Bucket') || msg.includes('row-level')
-                                ? 'Erro Supabase: verifique bucket "contents" público e políticas.'
-                                : ('Erro Supabase: ' + msg.slice(0, 120)), 'error');
-                            if (progressContainer) progressContainer.classList.add('hidden');
-                        } finally {
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50');
-                            submitBtn.innerHTML = 'Enviar Recurso';
-                        }
-                        return;
-                    }
-
                     // —— Fallback: Firebase Storage ——
                     const storagePath = `contents/${objectPath}`;
                     const fileRef = ref(storage, storagePath);
@@ -3208,6 +3305,50 @@
                     submitBtn.innerHTML = 'Enviar Recurso';
                 }
             }
+        }
+
+        function updateGoogleDriveDirectStatus(message, error = false) {
+            const el = document.getElementById('googleDriveDirectStatus');
+            if (!el) return;
+            el.textContent = message;
+            el.classList.toggle('text-red-600', !!error);
+            el.classList.toggle('dark:text-red-400', !!error);
+        }
+
+        function openGoogleDriveTransfer() {
+            const modal = document.getElementById('googleDriveTransferModal');
+            const frame = document.getElementById('googleDriveTransferFrame');
+            if (!modal || !frame) return;
+            frame.src = `https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(MD_DEFAULT_GOOGLE_DRIVE_FOLDER_ID)}#list`;
+            const name = selectedFile?.name || 'o ficheiro selecionado';
+            const status = document.getElementById('googleDriveTransferStatus');
+            if (status) status.textContent = `Ficheiro selecionado: ${name}. No quadro abaixo, use o Google Drive para adicionar o ficheiro à pasta pública.`;
+            modal.classList.remove('pointer-events-none','opacity-0');
+            const box = modal.querySelector('[data-drive-transfer-box]');
+            if (box) box.classList.remove('scale-95');
+            updateGoogleDriveDirectStatus('Google Drive aberto dentro do Mundo Digital. Faça a transferência para a pasta pública e depois publique o link no MD.');
+        }
+
+        function closeGoogleDriveTransfer() {
+            const modal = document.getElementById('googleDriveTransferModal');
+            const frame = document.getElementById('googleDriveTransferFrame');
+            if (!modal) return;
+            modal.classList.add('opacity-0','pointer-events-none');
+            const box = modal.querySelector('[data-drive-transfer-box]');
+            if (box) box.classList.add('scale-95');
+            if (frame) frame.src = 'about:blank';
+        }
+
+        async function publishSelectedFileToGoogleDrive() {
+            if (!currentUserId) {
+                showToast('Aguarde a autenticação e tente de novo.', 'error');
+                return;
+            }
+            if (!selectedFile) {
+                showToast('Primeiro escolha um ficheiro do dispositivo.', 'error');
+                return;
+            }
+            openGoogleDriveTransfer();
         }
 
         function useDefaultGoogleDriveFolder() {
@@ -3363,11 +3504,11 @@
             }
         }
 
-        function viewContent(id) {
+        async function viewContent(id) {
             const item = contents.find(c => c.id === id);
             if (!item) return;
 
-            leaveEntertainmentViewers();
+            await leaveEntertainmentViewers();
             leaveContentComments();
 
             document.getElementById('viewTitle').innerText = item.title;
@@ -3429,6 +3570,7 @@
                 downloadBtn.classList.remove('hidden');
                 actionContainer.style.display = 'flex';
                 enableCommentsPanel(item.id);
+                joinContentViewers(item.id);
                 openModal('viewContentModal');
                 return;
             }
@@ -3492,7 +3634,7 @@
                             referrerpolicy="origin"></iframe>
                     </div>
                 `;
-                joinEntertainmentViewers(item.id);
+                joinContentViewers(item.id);
             } else {
                 if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-link text-lg"></i>`;
                 const safeUrl = escapeHTML(url);
@@ -3512,8 +3654,9 @@
                 actionContainer.style.display = 'flex';
             }
 
-            // Comentários em todas as publicações
+            // Comentários + contador de visualizadores em todas as publicações
             enableCommentsPanel(item.id);
+            joinContentViewers(item.id);
 
             openModal('viewContentModal');
         }
@@ -3525,12 +3668,8 @@
                 const item = contents.find(c => c.id === id);
                 await deleteDoc(doc(db, "contents", id));
                 if (storagePath) {
-                    if (item && item.storageProvider === 'supabase' && supabase) {
-                        await supabase.storage.from(SUPABASE_BUCKET).remove([storagePath]).catch(() => {});
-                    } else {
-                        const fileRef = ref(storage, storagePath);
-                        await deleteObject(fileRef).catch(() => {});
-                    }
+                    const fileRef = ref(storage, storagePath);
+                    await deleteObject(fileRef).catch(() => {});
                 }
                 showToast("Recurso eliminado com sucesso.", "success");
                 if (isAdmin) renderAdminContents();
@@ -3539,20 +3678,18 @@
             }
         }
 
-        /** Configurar Supabase em runtime (consola do browser):
-         *  window.setSupabaseConfig('https://xxxx.supabase.co', 'eyJhbGciOi...')
-         */
-        function setSupabaseConfig(url, anonKey) {
+
+        function setConfig(url, anonKey) {
             if (!url || !anonKey) {
                 showToast('URL e anon key são obrigatórios.', 'error');
                 return false;
             }
-            localStorage.setItem('mundo_digital_supabase_url', url.trim());
-            localStorage.setItem('mundo_digital_supabase_key', anonKey.trim());
-            showToast('Supabase guardado. Recarregue a página.', 'success');
+            localStorage.setItem('mundo_digital__url', url.trim());
+            localStorage.setItem('mundo_digital__key', anonKey.trim());
+            showToast(' guardado. Recarregue a página.', 'success');
             return true;
         }
-        window.setSupabaseConfig = setSupabaseConfig;
+        window.setConfig = setConfig;
 
         // ========== ADMIN ==========
         function openAdminAccess() {
@@ -3707,45 +3844,78 @@
         }
 
         // ========== ENTERTAINMENT VIEWERS + CHAT ==========
-        async function joinEntertainmentViewers(contentId) {
+        // ========== VISUALIZADOR EM TEMPO REAL + COMENTÁRIOS ==========
+        async function joinContentViewers(contentId) {
             if (!currentUserId || !contentId) return;
+
+            // Sai primeiro de qualquer publicação anterior.
+            if (activeEntertainmentId && activeEntertainmentId !== contentId) {
+                await leaveEntertainmentViewers();
+            }
             activeEntertainmentId = contentId;
+
             const viewerRef = doc(db, "contentViewers", contentId, "viewers", currentUserId);
+            const nowMs = Date.now();
             try {
                 await setDoc(viewerRef, {
                     uid: currentUserId,
-                    name: currentUserName,
-                    joinedAt: serverTimestamp()
-                });
-            } catch (e) {}
+                    name: currentUserName || 'Utilizador',
+                    joinedAt: serverTimestamp(),
+                    lastSeenMs: nowMs,
+                    active: true
+                }, { merge: true });
+            } catch (e) {
+                console.warn('[MD] Não foi possível registar visualizador:', e?.message || e);
+            }
 
-            // heartbeat every 30s
             if (window._viewerHeartbeat) clearInterval(window._viewerHeartbeat);
             window._viewerHeartbeat = setInterval(async () => {
-                if (activeEntertainmentId === contentId) {
+                if (activeEntertainmentId === contentId && document.visibilityState === 'visible') {
                     try {
-                        await setDoc(viewerRef, { lastSeen: serverTimestamp() }, { merge: true });
-                    } catch (e) {}
+                        await setDoc(viewerRef, { lastSeenMs: Date.now(), active: true }, { merge: true });
+                    } catch (_) {}
                 }
-            }, 30000);
+            }, 15000);
 
-            // listen count
             if (unsubscribeViewers) { unsubscribeViewers(); unsubscribeViewers = null; }
             const viewersCol = collection(db, "contentViewers", contentId, "viewers");
             unsubscribeViewers = onSnapshot(viewersCol, (snap) => {
-                const count = snap.size;
-                const badge = document.getElementById('viewersBadge');
+                const cutoff = Date.now() - 45000;
+                const viewers = snap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .filter(v => v.active !== false && Number(v.lastSeenMs || 0) >= cutoff);
+
+                const count = viewers.length;
+                const live = document.getElementById('viewersLive');
                 const countEl = document.getElementById('viewersCount');
-                if (badge) {
-                    badge.classList.remove('hidden');
-                    badge.classList.add('inline-flex');
+                const namesEl = document.getElementById('viewersNames');
+                const avatarsEl = document.getElementById('viewersAvatars');
+
+                if (live) {
+                    live.classList.toggle('hidden', count === 0);
+                    live.classList.toggle('inline-flex', count > 0);
                 }
                 if (countEl) countEl.innerText = count;
+
+                const visibleNames = viewers.slice(0, 3).map(v => v.uid === currentUserId ? 'Você' : (v.name || 'Utilizador'));
+                if (namesEl) {
+                    namesEl.innerText = visibleNames.join(', ') + (count > 3 ? ` +${count - 3}` : '');
+                }
+                if (avatarsEl) {
+                    avatarsEl.innerHTML = viewers.slice(0, 4).map(v => {
+                        const name = v.name || 'Utilizador';
+                        return `<span class="viewer-avatar" title="${escapeHTML(name)}">${escapeHTML(name.charAt(0).toUpperCase())}</span>`;
+                    }).join('');
+                }
+            }, (err) => {
+                console.warn('[MD] Listener de visualizadores:', err?.code || err?.message || err);
             });
 
-            // Comentários também no canal de entretenimento
             joinContentComments(contentId);
         }
+
+        // Compatibilidade com o nome antigo.
+        const joinEntertainmentViewers = joinContentViewers;
 
         let activeCommentContentId = null;
         let unsubscribeContentComments = null;
@@ -3805,11 +3975,14 @@
             }
             activeEntertainmentId = null;
             entertainmentChatOpen = false;
+            const live = document.getElementById('viewersLive');
             const badge = document.getElementById('viewersBadge');
-            if (badge) {
-                badge.classList.add('hidden');
-                badge.classList.remove('inline-flex');
-            }
+            const namesEl = document.getElementById('viewersNames');
+            const avatarsEl = document.getElementById('viewersAvatars');
+            if (live) { live.classList.add('hidden'); live.classList.remove('inline-flex'); }
+            if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
+            if (namesEl) namesEl.innerText = '';
+            if (avatarsEl) avatarsEl.innerHTML = '';
             const panel = document.getElementById('entertainmentChatPanel');
             if (panel) panel.classList.add('hidden');
             const toggleBtn = document.getElementById('toggleChatBtn');
@@ -3951,6 +4124,10 @@
         window.toggleEntertainmentChat = toggleEntertainmentChat;
         window.closeViewContent = closeViewContent;
         window.onLinkUrlInput = onLinkUrlInput;
+        window.publishSelectedFileToGoogleDrive = publishSelectedFileToGoogleDrive;
+        window.openGoogleDriveTransfer = openGoogleDriveTransfer;
+        window.closeGoogleDriveTransfer = closeGoogleDriveTransfer;
+
         window.onDriveUrlInput = onDriveUrlInput;
         window.useDefaultGoogleDriveFolder = useDefaultGoogleDriveFolder;
         window.clearSelectedFile = clearSelectedFile;
@@ -3974,8 +4151,8 @@
         // Indicador de backend de armazenamento no modal Adicionar
         const storageHint = document.getElementById('storageBackendHint');
         if (storageHint) {
-            storageHint.innerHTML = supabase
-                ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ficheiros → <strong>Supabase Storage</strong> · Drive público disponível'
+            storageHint.innerHTML = 
+                ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ficheiros → <strong> Storage</strong> · Drive público disponível'
                 : '<i class="fa-solid fa-database text-slate-400 mr-1"></i>Ficheiros → Firebase Storage · Google Drive público disponível';
         }
 
