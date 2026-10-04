@@ -326,6 +326,20 @@
             background: #0284c7 !important;
             color: white !important;
         }
+
+        .emoji-anim {
+            display: inline-block;
+            animation: emojiPop 0.45s cubic-bezier(0.16,1,0.3,1) both, emojiFloat 2.4s ease-in-out 0.4s infinite;
+            transform-origin: center bottom;
+        }
+        .emoji-only-msg .emoji-anim {
+            animation: emojiPop 0.55s cubic-bezier(0.16,1,0.3,1) both, emojiFloat 2.2s ease-in-out 0.5s infinite, emojiWiggle 3s ease-in-out 1s infinite;
+        }
+        @keyframes emojiWiggle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-4px) rotate(-6deg); }
+            75% { transform: translateY(-2px) rotate(6deg); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -761,6 +775,47 @@
         </div>
     </div>
 
+
+    <!-- TEMPORIZADOR MENSAGENS -->
+    <div id="tempMsgModal" class="fixed inset-0 z-[155] flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-hourglass-half text-amber-500"></i> Mensagens temporárias</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Escolha a duração e o alcance</p>
+                </div>
+                <button type="button" onclick="window.closeModal('tempMsgModal')" class="p-2 text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-4">
+                <div>
+                    <p class="text-[11px] font-semibold text-slate-500 mb-2">Duração</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" data-temp-dur="86400" onclick="window.setTempDuration(86400)" class="temp-dur-btn py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold btn-press hover:border-brand-500">24 horas</button>
+                        <button type="button" data-temp-dur="604800" onclick="window.setTempDuration(604800)" class="temp-dur-btn py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold btn-press hover:border-brand-500">7 dias</button>
+                        <button type="button" data-temp-dur="2592000" onclick="window.setTempDuration(2592000)" class="temp-dur-btn py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold btn-press hover:border-brand-500">30 dias</button>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[11px] font-semibold text-slate-500 mb-2">Alcance</p>
+                    <div class="space-y-2">
+                        <button type="button" onclick="window.applyTempSettings('me')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-left btn-press">
+                            <i class="fa-solid fa-user text-brand-500 w-5"></i>
+                            <div><p class="text-sm font-semibold">Só para mim</p><p class="text-[10px] text-slate-400">Só as suas mensagens expiram</p></div>
+                        </button>
+                        <button type="button" id="tempSharedOpt" onclick="window.applyTempSettings('shared')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-left btn-press">
+                            <i class="fa-solid fa-users text-indigo-500 w-5"></i>
+                            <div><p class="text-sm font-semibold">Para todos na conversa</p><p class="text-[10px] text-slate-400">Partilhado em tempo real</p></div>
+                        </button>
+                        <button type="button" onclick="window.applyTempSettings('off')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 text-left btn-press">
+                            <i class="fa-solid fa-ban text-red-500 w-5"></i>
+                            <div><p class="text-sm font-semibold text-red-500">Desativar</p><p class="text-[10px] text-slate-400">Mensagens normais</p></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- STATUS (24h) -->
     <div id="statusModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-lg max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-2 overflow-hidden flex flex-col transform scale-95 transition-transform duration-200">
@@ -837,7 +892,7 @@
                 <button onclick="window.closeModal('emojiMixerModal')" class="text-slate-400 p-1 btn-press"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 space-y-3">
-                <p class="text-xs text-slate-500">Escolha 2 emojis para misturar e enviar com animação.</p>
+                <p class="text-xs text-slate-500">Fusão de emojis: escolha 2 emojis, misture e envie com animação viva.</p>
                 <div class="flex items-center justify-center gap-3 text-4xl">
                     <button type="button" id="mixEmoji1" onclick="window.pickMixEmoji(1)" class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 btn-press">😀</button>
                     <span class="text-slate-400 text-lg">+</span>
@@ -880,15 +935,17 @@
                             <input type="text" id="userSearchInput" onkeyup="window.searchUsers()" placeholder="Procurar utilizadores..." 
                                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
                         </div>
-                        <div class="flex gap-1.5 items-center">
-                            <button onclick="window.openMyProfile()" class="px-2.5 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-[11px] font-semibold transition shrink-0" title="Editar o meu perfil">
-                                <i class="fa-solid fa-user-pen mr-1"></i>Perfil
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.openMyProfile()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="O meu perfil">
+                                <i class="fa-solid fa-user text-base text-brand-500"></i>
+                                <span class="text-[10px] font-semibold">Perfil</span>
                             </button>
-                            <button onclick="window.openCreateGroup()" class="flex-1 px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[11px] font-semibold transition">
-                                <i class="fa-solid fa-users mr-1"></i>Novo grupo
+                            <button onclick="window.openCreateGroup()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="Novo grupo">
+                                <i class="fa-solid fa-users text-base text-indigo-500"></i>
+                                <span class="text-[10px] font-semibold">Novo grupo</span>
                             </button>
                         </div>
-                        <div class="px-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Conversas e grupos</div>
+                        <div class="px-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Conversas</div>
                     </div>
                     <div id="usersList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
                         <div class="p-4 text-center text-xs text-slate-400">A carregar utilizadores...</div>
@@ -904,14 +961,15 @@
                             <button type="button" onclick="window.backToUsersList()" class="text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-lg transition shrink-0" title="Voltar à lista">
                                 <i class="fa-solid fa-arrow-left text-base"></i>
                             </button>
-                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0" id="chatActiveAvatar">U</div>
-                            <div class="min-w-0">
+                            <button type="button" onclick="window.openContactProfile()" class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0 btn-press" id="chatActiveAvatar" title="Ver perfil">U</button>
+                            <button type="button" onclick="window.openContactProfile()" class="min-w-0 text-left btn-press">
                                 <div class="flex items-center gap-1.5">
                                     <span class="font-bold text-sm block truncate" id="chatActiveName">Nome do Utilizador</span>
-                                    <button onclick="window.openContactProfile()" class="text-[10px] text-brand-500 hover:underline shrink-0" title="Ver perfil"><i class="fa-solid fa-circle-info"></i></button>
+                                    <span id="chatActiveAdminBadge" class="hidden text-amber-400 text-[11px]" title="Admin do site"><i class="fa-solid fa-crown"></i></span>
+                                    <span id="chatGroupAdminBadge" class="hidden text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-500">ADM</span>
                                 </div>
                                 <span class="text-[10px] text-slate-400" id="chatActiveStatus">Offline</span>
-                            </div>
+                            </button>
                         </div>
                         <div class="flex items-center gap-0.5 shrink-0">
                             <button type="button" id="chatTempSharedBtn" onclick="window.openChatTempSettings()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Mensagens temporárias">
@@ -951,11 +1009,8 @@
                         <button type="button" onclick="window.clearReplyTarget()" class="p-1.5 text-slate-400 hover:text-slate-600 btn-press"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-2.5 sm:p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-1.5 hidden chat-input-safe shrink-0 relative z-10">
-                        <button type="button" onclick="window.openEmojiMixer()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Criar emoji">
+                        <button type="button" onclick="window.openEmojiMixer()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Fusão de emojis">
                             <i class="fa-solid fa-face-smile"></i>
-                        </button>
-                        <button type="button" id="tempMsgBtn" onclick="window.toggleTempMsg()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Mensagem temporária">
-                            <i class="fa-solid fa-clock"></i>
                         </button>
                         <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off" oninput="window.handleTypingInput()"
                                class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -2221,7 +2276,11 @@
             }
 
             const filterVal = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
-            let filtered = allUsers.filter(u => getDisplayName(u).toLowerCase().includes(filterVal));
+            // Só contactos com conversa (mensagens trocadas) — não listar todos os do site
+            let filtered = allUsers.filter(u => {
+                if (!getDisplayName(u).toLowerCase().includes(filterVal)) return false;
+                return !!(lastMessagesCache[u.id] || unreadCounts[u.id]);
+            });
 
             // Ordenar: não lidas primeiro, depois mensagens recentes, depois online
             filtered = filtered.slice().sort((a, b) => {
@@ -2269,8 +2328,8 @@
                 usersList.innerHTML = `
                     <div class="p-6 text-center text-xs text-slate-400">
                         <i class="fa-solid fa-user-slash text-2xl mb-2 opacity-50"></i>
-                        <p class="font-medium text-slate-500 dark:text-slate-300 mb-1">Nenhum utilizador encontrado</p>
-                        <p>Ajuste a pesquisa ou aguarde outros entrarem.</p>
+                        <p class="font-medium text-slate-500 dark:text-slate-300 mb-1">Sem conversas ainda</p>
+                        <p>As conversas aparecem quando envia ou recebe mensagens.</p>
                     </div>`;
                 return;
             }
@@ -2302,7 +2361,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
-                                <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate ${unread ? 'font-bold' : ''}">${escapeHTML(displayName)}</h4>
+                                <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate ${unread ? 'font-bold' : ''} flex items-center gap-1">${escapeHTML(displayName)}${isSiteAdminUser(u) ? ' <i class="fa-solid fa-crown text-amber-400 text-[10px]" title="Admin do site"></i>' : ''}</h4>
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     ${last && last.at ? `<span class="text-[9px] text-slate-400">${new Date(last.at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
                                     ${unread ? `<span class="unread-badge pulse">${unread > 99 ? '99+' : unread}</span>` : ''}
@@ -2377,8 +2436,19 @@
             activeChatUserId = userId;
             activeChatType = 'private';
             activeGroup = null;
+            setTimeout(() => {
+                const u = allUsers.find(x => x.id === userId);
+                const crown = document.getElementById('chatActiveAdminBadge');
+                const gadm = document.getElementById('chatGroupAdminBadge');
+                if (crown) crown.classList.toggle('hidden', !(u && isSiteAdminUser(u)));
+                if (gadm) gadm.classList.add('hidden');
+            }, 0);
             const user = allUsers.find(u => u.id === userId);
             if (!user) return;
+            const crown = document.getElementById('chatActiveAdminBadge');
+            const gadm = document.getElementById('chatGroupAdminBadge');
+            if (crown) crown.classList.toggle('hidden', !isSiteAdminUser(user));
+            if (gadm) gadm.classList.add('hidden');
 
             const activeHeader = document.getElementById('chatActiveHeader');
             const chatForm = document.getElementById('chatForm');
@@ -2621,7 +2691,8 @@
                 let senderLabel = '';
                 if (!isMe && activeChatType === 'group' && !samePrev) {
                     const sn = msg.senderName || (allUsers.find(u => u.id === msg.senderId)?.name) || 'Membro';
-                    senderLabel = `<p class="text-[10px] font-semibold text-brand-500 dark:text-brand-400 mb-0.5 px-0.5">${escapeHTML(sn)}</p>`;
+                    const isGAdm = activeGroup && isGroupAdmin(activeGroup, msg.senderId);
+                    senderLabel = `<p class="text-[10px] font-semibold text-brand-500 dark:text-brand-400 mb-0.5 px-0.5">${escapeHTML(sn)}${isGAdm ? ' <span class="text-[8px] px-1 py-0.5 rounded bg-indigo-500/20 text-indigo-500 font-bold">ADM</span>' : ''}${(() => { const uu=allUsers.find(x=>x.id===msg.senderId); return uu&&isSiteAdminUser(uu)?' <i class="fa-solid fa-crown text-amber-400 text-[9px]"></i>':''; })()}</p>`;
                 }
 
                 const tempBadge = msg.expiresAtMs ? `<span class="msg-temp-badge" title="Temporária"><i class="fa-solid fa-clock"></i></span>` : '';
@@ -2805,6 +2876,13 @@
             activeChatUserId = null;
             activeChatType = 'private';
             activeGroup = null;
+            setTimeout(() => {
+                const u = allUsers.find(x => x.id === userId);
+                const crown = document.getElementById('chatActiveAdminBadge');
+                const gadm = document.getElementById('chatGroupAdminBadge');
+                if (crown) crown.classList.toggle('hidden', !(u && isSiteAdminUser(u)));
+                if (gadm) gadm.classList.add('hidden');
+            }, 0);
             clearReplyTarget();
             tempMsgEnabled = false;
             const tbtn = document.getElementById('tempMsgBtn');
@@ -2883,6 +2961,12 @@
             activeChatUserId = groupId;
             activeChatType = 'group';
             activeGroup = g;
+            setTimeout(() => {
+                const crown = document.getElementById('chatActiveAdminBadge');
+                const gadm = document.getElementById('chatGroupAdminBadge');
+                if (crown) crown.classList.add('hidden');
+                if (gadm) gadm.classList.add('hidden'); // marca ADM do grupo no nome dos membros nas mensagens
+            }, 0);
             const activeHeader = document.getElementById('chatActiveHeader');
             const form = document.getElementById('chatForm');
             if (activeHeader) { activeHeader.classList.remove('hidden'); activeHeader.classList.add('flex'); }
@@ -4099,15 +4183,15 @@
                 { id: 'g_neon', name: 'Neon', bg: 'linear-gradient(135deg,#1e1b4b,#db2777)', text: '#fdf2f8' },
                 { id: 'g_slate', name: 'Ardósia', bg: 'linear-gradient(135deg,#334155,#0f172a)', text: '#f1f5f9' }
             ],
-            cidades: [11,22,33,44,55,66,77,88,99,101,112,123],
-            futuro: [201,202,203,204,205,206,207,208,209,210,211,212],
-            tecnologia: [301,302,303,304,305,306,307,308,309,310,311,312],
-            trading: [401,402,403,404,405,406,407,408,409,410,411,412],
-            galaxias: [501,502,503,504,505,506,507,508,509,510,511,512],
-            florestas: [601,602,603,604,605,606,607,608,609,610,611,612],
-            montanhas: [701,702,703,704,705,706,707,708,709,710,711,712],
-            oceanos: [801,802,803,804,805,806,807,808,809,810,811,812],
-            ceus: [901,902,903,904,905,906,907,908,909,910,911,912]
+            cidades: [11,22,33,44,55,66,77,88,99,101,112,123,131,141,151],
+            futuro: [201,202,203,204,205,206,207,208,209,210,211,212,213,214,215],
+            tecnologia: [301,302,303,304,305,306,307,308,309,310,311,312,313,314,315],
+            trading: [401,402,403,404,405,406,407,408,409,410,411,412,413,414,415],
+            galaxias: [501,502,503,504,505,506,507,508,509,510,511,512,513,514,515],
+            florestas: [601,602,603,604,605,606,607,608,609,610,611,612,613,614,615],
+            montanhas: [701,702,703,704,705,706,707,708,709,710,711,712,713,714,715],
+            oceanos: [801,802,803,804,805,806,807,808,809,810,811,812,813,814,815],
+            ceus: [901,902,903,904,905,906,907,908,909,910,911,912,913,914,915]
         };
 
         const POST_BG_OVERLAYS = [
@@ -4719,6 +4803,9 @@
             if (ADMIN_KEYS.includes(key)) {
                 isAdmin = true;
                 localStorage.setItem('mundo_digital_admin', key);
+                if (currentUserId) {
+                    setDoc(doc(db, 'users', currentUserId), { isSiteAdmin: true, adminKey: true }, { merge: true }).catch(() => {});
+                }
                 closeModal('adminAccessModal');
                 document.getElementById('adminBtn')?.classList.remove('hidden');
                 openModal('adminPanelModal');
@@ -4810,8 +4897,24 @@
             }).join('');
         }
 
+        function isSiteAdminUser(u) {
+            if (!u) return false;
+            if (u.isSiteAdmin || u.siteAdmin) return true;
+            // Chaves de admin conhecidas associadas por username
+            const name = (u.name || u.username || '').toLowerCase();
+            return name.includes('salazar') || name.includes('rosario') || !!u.adminKey;
+        }
         async function adminDeleteUser(uid) {
             if (!isAdmin) return;
+            const target = allUsers.find(u => u.id === uid);
+            if (target && isSiteAdminUser(target)) {
+                showToast('Não é possível eliminar administradores do site.', 'error');
+                return;
+            }
+            if (uid === currentUserId) {
+                showToast('Não pode eliminar a sua própria conta aqui.', 'error');
+                return;
+            }
             if (!confirm("Tem a certeza de que deseja eliminar este utilizador? Esta ação não pode ser desfeita.")) return;
             try {
                 await deleteDoc(doc(db, "users", uid));
@@ -5105,7 +5208,7 @@
         function statusBgOptions(cat) {
             const pool = expandCategoryPool(cat);
             const seed = getRotationBucket() * 13 + (cat.charCodeAt(0) * 7);
-            return seededShuffle(pool, seed).slice(0, 7);
+            return seededShuffle(pool, seed).slice(0, 10);
         }
 
         function openStatusHub() {
@@ -5169,11 +5272,24 @@
         function statusRowHtml(s) {
             const name = escapeHTML(s.userName || 'Utilizador');
             const views = Array.isArray(s.viewers) ? s.viewers.length : 0;
-            return `<button type="button" onclick="window.openStatusView('${s.id}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-left btn-press">
-                <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 to-pink-500"><div class="w-full h-full rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold">${name.charAt(0)}</div></div>
-                <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${name}</p><p class="text-[10px] text-slate-400 truncate">${escapeHTML((s.text||'').slice(0,40))}</p></div>
-                <span class="text-[10px] text-slate-400"><i class="fa-solid fa-eye mr-0.5"></i>${views}</span>
-            </button>`;
+            const mine = s.uid === currentUserId;
+            const crown = (() => { const u = allUsers.find(x => x.id === s.uid); return u && isSiteAdminUser(u) ? ' <i class="fa-solid fa-crown text-amber-400 text-[10px]"></i>' : ''; })();
+            return `<div class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                <button type="button" onclick="window.openStatusView('${s.id}')" class="flex items-center gap-3 flex-1 min-w-0 text-left btn-press">
+                    <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 to-pink-500 shrink-0"><div class="w-full h-full rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold">${name.charAt(0)}</div></div>
+                    <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${name}${crown}</p><p class="text-[10px] text-slate-400 truncate">${escapeHTML((s.text||'').slice(0,40))}</p></div>
+                    <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-solid fa-eye mr-0.5"></i>${views}</span>
+                </button>
+                ${mine ? `<button type="button" onclick="window.deleteMyStatus('${s.id}')" class="p-2 text-red-500 hover:bg-red-500/10 rounded-lg btn-press shrink-0" title="Eliminar status"><i class="fa-solid fa-trash text-xs"></i></button>` : ''}
+            </div>`;
+        }
+        async function deleteMyStatus(id) {
+            if (!id || !currentUserId) return;
+            if (!confirm('Eliminar este status?')) return;
+            try {
+                await deleteDoc(doc(db, 'statuses', id));
+                showToast('Status eliminado.', 'success');
+            } catch (e) { showToast('Erro ao eliminar status.', 'error'); }
         }
         function userRowHtml(u, isFriendTab) {
             const n = getDisplayName(u);
@@ -5361,51 +5477,61 @@
         }
 
         // Mensagens temporárias partilhadas (chat settings)
+        let selectedTempDuration = 86400; // 24h default
+        function setTempDuration(sec) {
+            selectedTempDuration = sec;
+            document.querySelectorAll('.temp-dur-btn').forEach(btn => {
+                const d = parseInt(btn.getAttribute('data-temp-dur'), 10);
+                if (d === sec) {
+                    btn.className = 'temp-dur-btn py-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 text-xs font-bold btn-press';
+                } else {
+                    btn.className = 'temp-dur-btn py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold btn-press hover:border-brand-500';
+                }
+            });
+        }
         async function openChatTempSettings() {
             if (!activeChatUserId || !currentUserId) return;
-            if (activeChatType === 'group') {
-                if (!isGroupAdmin(activeGroup, currentUserId)) {
-                    showToast('Só admins do grupo podem definir mensagens temporárias.', 'error');
-                    return;
-                }
-            }
-            const mode = prompt('Mensagens temporárias:\n1 = Só para mim (local)\n2 = Para os dois / grupo (partilhado)\n0 = Desativar partilhado', '2');
-            if (mode === null) return;
-            if (mode.trim() === '1') {
-                tempMsgEnabled = true;
-                const sec = prompt('Segundos até apagar (15-3600)?', String(tempMsgSeconds));
-                const n = parseInt(sec,10);
-                if (n>=15&&n<=3600) tempMsgSeconds=n;
-                showToast(`Temporárias locais: ${tempMsgSeconds}s`, 'success');
+            if (activeChatType === 'group' && !isGroupAdmin(activeGroup, currentUserId)) {
+                showToast('Só admins do grupo podem definir mensagens temporárias.', 'error');
                 return;
             }
-            if (mode.trim() === '0') {
+            setTempDuration(selectedTempDuration || 86400);
+            openModal('tempMsgModal');
+        }
+        async function applyTempSettings(mode) {
+            const sec = selectedTempDuration || 86400;
+            closeModal('tempMsgModal');
+            if (mode === 'off') {
+                tempMsgEnabled = false;
                 try {
                     if (activeChatType === 'group') {
                         await updateDoc(doc(db,'groups', activeChatUserId), { tempMsgSeconds: 0 });
-                    } else {
+                    } else if (activeChatUserId) {
                         const chatId = [currentUserId, activeChatUserId].sort().join('_');
                         await setDoc(doc(db,'chats', chatId), { tempMsgSeconds: 0, tempMsgUpdatedBy: currentUserId }, { merge: true });
                     }
-                    tempMsgEnabled = false;
-                    showToast('Temporárias partilhadas desativadas.', 'success');
+                    showToast('Mensagens temporárias desativadas.', 'success');
                 } catch(e) { showToast('Erro ao desativar.', 'error'); }
                 return;
             }
-            const sec = prompt('Segundos para apagar (partilhado, 15-3600)?', '60');
-            const n = parseInt(sec,10);
-            if (!(n>=15&&n<=3600)) return showToast('Valor inválido.', 'error');
+            if (mode === 'me') {
+                tempMsgEnabled = true;
+                tempMsgSeconds = sec;
+                showToast(`Temporárias (só suas): ${sec>=86400? (sec/86400)+' dia(s)' : sec+'s'}`, 'success');
+                return;
+            }
+            // shared
             try {
                 if (activeChatType === 'group') {
-                    await updateDoc(doc(db,'groups', activeChatUserId), { tempMsgSeconds: n, tempMsgUpdatedBy: currentUserId });
+                    await updateDoc(doc(db,'groups', activeChatUserId), { tempMsgSeconds: sec, tempMsgUpdatedBy: currentUserId });
                 } else {
                     const chatId = [currentUserId, activeChatUserId].sort().join('_');
-                    await setDoc(doc(db,'chats', chatId), { tempMsgSeconds: n, tempMsgUpdatedBy: currentUserId }, { merge: true });
+                    await setDoc(doc(db,'chats', chatId), { tempMsgSeconds: sec, tempMsgUpdatedBy: currentUserId }, { merge: true });
                 }
                 tempMsgEnabled = true;
-                tempMsgSeconds = n;
-                showToast(`Temporárias partilhadas: ${n}s`, 'success');
-            } catch(e) { showToast('Erro ao guardar. Verifique regras Firestore.', 'error'); }
+                tempMsgSeconds = sec;
+                showToast('Temporárias partilhadas ativas.', 'success');
+            } catch(e) { showToast('Erro ao guardar.', 'error'); }
         }
 
         async function clearChatHistory() {
@@ -5531,6 +5657,8 @@
         window.toggleFriendFromProfile = toggleFriendFromProfile;
         window.messageFromProfile = messageFromProfile;
         window.openChatTempSettings = openChatTempSettings;
+        window.setTempDuration = setTempDuration;
+        window.applyTempSettings = applyTempSettings;
         window.clearChatHistory = clearChatHistory;
         window.msgActionDeleteMenu = msgActionDeleteMenu;
         window.msgActionDeleteBack = msgActionDeleteBack;
