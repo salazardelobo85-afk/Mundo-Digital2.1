@@ -460,6 +460,9 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="window.openStatusHub()" title="Status e amigos" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press">
+                    <i class="fa-solid fa-circle-notch text-lg"></i>
+                </button>
                 <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
                     <i class="fa-solid fa-comments text-lg"></i>
                     <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
@@ -670,8 +673,12 @@
     <!-- PERFIL DO CONTACTO / GRUPO -->
     <div id="contactProfileModal" class="fixed inset-0 z-[155] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-6 text-center"><img id="contactProfileAvatarImg" class="w-24 h-24 mx-auto rounded-full object-cover hidden" alt="Perfil"><div id="contactProfileFallback" class="w-24 h-24 mx-auto rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div><h3 id="contactProfileName" class="font-bold text-xl mt-3">Utilizador</h3><p id="contactProfileBio" class="text-sm text-slate-500 mt-1 whitespace-pre-wrap"></p><p id="contactProfilePhone" class="text-xs text-slate-400 mt-2"></p></div>
-            <div class="p-4 border-t border-slate-200 dark:border-slate-700"><button onclick="window.closeModal('contactProfileModal')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm btn-press">Fechar</button></div>
+            <div class="p-6 text-center"><img id="contactProfileAvatarImg" class="w-24 h-24 mx-auto rounded-full object-cover hidden" alt="Perfil"><div id="contactProfileFallback" class="w-24 h-24 mx-auto rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div><h3 id="contactProfileName" class="font-bold text-xl mt-3">Utilizador</h3><p id="contactProfileUsername" class="text-xs text-brand-500 font-medium mt-0.5"></p><p id="contactProfileBio" class="text-sm text-slate-500 mt-2 whitespace-pre-wrap"></p><p id="contactProfilePhone" class="text-xs text-slate-400 mt-2"></p></div>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                <button type="button" id="contactAddFriendBtn" onclick="window.toggleFriendFromProfile()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm btn-press"><i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo</button>
+                <button type="button" id="contactMsgBtn" onclick="window.messageFromProfile()" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm btn-press"><i class="fa-solid fa-comment mr-1"></i>Mensagem</button>
+                <button onclick="window.closeModal('contactProfileModal')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm btn-press">Fechar</button>
+            </div>
         </div>
     </div>
 
@@ -718,13 +725,13 @@
     </div>
 
 
-    <!-- AÇÕES DA MENSAGEM (segurar 2s) -->
+    <!-- AÇÕES DA MENSAGEM (segurar) -->
     <div id="msgActionSheet" class="fixed inset-0 z-[160] flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 transform translate-y-4 sm:translate-y-0 transition-transform duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4">
             <div class="p-3 border-b border-slate-200 dark:border-slate-700">
                 <p class="text-xs text-slate-500 truncate px-1" id="msgActionPreview">Mensagem</p>
             </div>
-            <div class="p-2 space-y-0.5">
+            <div id="msgActionMain" class="p-2 space-y-0.5">
                 <button type="button" onclick="window.msgActionReply()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
                     <i class="fa-solid fa-reply text-brand-500 w-5"></i> Responder
                 </button>
@@ -734,15 +741,93 @@
                 <button type="button" onclick="window.msgActionForward()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
                     <i class="fa-solid fa-share text-brand-500 w-5"></i> Reencaminhar
                 </button>
-                <button type="button" onclick="window.msgActionDelete()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 text-sm font-medium btn-press text-left">
+                <button type="button" onclick="window.msgActionDeleteMenu()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 text-sm font-medium btn-press text-left">
                     <i class="fa-solid fa-trash w-5"></i> Apagar
                 </button>
+            </div>
+            <div id="msgActionDeleteOpts" class="hidden p-2 space-y-0.5">
+                <p class="px-3 py-1 text-[11px] text-slate-400 font-semibold">Como deseja apagar?</p>
+                <button type="button" onclick="window.msgActionDeleteConfirm('me')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-user text-slate-500 w-5"></i> Apagar só para mim
+                </button>
+                <button type="button" id="msgDeleteForAllBtn" onclick="window.msgActionDeleteConfirm('all')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-500 text-sm font-medium btn-press text-left">
+                    <i class="fa-solid fa-users text-red-500 w-5"></i> Apagar para todos
+                </button>
+                <button type="button" onclick="window.msgActionDeleteBack()" class="w-full py-2 text-xs text-slate-500 font-semibold btn-press">Voltar</button>
             </div>
             <div class="p-3 border-t border-slate-200 dark:border-slate-700">
                 <button type="button" onclick="window.closeMsgActionSheet()" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-sm font-semibold btn-press">Cancelar</button>
             </div>
         </div>
     </div>
+
+    <!-- STATUS (24h) -->
+    <div id="statusModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-2 overflow-hidden flex flex-col transform scale-95 transition-transform duration-200">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+                <div>
+                    <h3 class="font-bold text-base">Status</h3>
+                    <p class="text-[11px] text-slate-400" id="friendsStatsLine">Amigos: 0 · Online: 0</p>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="window.openCreateStatus()" class="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-semibold btn-press"><i class="fa-solid fa-plus mr-1"></i>Novo</button>
+                    <button type="button" onclick="window.closeModal('statusModal')" class="p-2 text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="px-3 py-2 flex gap-2 border-b border-slate-200 dark:border-slate-700">
+                <button type="button" onclick="window.setStatusTab('status')" id="statusTabStatus" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white btn-press">Status</button>
+                <button type="button" onclick="window.setStatusTab('users')" id="statusTabUsers" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">Utilizadores</button>
+                <button type="button" onclick="window.setStatusTab('friends')" id="statusTabFriends" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">Amigos</button>
+            </div>
+            <div id="statusListPanel" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 min-h-0"></div>
+        </div>
+    </div>
+
+    <!-- CRIAR STATUS -->
+    <div id="createStatusModal" class="fixed inset-0 z-[155] flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold">Novo status (24h)</h3>
+                <button onclick="window.closeModal('createStatusModal')" class="text-slate-400 p-1 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                <textarea id="statusTextInput" maxlength="300" rows="4" placeholder="Escreva o seu status..." class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-none"></textarea>
+                <div id="statusBgCats" class="flex flex-wrap gap-1"></div>
+                <div id="statusBgPalette" class="flex flex-wrap gap-2"></div>
+                <div id="statusPreview" class="rounded-2xl p-6 min-h-[120px] flex items-center justify-center text-center text-white font-semibold text-lg bg-slate-800">Pré-visualização</div>
+                <button type="button" onclick="window.publishStatus()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm btn-press">Publicar status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VER STATUS -->
+    <div id="viewStatusModal" class="fixed inset-0 z-[160] flex flex-col bg-slate-950 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="flex-1 relative flex flex-col min-h-0">
+            <div id="viewStatusBg" class="absolute inset-0 bg-cover bg-center"></div>
+            <div class="absolute inset-0 bg-black/35"></div>
+            <div class="relative z-10 p-4 flex items-center gap-3">
+                <div id="viewStatusAvatar" class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold">U</div>
+                <div class="flex-1 min-w-0">
+                    <p id="viewStatusName" class="text-white font-semibold text-sm truncate">Nome</p>
+                    <p id="viewStatusMeta" class="text-white/70 text-[11px]">há pouco</p>
+                </div>
+                <button type="button" onclick="window.closeModal('viewStatusModal')" class="text-white p-2 btn-press"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="relative z-10 flex-1 flex items-center justify-center p-6">
+                <p id="viewStatusText" class="text-white text-2xl sm:text-3xl font-bold text-center leading-snug drop-shadow-lg whitespace-pre-wrap"></p>
+            </div>
+            <div class="relative z-10 p-4 space-y-2 safe-area-pb">
+                <button type="button" id="statusViewersBtn" onclick="window.toggleStatusViewers()" class="w-full py-2 rounded-xl bg-white/15 text-white text-xs font-semibold btn-press">
+                    <i class="fa-solid fa-eye mr-1"></i><span id="statusViewersCount">0</span> visualizações
+                </button>
+                <div id="statusViewersList" class="hidden max-h-32 overflow-y-auto rounded-xl bg-black/40 p-2 space-y-1"></div>
+                <button type="button" id="statusMsgAuthorBtn" onclick="window.messageStatusAuthor()" class="w-full py-3 rounded-xl bg-brand-600 text-white font-semibold text-sm btn-press">
+                    <i class="fa-solid fa-comment mr-2"></i>Mensagem
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- CRIADOR DE EMOJI -->
     <div id="emojiMixerModal" class="fixed inset-0 z-[155] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
@@ -829,6 +914,12 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-0.5 shrink-0">
+                            <button type="button" id="chatTempSharedBtn" onclick="window.openChatTempSettings()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Mensagens temporárias">
+                                <i class="fa-solid fa-hourglass-half text-sm"></i>
+                            </button>
+                            <button type="button" id="chatClearBtn" onclick="window.clearChatHistory()" class="p-2 rounded-lg hover:bg-red-500/10 text-slate-600 dark:text-slate-300 hover:text-red-500 transition btn-press" title="Apagar conversa">
+                                <i class="fa-solid fa-trash text-sm"></i>
+                            </button>
                             <button type="button" id="chatGroupSettingsBtn" onclick="window.openGroupSettings()" class="hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Definições do grupo">
                                 <i class="fa-solid fa-gear text-sm"></i>
                             </button>
@@ -1131,6 +1222,7 @@
             limit,
             updateDoc,
             getDoc,
+            getDocs,
             serverTimestamp,
             writeBatch
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -1332,6 +1424,8 @@
             if (prev) prev.textContent = (msg.text || (msg.type === 'audio' ? 'Áudio' : 'Mensagem')).slice(0, 80);
             const editBtn = document.getElementById('msgActionEditBtn');
             if (editBtn) editBtn.classList.toggle('hidden', msg.senderId !== currentUserId || msg.type === 'audio');
+            document.getElementById('msgActionMain')?.classList.remove('hidden');
+            document.getElementById('msgActionDeleteOpts')?.classList.add('hidden');
             openModal('msgActionSheet');
         }
         function closeMsgActionSheet() {
@@ -1367,36 +1461,41 @@
             showToast('Texto colocado no campo — escolha o contacto e envie.', 'info');
             backToUsersList(true);
         }
-        async function msgActionDelete() {
+        function msgActionDeleteMenu() {
+            const msg = msgActionTarget;
+            if (!msg) return;
+            document.getElementById('msgActionMain')?.classList.add('hidden');
+            document.getElementById('msgActionDeleteOpts')?.classList.remove('hidden');
+            const allBtn = document.getElementById('msgDeleteForAllBtn');
+            if (allBtn) allBtn.classList.toggle('hidden', msg.senderId !== currentUserId);
+        }
+        function msgActionDeleteBack() {
+            document.getElementById('msgActionDeleteOpts')?.classList.add('hidden');
+            document.getElementById('msgActionMain')?.classList.remove('hidden');
+        }
+        async function msgActionDeleteConfirm(mode) {
             const msg = msgActionTarget;
             closeMsgActionSheet();
             if (!msg) return;
             const isMe = msg.senderId === currentUserId;
-            let mode = 'me';
-            if (isMe) {
-                const choice = prompt('Apagar mensagem:\n1 = Só para mim\n2 = Para todos', '1');
-                if (choice === null) return;
-                mode = choice.trim() === '2' ? 'all' : 'me';
-            } else {
-                if (!confirm('Apagar esta mensagem só para si?')) return;
-                mode = 'me';
-            }
             try {
                 const chatId = activeChatType === 'group' ? activeChatUserId : [currentUserId, activeChatUserId].sort().join('_');
                 const col = activeChatType === 'group' ? 'groups' : 'chats';
                 const ref = doc(db, col, chatId, 'messages', msg.id);
                 if (mode === 'all' && isMe) {
                     await deleteDoc(ref);
+                    showToast('Apagada para todos.', 'success');
                 } else {
-                    const hidden = Array.isArray(msg.hiddenFor) ? msg.hiddenFor : [];
+                    const hidden = Array.isArray(msg.hiddenFor) ? [...msg.hiddenFor] : [];
                     if (!hidden.includes(currentUserId)) hidden.push(currentUserId);
                     await updateDoc(ref, { hiddenFor: hidden });
+                    showToast('Apagada só para si.', 'success');
                 }
-                showToast('Mensagem apagada.', 'success');
             } catch (e) {
                 showToast('Erro ao apagar mensagem.', 'error');
             }
         }
+        async function msgActionDelete() { msgActionDeleteMenu(); }
 
         function bindMessageGestures(container) {
             if (!container || container.dataset.gestures === '1') return;
@@ -1412,7 +1511,7 @@
                     const msg = serverMessagesSnapshot.find(m => m.id === id);
                     if (msg) openMsgActionSheet(msg);
                     longPressTimer = null;
-                }, 2000);
+                }, 700);
             });
             const cancel = (e) => {
                 if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
@@ -3975,14 +4074,16 @@
             gradiente: { name: 'Gradientes', icon: 'fa-fill-drip' },
             cidades: { name: 'Cidades', icon: 'fa-city' },
             futuro: { name: 'Futurista', icon: 'fa-robot' },
+            tecnologia: { name: 'Tecnologia', icon: 'fa-microchip' },
+            trading: { name: 'Trading', icon: 'fa-chart-line' },
             galaxias: { name: 'Galáxias', icon: 'fa-star' },
             florestas: { name: 'Florestas', icon: 'fa-tree' },
             montanhas: { name: 'Montanhas', icon: 'fa-mountain' },
             oceanos: { name: 'Oceanos', icon: 'fa-water' },
-            ceus: { name: 'Céus', icon: 'fa-cloud' },
-            aurora: { name: 'Aurora', icon: 'fa-moon' }
+            ceus: { name: 'Céus', icon: 'fa-cloud' }
         };
 
+        // Fundos fiáveis: gradientes CSS + picsum.photos (sempre disponíveis)
         const POST_BG_POOL = {
             gradiente: [
                 { id: 'g_sky', name: 'Céu', bg: 'linear-gradient(135deg,#e0f2fe,#7dd3fc)', text: '#0c4a6e' },
@@ -3994,44 +4095,19 @@
                 { id: 'g_grape', name: 'Uva', bg: 'linear-gradient(135deg,#3b0764,#9333ea)', text: '#f3e8ff' },
                 { id: 'g_gold', name: 'Ouro', bg: 'linear-gradient(135deg,#fef3c7,#f59e0b)', text: '#78350f' },
                 { id: 'g_coral', name: 'Coral', bg: 'linear-gradient(135deg,#fff1f2,#fb7185)', text: '#881337' },
-                { id: 'g_slate', name: 'Ardósia', bg: 'linear-gradient(135deg,#334155,#0f172a)', text: '#f1f5f9' },
                 { id: 'g_cyber', name: 'Cyber', bg: 'linear-gradient(135deg,#022c22,#0ea5e9 50%,#a855f7)', text: '#ecfeff' },
-                { id: 'g_neon', name: 'Neon', bg: 'linear-gradient(135deg,#1e1b4b,#db2777)', text: '#fdf2f8' }
+                { id: 'g_neon', name: 'Neon', bg: 'linear-gradient(135deg,#1e1b4b,#db2777)', text: '#fdf2f8' },
+                { id: 'g_slate', name: 'Ardósia', bg: 'linear-gradient(135deg,#334155,#0f172a)', text: '#f1f5f9' }
             ],
-            cidades: [
-                '1514565131-fce0801e5785','1480714378408-67cf0d13bc1b','1540959733332-eab4deabeeaf','1502602898657-3e91760cbb34',
-                '1496442226666-8d4d0e62e6e9','1512453979798-5ea266f8880c','1536599018102-9f803c140fc1','1513635269975-59663e0ac1ad',
-                '1525625293386-3f8f99389edd','1477959858617-67f85cf4f1df','1449824913935-59a10b8d2000','1519501025264-29d6b9dfcb63'
-            ],
-            futuro: [
-                '1451187580459-43490279c0fa','1518770660439-4636190af475','1550751827-4bd374c3f58b','1526374965328-7f61d4dc18c5',
-                '1485827404703-89b55fcc595e','1535223289814-23af8c1b1b2c','1516321318423-f06f85e504b3','1558618666-fcd25c85cd64',
-                '1518709268805-4e9042af2176','1563089145-5991074e6b4b','1579546929518-9e396f3cc809','1557682250-33bd709cbe85'
-            ],
-            galaxias: [
-                '1419242902214-272b3f66ee7a','1462331940025-496dfbfc7564','1464802686167-b363b5d2b8f3','1446776811953-b23d57bd21aa',
-                '1454783548815-0d0c1c8c1e0e','1516339901601-2e1b62dc0c45','1543722530-d2c3201371f7','1534796636912-3b95b2b8c0e0'
-            ],
-            florestas: [
-                '1441974231531-c6227db76b6e','1511497584788-876760111969','1470071459604-3b5ec3a7fe05','1476820865390-c52aeebb9891',
-                '1516026672322-bc52d61a55d5','1448375240586-876e2e1f5c8c','1469474968028-56623f02e42e','1447752875215-b2761acb3c5d'
-            ],
-            montanhas: [
-                '1464822759023-fed622ff2c3b','1506905925346-21bda4d32df4','1439066615861-d1af74d74000','1501785888041-af3ef285b470',
-                '1464822759023-fed622ff2c3c','1472214103451-9374bd1c798e','1426604966848-d7adac402bff','1501854140801-50d0167340bb'
-            ],
-            oceanos: [
-                '1507525428034-b723cf961d3e','1505142468610-359e7d316be0','1505118380757-91f5f5632de0','1518837695005-2083093ee35b',
-                '1505118380757-91f5f5632de1','1475924156734-496f6cac6ec1','1501785888041-af3ef285b471','1439066615861-d1af74d74001'
-            ],
-            ceus: [
-                '1495616811223-4d98c6e9c869','1509316785289-025f5b846b35','1470252649378-9c29740c4ab0','1519681393784-d1202c3f5b0b',
-                '1501854140801-50d0167340bc','1469474968028-56623f02e42f','1441974231531-c6227db76b6f','1470114715944-ae22d4b4c8a0'
-            ],
-            aurora: [
-                '1531366936337-7c912a45b87a','1483347756197-71ef80e95f73','1507400505-5e1e2e0e0e0e','1519681393784-d1202c3f5b0c',
-                '1464822759023-fed622ff2c3d','1506905925346-21bda4d32df6','1439066615861-d1af74d74002','1446776811953-b23d57bd21ab'
-            ]
+            cidades: [11,22,33,44,55,66,77,88,99,101,112,123],
+            futuro: [201,202,203,204,205,206,207,208,209,210,211,212],
+            tecnologia: [301,302,303,304,305,306,307,308,309,310,311,312],
+            trading: [401,402,403,404,405,406,407,408,409,410,411,412],
+            galaxias: [501,502,503,504,505,506,507,508,509,510,511,512],
+            florestas: [601,602,603,604,605,606,607,608,609,610,611,612],
+            montanhas: [701,702,703,704,705,706,707,708,709,710,711,712],
+            oceanos: [801,802,803,804,805,806,807,808,809,810,811,812],
+            ceus: [901,902,903,904,905,906,907,908,909,910,911,912]
         };
 
         const POST_BG_OVERLAYS = [
@@ -4063,7 +4139,7 @@
 
         function getRotationBucket() {
             // muda a cada 30 minutos
-            return Math.floor(Date.now() / (30 * 60 * 1000));
+            return Math.floor(Date.now() / (20 * 60 * 1000)); // 20 minutos
         }
 
         function expandCategoryPool(cat) {
@@ -4079,11 +4155,11 @@
                 }));
             }
             const out = [];
-            raw.forEach((imgId, i) => {
+            raw.forEach((seed, i) => {
                 const ov = POST_BG_OVERLAYS[i % POST_BG_OVERLAYS.length];
-                const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
+                const url = `https://picsum.photos/seed/${cat}${seed}/900/1200`;
                 out.push({
-                    id: `img_${imgId}_${ov.key}`,
+                    id: `img_${cat}_${seed}_${ov.key}`,
                     name: `${POST_BG_CATEGORIES[cat]?.name || cat} ${i + 1}`,
                     bg: `${ov.overlay}, url('${url}')`,
                     text: ov.text,
@@ -4143,9 +4219,10 @@
             if (id && String(id).startsWith('img_')) {
                 const parts = String(id).replace(/^img_/, '').split('_');
                 const ovKey = parts.pop();
-                const imgId = parts.join('_');
+                const seed = parts.pop();
+                const cat = parts.join('_') || 'cidades';
                 const ov = POST_BG_OVERLAYS.find(o => o.key === ovKey) || POST_BG_OVERLAYS[0];
-                const url = `https://images.unsplash.com/photo-${imgId}?w=900&q=80`;
+                const url = `https://picsum.photos/seed/${cat}${seed}/900/1200`;
                 return { id, name: 'Foto', bg: `${ov.overlay}, url('${url}')`, text: ov.text, border: 'rgba(255,255,255,0.15)', image: true, thumb: url };
             }
             return { id: 'default', name: 'Padrão', bg: '', text: '#0f172a', border: '' };
@@ -4176,7 +4253,7 @@
             }).join('');
             const hint = document.getElementById('postBgRotateHint');
             if (hint) {
-                const mins = 30 - (Math.floor(Date.now() / 60000) % 30);
+                const mins = 20 - (Math.floor(Date.now() / 60000) % 20);
                 hint.textContent = `10 fundos · novos em ~${mins} min`;
             }
         }
@@ -5002,6 +5079,374 @@
             }
         })();
 
+
+        // ========== AMIGOS + STATUS 24h + TEMP PARTILHADO ==========
+        let friendsList = [];
+        try { friendsList = JSON.parse(localStorage.getItem('mundo_digital_friends') || '[]') || []; } catch(_) { friendsList = []; }
+        function saveFriends() { try { localStorage.setItem('mundo_digital_friends', JSON.stringify(friendsList)); } catch(_){} }
+        function isFriend(uid) { return friendsList.includes(uid); }
+        function toggleFriend(uid) {
+            if (!uid || uid === currentUserId) return;
+            if (isFriend(uid)) friendsList = friendsList.filter(id => id !== uid);
+            else friendsList.push(uid);
+            saveFriends();
+            showToast(isFriend(uid) ? 'Amigo adicionado!' : 'Removido dos amigos.', 'success');
+            renderStatusHub();
+        }
+        let statusTab = 'status';
+        let statusesCache = [];
+        let unsubscribeStatuses = null;
+        let viewingStatus = null;
+        let selectedStatusBg = null;
+        let statusBgCat = 'gradiente';
+
+        const STATUS_BG_CATS = ['gradiente','tecnologia','trading','cidades','futuro','galaxias','florestas','montanhas','oceanos','ceus'];
+
+        function statusBgOptions(cat) {
+            const pool = expandCategoryPool(cat);
+            const seed = getRotationBucket() * 13 + (cat.charCodeAt(0) * 7);
+            return seededShuffle(pool, seed).slice(0, 7);
+        }
+
+        function openStatusHub() {
+            openModal('statusModal');
+            listenStatuses();
+            renderStatusHub();
+        }
+        function setStatusTab(tab) {
+            statusTab = tab;
+            ['status','users','friends'].forEach(t => {
+                const btn = document.getElementById('statusTab' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (!btn) return;
+                if (t === tab) btn.className = 'flex-1 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white btn-press';
+                else btn.className = 'flex-1 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press';
+            });
+            renderStatusHub();
+        }
+        function listenStatuses() {
+            if (unsubscribeStatuses) return;
+            try {
+                unsubscribeStatuses = onSnapshot(collection(db, 'statuses'), (snap) => {
+                    const now = Date.now();
+                    statusesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                        .filter(s => (s.expiresAtMs || 0) > now)
+                        .sort((a,b) => (b.createdAtMs||0)-(a.createdAtMs||0));
+                    // limpar expirados próprios
+                    snap.docs.forEach(async d => {
+                        const s = d.data();
+                        if (s.expiresAtMs && s.expiresAtMs < now && s.uid === currentUserId) {
+                            try { await deleteDoc(d.ref); } catch(_){}
+                        }
+                    });
+                    if (!document.getElementById('statusModal')?.classList.contains('opacity-0')) renderStatusHub();
+                });
+            } catch(e) { console.warn(e); }
+        }
+        function renderStatusHub() {
+            const friendsOnline = friendsList.filter(id => allUsers.find(u => u.id === id && u.online)).length;
+            const line = document.getElementById('friendsStatsLine');
+            if (line) line.textContent = `Amigos: ${friendsList.length} · Online: ${friendsOnline}`;
+            const panel = document.getElementById('statusListPanel');
+            if (!panel) return;
+            if (statusTab === 'status') {
+                const mine = statusesCache.filter(s => s.uid === currentUserId);
+                const others = statusesCache.filter(s => s.uid !== currentUserId);
+                let html = '';
+                if (mine.length) {
+                    html += `<p class="text-[10px] font-bold uppercase text-slate-400 mb-1">O meu status</p>`;
+                    html += mine.map(s => statusRowHtml(s)).join('');
+                }
+                html += `<p class="text-[10px] font-bold uppercase text-slate-400 mt-3 mb-1">Atualizações recentes</p>`;
+                html += others.map(s => statusRowHtml(s)).join('') || '<p class="text-xs text-slate-400 p-4 text-center">Nenhum status ativo</p>';
+                panel.innerHTML = html;
+            } else if (statusTab === 'friends') {
+                const list = friendsList.map(id => allUsers.find(u => u.id === id)).filter(Boolean);
+                panel.innerHTML = list.map(u => userRowHtml(u, true)).join('') || '<p class="text-xs text-slate-400 p-4 text-center">Ainda sem amigos</p>';
+            } else {
+                panel.innerHTML = allUsers.map(u => userRowHtml(u, false)).join('') || '<p class="text-xs text-slate-400 p-4 text-center">Sem utilizadores</p>';
+            }
+        }
+        function statusRowHtml(s) {
+            const name = escapeHTML(s.userName || 'Utilizador');
+            const views = Array.isArray(s.viewers) ? s.viewers.length : 0;
+            return `<button type="button" onclick="window.openStatusView('${s.id}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-left btn-press">
+                <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 to-pink-500"><div class="w-full h-full rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold">${name.charAt(0)}</div></div>
+                <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${name}</p><p class="text-[10px] text-slate-400 truncate">${escapeHTML((s.text||'').slice(0,40))}</p></div>
+                <span class="text-[10px] text-slate-400"><i class="fa-solid fa-eye mr-0.5"></i>${views}</span>
+            </button>`;
+        }
+        function userRowHtml(u, isFriendTab) {
+            const n = getDisplayName(u);
+            const friend = isFriend(u.id);
+            return `<div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                <button type="button" onclick="window.openUserProfileById('${u.id}')" class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm btn-press">${escapeHTML(n.charAt(0).toUpperCase())}</button>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold truncate cursor-pointer" onclick="window.openUserProfileById('${u.id}')">${escapeHTML(n)}</p>
+                    <p class="text-[10px] ${u.online?'text-emerald-500':'text-slate-400'}">${u.online?'Online':'Offline'}</p>
+                </div>
+                <button type="button" onclick="window.toggleFriend('${u.id}')" class="px-2 py-1 rounded-lg text-[10px] font-semibold btn-press ${friend?'bg-slate-200 dark:bg-slate-600':'bg-brand-600 text-white'}">${friend?'Amigo':'Adicionar'}</button>
+                <button type="button" onclick="window.startChatWith('${u.id}');window.closeModal('statusModal');window.openModal('chatModal');" class="p-2 text-brand-500 btn-press"><i class="fa-solid fa-comment"></i></button>
+            </div>`;
+        }
+        function openCreateStatus() {
+            statusBgCat = 'gradiente';
+            selectedStatusBg = null;
+            document.getElementById('statusTextInput').value = '';
+            renderStatusBgPicker();
+            openModal('createStatusModal');
+        }
+        function renderStatusBgPicker() {
+            const cats = document.getElementById('statusBgCats');
+            if (cats) {
+                cats.innerHTML = STATUS_BG_CATS.map(c => {
+                    const meta = POST_BG_CATEGORIES[c] || { name: c, icon: 'fa-image' };
+                    return `<button type="button" onclick="window.setStatusBgCat('${c}')" class="px-2 py-1 rounded-lg text-[10px] font-semibold btn-press ${statusBgCat===c?'bg-brand-600 text-white':'bg-slate-100 dark:bg-slate-700'}">${meta.name}</div>`.replace('</div>','</button>');
+                }).join('');
+            }
+            const opts = statusBgOptions(statusBgCat);
+            if (!selectedStatusBg) selectedStatusBg = opts[0];
+            const pal = document.getElementById('statusBgPalette');
+            if (pal) {
+                pal.innerHTML = opts.map((b,i) => {
+                    const style = b.thumb ? `background-image:url('${b.thumb}');background-size:cover` : `background:${b.bg}`;
+                    const sel = selectedStatusBg && selectedStatusBg.id === b.id ? 'selected' : '';
+                    return `<button type="button" class="post-bg-swatch ${b.thumb?'img-swatch':''} ${sel}" style="${style}" onclick="window.pickStatusBg(${i})"></button>`;
+                }).join('');
+            }
+            // store opts on window for pick
+            window._statusBgOpts = opts;
+            updateStatusPreview();
+        }
+        function setStatusBgCat(c) { statusBgCat = c; selectedStatusBg = null; renderStatusBgPicker(); }
+        function pickStatusBg(i) {
+            const opts = window._statusBgOpts || [];
+            selectedStatusBg = opts[i];
+            renderStatusBgPicker();
+        }
+        function updateStatusPreview() {
+            const prev = document.getElementById('statusPreview');
+            const text = document.getElementById('statusTextInput')?.value || 'Pré-visualização';
+            if (!prev || !selectedStatusBg) return;
+            prev.style.background = selectedStatusBg.bg || '#0f172a';
+            prev.style.backgroundSize = 'cover';
+            prev.style.backgroundPosition = 'center';
+            prev.style.color = selectedStatusBg.text || '#fff';
+            prev.textContent = text;
+        }
+        document.addEventListener('input', (e) => {
+            if (e.target && e.target.id === 'statusTextInput') updateStatusPreview();
+        });
+        async function publishStatus() {
+            const text = (document.getElementById('statusTextInput')?.value || '').trim();
+            if (!text) return showToast('Escreva o status.', 'error');
+            if (!currentUserId) return showToast('Aguarde autenticação.', 'error');
+            if (!selectedStatusBg) return showToast('Escolha um fundo.', 'error');
+            const expiresAtMs = Date.now() + 24 * 60 * 60 * 1000;
+            try {
+                await addDoc(collection(db, 'statuses'), {
+                    uid: currentUserId,
+                    userName: currentUserName || 'Utilizador',
+                    text,
+                    bgId: selectedStatusBg.id,
+                    bgStyle: selectedStatusBg.bg,
+                    textColor: selectedStatusBg.text || '#fff',
+                    viewers: [],
+                    createdAtMs: Date.now(),
+                    expiresAtMs,
+                    createdAt: serverTimestamp()
+                });
+                closeModal('createStatusModal');
+                showToast('Status publicado por 24h!', 'success');
+                openStatusHub();
+            } catch (e) {
+                showToast('Erro ao publicar status.', 'error');
+            }
+        }
+        async function openStatusView(id) {
+            const s = statusesCache.find(x => x.id === id);
+            if (!s) return;
+            viewingStatus = s;
+            const bg = document.getElementById('viewStatusBg');
+            if (bg) {
+                bg.style.backgroundImage = '';
+                bg.style.background = s.bgStyle || '#0f172a';
+                if (s.bgStyle && s.bgStyle.includes('url(')) {
+                    bg.style.background = s.bgStyle;
+                    bg.style.backgroundSize = 'cover';
+                    bg.style.backgroundPosition = 'center';
+                }
+            }
+            document.getElementById('viewStatusText').textContent = s.text || '';
+            document.getElementById('viewStatusText').style.color = s.textColor || '#fff';
+            document.getElementById('viewStatusName').textContent = s.userName || 'Utilizador';
+            document.getElementById('viewStatusAvatar').textContent = (s.userName || 'U').charAt(0).toUpperCase();
+            const ago = s.createdAtMs ? Math.max(1, Math.round((Date.now()-s.createdAtMs)/60000)) : 0;
+            document.getElementById('viewStatusMeta').textContent = ago ? `há ${ago} min` : 'agora';
+            const views = Array.isArray(s.viewers) ? s.viewers : [];
+            document.getElementById('statusViewersCount').textContent = views.length;
+            document.getElementById('statusViewersBtn').classList.toggle('hidden', s.uid !== currentUserId);
+            document.getElementById('statusMsgAuthorBtn').classList.toggle('hidden', s.uid === currentUserId);
+            document.getElementById('statusViewersList').classList.add('hidden');
+            openModal('viewStatusModal');
+            // registar visualização
+            if (s.uid !== currentUserId && currentUserId) {
+                try {
+                    const viewers = Array.isArray(s.viewers) ? [...s.viewers] : [];
+                    if (!viewers.some(v => v.uid === currentUserId)) {
+                        viewers.push({ uid: currentUserId, name: currentUserName || 'Utilizador', at: Date.now() });
+                        await updateDoc(doc(db, 'statuses', s.id), { viewers });
+                        s.viewers = viewers;
+                    }
+                } catch(_){}
+            }
+        }
+        function toggleStatusViewers() {
+            const list = document.getElementById('statusViewersList');
+            if (!list || !viewingStatus) return;
+            list.classList.toggle('hidden');
+            if (!list.classList.contains('hidden')) {
+                const viewers = Array.isArray(viewingStatus.viewers) ? viewingStatus.viewers : [];
+                list.innerHTML = viewers.map(v => `
+                    <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10">
+                        <span class="text-white text-xs flex-1 truncate">${escapeHTML(v.name || 'Utilizador')}</span>
+                        <button type="button" onclick="window.startChatWith('${v.uid}');window.closeModal('viewStatusModal');window.closeModal('statusModal');window.openModal('chatModal');" class="px-2 py-1 rounded-lg bg-brand-600 text-white text-[10px] btn-press">Msg</button>
+                        <button type="button" onclick="window.toggleFriend('${v.uid}')" class="px-2 py-1 rounded-lg bg-white/20 text-white text-[10px] btn-press">Amigo</button>
+                    </div>`).join('') || '<p class="text-white/60 text-xs p-2">Sem visualizações</p>';
+            }
+        }
+        function messageStatusAuthor() {
+            if (!viewingStatus) return;
+            closeModal('viewStatusModal');
+            closeModal('statusModal');
+            openModal('chatModal');
+            startChatWith(viewingStatus.uid);
+        }
+
+        // Perfil de outro utilizador
+        let profileTargetId = null;
+        function openUserProfileById(uid) {
+            profileTargetId = uid;
+            const u = allUsers.find(x => x.id === uid);
+            if (!u) return;
+            const name = getDisplayName(u);
+            document.getElementById('contactProfileName').textContent = name;
+            const un = document.getElementById('contactProfileUsername');
+            if (un) un.textContent = '@' + (u.username || name.toLowerCase().replace(/\s+/g,'').slice(0,20));
+            document.getElementById('contactProfileBio').textContent = u.bio || 'Sem biografia';
+            document.getElementById('contactProfilePhone').textContent = u.phone || '';
+            const img = document.getElementById('contactProfileAvatarImg');
+            const fb = document.getElementById('contactProfileFallback');
+            if (u.photoURL) { img.src = u.photoURL; img.classList.remove('hidden'); fb.classList.add('hidden'); }
+            else { img.classList.add('hidden'); fb.classList.remove('hidden'); fb.textContent = name.charAt(0).toUpperCase(); }
+            const addBtn = document.getElementById('contactAddFriendBtn');
+            if (addBtn) {
+                const f = isFriend(uid);
+                addBtn.innerHTML = f ? '<i class="fa-solid fa-user-check mr-1"></i>Amigo' : '<i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo';
+            }
+            openModal('contactProfileModal');
+        }
+        function toggleFriendFromProfile() {
+            if (profileTargetId) toggleFriend(profileTargetId);
+            const addBtn = document.getElementById('contactAddFriendBtn');
+            if (addBtn && profileTargetId) {
+                const f = isFriend(profileTargetId);
+                addBtn.innerHTML = f ? '<i class="fa-solid fa-user-check mr-1"></i>Amigo' : '<i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo';
+            }
+        }
+        function messageFromProfile() {
+            if (!profileTargetId) return;
+            closeModal('contactProfileModal');
+            openModal('chatModal');
+            startChatWith(profileTargetId);
+        }
+
+        // Mensagens temporárias partilhadas (chat settings)
+        async function openChatTempSettings() {
+            if (!activeChatUserId || !currentUserId) return;
+            if (activeChatType === 'group') {
+                if (!isGroupAdmin(activeGroup, currentUserId)) {
+                    showToast('Só admins do grupo podem definir mensagens temporárias.', 'error');
+                    return;
+                }
+            }
+            const mode = prompt('Mensagens temporárias:\n1 = Só para mim (local)\n2 = Para os dois / grupo (partilhado)\n0 = Desativar partilhado', '2');
+            if (mode === null) return;
+            if (mode.trim() === '1') {
+                tempMsgEnabled = true;
+                const sec = prompt('Segundos até apagar (15-3600)?', String(tempMsgSeconds));
+                const n = parseInt(sec,10);
+                if (n>=15&&n<=3600) tempMsgSeconds=n;
+                showToast(`Temporárias locais: ${tempMsgSeconds}s`, 'success');
+                return;
+            }
+            if (mode.trim() === '0') {
+                try {
+                    if (activeChatType === 'group') {
+                        await updateDoc(doc(db,'groups', activeChatUserId), { tempMsgSeconds: 0 });
+                    } else {
+                        const chatId = [currentUserId, activeChatUserId].sort().join('_');
+                        await setDoc(doc(db,'chats', chatId), { tempMsgSeconds: 0, tempMsgUpdatedBy: currentUserId }, { merge: true });
+                    }
+                    tempMsgEnabled = false;
+                    showToast('Temporárias partilhadas desativadas.', 'success');
+                } catch(e) { showToast('Erro ao desativar.', 'error'); }
+                return;
+            }
+            const sec = prompt('Segundos para apagar (partilhado, 15-3600)?', '60');
+            const n = parseInt(sec,10);
+            if (!(n>=15&&n<=3600)) return showToast('Valor inválido.', 'error');
+            try {
+                if (activeChatType === 'group') {
+                    await updateDoc(doc(db,'groups', activeChatUserId), { tempMsgSeconds: n, tempMsgUpdatedBy: currentUserId });
+                } else {
+                    const chatId = [currentUserId, activeChatUserId].sort().join('_');
+                    await setDoc(doc(db,'chats', chatId), { tempMsgSeconds: n, tempMsgUpdatedBy: currentUserId }, { merge: true });
+                }
+                tempMsgEnabled = true;
+                tempMsgSeconds = n;
+                showToast(`Temporárias partilhadas: ${n}s`, 'success');
+            } catch(e) { showToast('Erro ao guardar. Verifique regras Firestore.', 'error'); }
+        }
+
+        async function clearChatHistory() {
+            if (!activeChatUserId || !currentUserId) return;
+            if (!confirm('Apagar o histórico desta conversa só para si?')) return;
+            try {
+                const chatId = activeChatType === 'group' ? activeChatUserId : [currentUserId, activeChatUserId].sort().join('_');
+                const colPath = activeChatType === 'group'
+                    ? collection(db, 'groups', chatId, 'messages')
+                    : collection(db, 'chats', chatId, 'messages');
+                const snap = await getDocs(query(colPath, limit(200)));
+                const batch = writeBatch(db);
+                let n = 0;
+                snap.docs.forEach(d => {
+                    const m = d.data();
+                    const hidden = Array.isArray(m.hiddenFor) ? [...m.hiddenFor] : [];
+                    if (!hidden.includes(currentUserId)) {
+                        hidden.push(currentUserId);
+                        batch.update(d.ref, { hiddenFor: hidden });
+                        n++;
+                    }
+                });
+                if (n) await batch.commit();
+                showToast('Conversa limpa para si.', 'success');
+                listenToChatMessages();
+            } catch (e) {
+                showToast('Erro ao limpar conversa.', 'error');
+            }
+        }
+
+        // Melhorar openContactProfile
+        const _origOpenContact = typeof openContactProfile === 'function' ? openContactProfile : null;
+        async function openContactProfileEnhanced() {
+            if (activeChatType === 'group') {
+                if (_origOpenContact) return _origOpenContact();
+            }
+            if (activeChatUserId) openUserProfileById(activeChatUserId);
+        }
+        openContactProfile = openContactProfileEnhanced;
+
+
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.toggleTheme = toggleTheme;
@@ -5072,6 +5517,25 @@
         window.setMixEmoji = setMixEmoji;
         window.sendMixedEmoji = sendMixedEmoji;
         window.selectPostBgCategory = selectPostBgCategory;
+        window.openStatusHub = openStatusHub;
+        window.setStatusTab = setStatusTab;
+        window.openCreateStatus = openCreateStatus;
+        window.setStatusBgCat = setStatusBgCat;
+        window.pickStatusBg = pickStatusBg;
+        window.publishStatus = publishStatus;
+        window.openStatusView = openStatusView;
+        window.toggleStatusViewers = toggleStatusViewers;
+        window.messageStatusAuthor = messageStatusAuthor;
+        window.toggleFriend = toggleFriend;
+        window.openUserProfileById = openUserProfileById;
+        window.toggleFriendFromProfile = toggleFriendFromProfile;
+        window.messageFromProfile = messageFromProfile;
+        window.openChatTempSettings = openChatTempSettings;
+        window.clearChatHistory = clearChatHistory;
+        window.msgActionDeleteMenu = msgActionDeleteMenu;
+        window.msgActionDeleteBack = msgActionDeleteBack;
+        window.msgActionDeleteConfirm = msgActionDeleteConfirm;
+
 
         window.applyPostTextStyle = applyPostTextStyle;
         window.viewContent = viewContent;
