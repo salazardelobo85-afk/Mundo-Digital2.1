@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Digital - Gestão, Conteúdo, Chat & Chamadas</title>
+    <title>Mundo Digital - Publicações, Chat & Chamadas</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -333,7 +333,7 @@
             <div class="flex-1 max-w-md mx-2">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar ficheiros, vídeos, links..." 
+                    <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar publicações..." 
                            class="w-full pl-10 pr-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
                 </div>
             </div>
@@ -352,9 +352,9 @@
                     <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
                 </button>
                 
-                <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-full shadow-md hover:shadow-lg transition transform active:scale-95 text-sm">
-                    <i class="fa-solid fa-plus"></i>
-                    <span class="hidden md:inline">Adicionar</span>
+                <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all duration-200 transform active:scale-95 text-sm btn-press">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span class="hidden sm:inline">Publicar</span>
                 </button>
 
                 <div class="pl-2 border-l border-slate-200 dark:border-slate-700 flex items-center gap-2">
@@ -375,8 +375,8 @@
         
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Central Multimédia Mundo Digital</h1>
-                <p class="text-slate-300 text-sm sm:text-base">Plataforma centralizada para gestão, visualização, partilha de ficheiros, chat e chamadas em tempo real.</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Mundo Digital</h1>
+                <p class="text-slate-300 text-sm sm:text-base">Partilhe textos, converse e ligue em tempo real com a comunidade.</p>
             </div>
             <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -385,26 +385,8 @@
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap w-full sm:w-auto custom-scrollbar pb-2 sm:pb-0" id="filterTabs">
-                <button onclick="window.setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white">
-                    <i class="fa-solid fa-border-all mr-1.5"></i>Todos
-                </button>
-                <button onclick="window.setFilter('image')" data-filter="image" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-image mr-1.5"></i>Imagens
-                </button>
-                <button onclick="window.setFilter('video')" data-filter="video" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-video mr-1.5"></i>Vídeos
-                </button>
-                <button onclick="window.setFilter('document')" data-filter="document" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-file-pdf mr-1.5"></i>Documentos
-                </button>
-                <button onclick="window.setFilter('entertainment')" data-filter="entertainment" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-film mr-1.5"></i>Filmes e Séries
-                </button>
-                <button onclick="window.setFilter('text')" data-filter="text" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-align-left mr-1.5"></i>Textos
-                </button>
-                <button onclick="window.setFilter('link')" data-filter="link" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-link mr-1.5"></i>Links
+                <button onclick="window.setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition bg-brand-600 text-white btn-press">
+                    <i class="fa-solid fa-align-left mr-1.5"></i>Publicações
                 </button>
             </div>
             
@@ -413,15 +395,15 @@
             </span>
         </div>
 
-        <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <div id="contentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
         <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
             <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center text-3xl mb-4">
-                <i class="fa-solid fa-folder-open"></i>
+                <i class="fa-solid fa-pen-to-square"></i>
             </div>
-            <h3 class="text-lg font-bold mb-1">Nenhum conteúdo encontrado</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">Não foram encontrados recursos com os filtros atuais ou tente fazer uma nova busca.</p>
-            <button onclick="window.resetFilters()" class="text-sm text-brand-600 dark:text-brand-400 font-semibold hover:underline">Limpar Filtros e Pesquisa</button>
+            <h3 class="text-lg font-bold mb-1">Ainda não há publicações</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">Seja o primeiro a partilhar um texto com a comunidade.</p>
+            <button onclick="window.openModal('addContentModal')" class="text-sm text-white font-semibold px-5 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 shadow-md btn-press">Publicar agora</button>
         </div>
 
     </main>
@@ -713,132 +695,35 @@
 
     <!-- MODAL DE ADIÇÃO DE CONTEÚDO -->
     <div id="addContentModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-lg sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-0 sm:m-4 max-h-[92dvh] flex flex-col">
-            
-            <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-                <div class="min-w-0">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200 m-0 sm:m-4 flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <div>
                     <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i> Adicionar ao Mundo Digital
+                        <i class="fa-solid fa-pen-to-square text-brand-500"></i> Nova publicação
                     </h3>
-                    <p id="storageBackendHint" class="text-[10px] text-slate-400 mt-0.5">A preparar armazenamento…</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Partilhe um texto com a comunidade</p>
                 </div>
-                <button type="button" onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+                <button type="button" onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 btn-press">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col flex-1 min-h-0">
-            <div class="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-                    <button type="button" id="tabUploadBtn" onclick="window.switchAddTab('upload')" class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 shadow-sm text-brand-600 dark:text-brand-400 transition">
-                        <i class="fa-solid fa-upload mr-1"></i> Ficheiro Local
-                    </button>
-                    <button type="button" id="tabLinkBtn" onclick="window.switchAddTab('link')" class="py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                        <i class="fa-solid fa-link mr-1"></i> Link Externo
-                    </button>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Título do Conteúdo</label>
-                    <input type="text" id="inputTitle" required placeholder="Ex: Vídeo de Apresentação, Relatório PDF..." 
-                           class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-slate-600 dark:text-slate-400">Categoria / Tipo</label>
-                    
-                    <select id="selectCategory" class="hidden">
-                        <option value="image">Imagem</option>
-                        <option value="video">Vídeo</option>
-                        <option value="document">Documento / PDF</option>
-                        <option value="entertainment">Filmes e Séries</option>
-                        <option value="text">Texto / Publicação</option>
-                        <option value="link">Link Web</option>
-                    </select>
-
-                    <div class="grid grid-cols-2 gap-2" id="categoryGrid">
-                        <button type="button" onclick="window.setCategoryUI('image')" data-cat="image" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold text-xs shadow-sm transition btn-press">
-                            <i class="fa-solid fa-image text-base"></i>
-                            <span>Imagem</span>
-                        </button>
-                        <button type="button" onclick="window.setCategoryUI('video')" data-cat="video" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition btn-press">
-                            <i class="fa-solid fa-video text-base"></i>
-                            <span>Vídeo</span>
-                        </button>
-                        <button type="button" onclick="window.setCategoryUI('document')" data-cat="document" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition btn-press">
-                            <i class="fa-solid fa-file-pdf text-base"></i>
-                            <span>Documento / PDF</span>
-                        </button>
-                        <button type="button" onclick="window.setCategoryUI('entertainment')" data-cat="entertainment" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition btn-press">
-                            <i class="fa-solid fa-film text-base"></i>
-                            <span>Filmes e Séries</span>
-                        </button>
-                        <button type="button" onclick="window.setCategoryUI('text')" data-cat="text" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition btn-press">
-                            <i class="fa-solid fa-align-left text-base"></i>
-                            <span>Texto / Post</span>
-                        </button>
-                        <button type="button" onclick="window.setCategoryUI('link')" data-cat="link" class="cat-tile flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-medium text-xs hover:border-slate-300 dark:hover:border-slate-600 transition btn-press">
-                            <i class="fa-solid fa-link text-base"></i>
-                            <span>Link Web</span>
-                        </button>
+            <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col">
+                <div class="p-4 sm:p-5">
+                    <textarea id="inputPostText" required maxlength="2000" rows="6" placeholder="O que está a pensar? Escreva a sua publicação..."
+                        class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar resize-none leading-relaxed"
+                        oninput="window.updatePostCharCount()"></textarea>
+                    <div class="flex items-center justify-between mt-2 px-1">
+                        <span class="text-[11px] text-slate-400"><i class="fa-solid fa-users mr-1"></i>Visível para todos</span>
+                        <span id="postCharCount" class="text-[11px] text-slate-400 font-medium">0 / 2000</span>
                     </div>
                 </div>
 
-                <div id="uploadSection" class="space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Ficheiro do dispositivo</label>
-                    <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-brand-500 transition cursor-pointer bg-slate-50 dark:bg-slate-900/50"
-                         onclick="document.getElementById('fileInput').click()">
-                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-brand-500 mb-1.5"></i>
-                        <p id="fileNameDisplay" class="text-xs text-slate-600 dark:text-slate-300 font-medium">Toque para escolher ficheiro</p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Imagens · Vídeos · PDF · Áudio (máx. 100 MB)</p>
-                        <input type="file" id="fileInput" class="hidden"
-                               accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
-                               onchange="window.handleFileSelect(event)">
-                    </div>
-                    <div id="filePreviewBox" class="hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 overflow-hidden">
-                        <div class="flex items-center gap-3 p-2.5">
-                            <div class="w-14 h-14 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 flex items-center justify-center">
-                                <img id="filePreviewImg" class="hidden w-full h-full object-cover" alt="">
-                                <video id="filePreviewVideo" class="hidden w-full h-full object-cover" muted playsinline></video>
-                                <i id="filePreviewIcon" class="fa-solid fa-file text-slate-400 text-lg"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p id="filePreviewName" class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate"></p>
-                                <p id="filePreviewSize" class="text-[10px] text-slate-500 mt-0.5"></p>
-                            </div>
-                            <button type="button" onclick="window.clearSelectedFile()" class="px-2.5 py-1.5 text-[11px] font-medium text-red-500 hover:bg-red-500/10 rounded-lg shrink-0">Remover</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="linkSection" class="hidden space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">URL do Recurso / Website / TeraBox</label>
-                    <input type="url" id="inputUrl" placeholder="https://… ou link TeraBox / imagem / vídeo" oninput="window.onLinkUrlInput(event)"
-                           class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider mb-1 text-slate-600 dark:text-slate-400">Descrição Curta</label>
-                    <textarea id="inputDescription" rows="2" placeholder="Breve resumo..." 
-                              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar"></textarea>
-                </div>
-
-                <div id="uploadProgressContainer" class="hidden space-y-1">
-                    <div class="flex justify-between text-xs text-slate-500">
-                        <span>A enviar ficheiro...</span>
-                        <span id="uploadPercent">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                        <div id="uploadProgressBar" class="bg-brand-600 h-2 rounded-full transition-all duration-200 w-0"></div>
-                    </div>
-                </div>
-            </div>
-
-                <!-- Rodapé fixo: botões sempre visíveis -->
-                <div class="shrink-0 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 flex items-center justify-end gap-2 safe-area-pb">
-                    <button type="button" onclick="window.closeModal('addContentModal')" class="px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition">Cancelar</button>
-                    <button type="submit" id="submitBtn" class="px-5 py-2.5 text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow transition min-w-[140px]">
-                        Enviar Recurso
+                <div class="px-4 sm:px-5 pb-5 sm:pb-6 flex items-center gap-3 safe-area-pb">
+                    <button type="button" onclick="window.closeModal('addContentModal')" class="px-5 py-3.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition btn-press">Cancelar</button>
+                    <button type="submit" id="submitBtn" class="flex-1 py-3.5 text-sm font-bold bg-gradient-to-r from-brand-600 via-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl shadow-brand-600/30 hover:shadow-brand-600/45 transition-all duration-200 btn-press flex items-center justify-center gap-2.5 disabled:opacity-45 disabled:cursor-not-allowed disabled:shadow-none ring-2 ring-brand-500/20">
+                        <i class="fa-solid fa-paper-plane text-base"></i>
+                        <span>Publicar agora</span>
                     </button>
                 </div>
             </form>
@@ -1398,6 +1283,12 @@
             if (id === 'chatModal') {
                 const badge = document.getElementById('chatBadge');
                 if (badge) badge.classList.add('hidden');
+            }
+            if (id === 'addContentModal') {
+                setTimeout(() => {
+                    const ta = document.getElementById('inputPostText');
+                    if (ta) { ta.focus(); updatePostCharCount(); }
+                }, 80);
             }
         }
 
@@ -3212,22 +3103,13 @@
             const applyContents = (snapshot) => {
                 contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
                 // Ordenar localmente se necessário
+                // Só publicações de texto
+                contents = contents.filter(c => c.category === 'text' || (!c.category && (c.text || c.description)));
                 contents.sort((a, b) => {
                     const ta = a.createdAt?.seconds || 0;
                     const tb = b.createdAt?.seconds || 0;
                     return tb - ta;
                 });
-                const hasEntertainment = contents.some(c => c.category === 'entertainment');
-                if (!hasEntertainment) {
-                    contents.unshift({
-                        id: 'default-entertainment-channel',
-                        title: 'Filmes e Séries',
-                        category: 'entertainment',
-                        description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
-                        url: 'https://vialacteafilmes.com',
-                        isVirtualChannel: true
-                    });
-                }
                 renderContents();
             };
             try {
@@ -3281,15 +3163,13 @@
             if (!grid) return;
 
             const filtered = contents.filter(item => {
-                const matchesFilter = currentFilter === 'all' || item.category === currentFilter;
-                const matchesSearch = !searchQuery || 
-                    (item.title && item.title.toLowerCase().includes(searchQuery)) ||
-                    (item.description && item.description.toLowerCase().includes(searchQuery));
-                return matchesFilter && matchesSearch;
+                const body = (item.text || item.description || item.title || '').toLowerCase();
+                const matchesSearch = !searchQuery || body.includes(searchQuery);
+                return matchesSearch;
             });
 
             if (counter) {
-                counter.innerText = `${filtered.length} ${filtered.length === 1 ? 'recurso' : 'recursos'}`;
+                counter.innerText = `${filtered.length} ${filtered.length === 1 ? 'publicação' : 'publicações'}`;
             }
 
             if (filtered.length === 0) {
@@ -3301,72 +3181,40 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                const isOwner = item.createdBy === currentUserId && !item.isVirtualChannel;
-                let catIcon = "fa-file";
-                let catBadge = "Documento";
-
-                if (item.category === 'image') { catIcon = "fa-image"; catBadge = "Imagem"; }
-                else if (item.category === 'video') { catIcon = "fa-video"; catBadge = "Vídeo"; }
-                else if (item.category === 'document') { catIcon = "fa-file-pdf"; catBadge = "PDF/Doc"; }
-                else if (item.category === 'entertainment') { catIcon = "fa-film"; catBadge = "Filmes e Séries"; }
-                else if (item.category === 'text') { catIcon = "fa-align-left"; catBadge = "Texto"; }
-                else if (item.category === 'link') { catIcon = "fa-link"; catBadge = "Link"; }
-
+                const isOwner = item.createdBy === currentUserId;
                 const likes = item.likes || [];
                 const likeCount = Array.isArray(likes) ? likes.length : (item.likeCount || 0);
                 const likedByMe = Array.isArray(likes) && currentUserId && likes.includes(currentUserId);
-
-                let previewHtml = '';
-                if (item.category === 'image' && item.url) {
-                    previewHtml = `<img src="${item.url}" alt="${escapeHTML(item.title)}" class="w-full h-40 object-cover rounded-t-2xl">`;
-                } else if (item.category === 'entertainment') {
-                    previewHtml = `
-                        <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 rounded-t-2xl flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
-                            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                            <i class="fa-solid fa-clapperboard text-4xl text-brand-400 mb-2"></i>
-                            <span class="font-extrabold text-base tracking-wider">Mundo Filmes</span>
-                        </div>
-                    `;
-                } else if (item.category === 'text') {
-                    previewHtml = `
-                        <div class="w-full min-h-[7rem] bg-gradient-to-br from-slate-50 to-brand-50 dark:from-slate-800 dark:to-slate-900 rounded-t-2xl flex flex-col justify-center p-4 border-b border-slate-100 dark:border-slate-700">
-                            <p class="text-sm text-slate-700 dark:text-slate-200 line-clamp-4 leading-relaxed whitespace-pre-wrap">${escapeHTML(item.description || item.title || '')}</p>
-                        </div>
-                    `;
-                } else {
-                    previewHtml = `
-                        <div class="w-full h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-t-2xl flex items-center justify-center text-slate-400">
-                            <i class="fa-solid ${catIcon} text-4xl"></i>
-                        </div>
-                    `;
+                const body = item.text || item.description || '';
+                const author = item.createdByName || 'Utilizador';
+                let dateStr = '';
+                if (item.createdAt?.seconds) {
+                    dateStr = new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
                 }
 
                 return `
                     <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
-                        ${previewHtml}
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between gap-2 mb-2">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800/40">
-                                        <i class="fa-solid ${catIcon} mr-1"></i>${catBadge}
-                                    </span>
-                                    ${isOwner ? `
-                                        <button onclick="event.stopPropagation();window.deleteContent('${item.id}', '${item.storagePath || ''}')" class="text-slate-400 hover:text-red-500 transition text-xs p-1 btn-press" title="Eliminar">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    ` : ''}
+                        <div class="p-5 flex-1 flex flex-col">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0">${escapeHTML(author.charAt(0).toUpperCase())}</div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(author)}</p>
+                                    ${dateStr ? `<p class="text-[10px] text-slate-400">${dateStr}</p>` : ''}
                                 </div>
-                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-1 mb-1">${escapeHTML(item.title)}</h3>
-                                ${item.category !== 'text' ? `<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHTML(item.description || 'Sem descrição.')}</p>` : '<div class="mb-3"></div>'}
-                                ${item.createdByName ? `<p class="text-[10px] text-slate-400 mb-2"><i class="fa-solid fa-user mr-1"></i>${escapeHTML(item.createdByName)}</p>` : ''}
+                                ${isOwner ? `
+                                    <button onclick="event.stopPropagation();window.deleteContent('${item.id}', '')" class="text-slate-400 hover:text-red-500 transition text-xs p-1.5 rounded-lg hover:bg-red-500/10 btn-press" title="Eliminar">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                ` : ''}
                             </div>
-                            <div class="flex items-center gap-2">
+                            <p class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap flex-1 mb-4">${escapeHTML(body)}</p>
+                            <div class="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-700/60">
                                 <button type="button" onclick="event.stopPropagation();window.toggleLike('${item.id}')" class="like-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 dark:text-slate-300 text-xs font-semibold transition btn-press ${likedByMe ? 'active text-rose-500' : ''}">
                                     <i class="fa-${likedByMe ? 'solid' : 'regular'} fa-heart"></i>
                                     <span>${likeCount}</span>
                                 </button>
                                 <button onclick="window.viewContent('${item.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
-                                    <i class="fa-solid ${item.category === 'text' ? 'fa-comments' : 'fa-play'}"></i> ${item.category === 'text' ? 'Ver e comentar' : 'Aceder'}
+                                    <i class="fa-solid fa-comments"></i> Comentar
                                 </button>
                             </div>
                         </div>
@@ -3542,15 +3390,27 @@
             });
         }
 
+        function updatePostCharCount() {
+            const el = document.getElementById('inputPostText');
+            const counter = document.getElementById('postCharCount');
+            const btn = document.getElementById('submitBtn');
+            if (!el || !counter) return;
+            const len = (el.value || '').length;
+            counter.textContent = `${len} / 2000`;
+            counter.className = len > 1800
+                ? 'text-[11px] text-amber-500 font-medium'
+                : 'text-[11px] text-slate-400 font-medium';
+            if (btn) btn.disabled = len === 0;
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
-            const title = document.getElementById('inputTitle').value.trim();
-            let category = document.getElementById('selectCategory').value;
-            const description = document.getElementById('inputDescription').value.trim();
+            const textarea = document.getElementById('inputPostText');
             const submitBtn = document.getElementById('submitBtn');
+            const text = (textarea?.value || '').trim();
 
-            if (!title) {
-                showToast('Indique um título para a publicação.', 'error');
+            if (!text) {
+                showToast('Escreva o texto da publicação.', 'error');
                 return;
             }
             if (!currentUserId) {
@@ -3560,231 +3420,43 @@
 
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> A publicar...';
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>A publicar...</span>';
 
             try {
-                // Publicação de texto puro (sem ficheiro nem link)
-                if (category === 'text') {
-                    if (!description) {
-                        showToast('Escreva o texto da publicação na descrição.', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-                    await addDoc(collection(db, 'contents'), {
-                        title,
-                        category: 'text',
-                        description,
-                        url: '',
-                        likes: [],
-                        likeCount: 0,
-                        createdBy: currentUserId,
-                        createdByName: currentUserName || '',
-                        createdAt: serverTimestamp()
-                    });
-                    resetAddContentForm();
-                    closeModal('addContentModal');
-                    showToast('Publicação de texto criada!', 'success');
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50');
-                    submitBtn.innerHTML = 'Enviar Recurso';
-                    return;
-                }
-
-                if (currentAddTab === 'upload') {
-                    if (!selectedFile) {
-                        showToast('Selecione um ficheiro do seu dispositivo.', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-                    if (selectedFile.size > MAX_UPLOAD_BYTES) {
-                        showToast('Ficheiro demasiado grande (máx. 100 MB).', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-
-                    // Ajustar categoria pelo tipo real do ficheiro
-                    if (selectedFile.type.startsWith('image/')) category = 'image';
-                    else if (selectedFile.type.startsWith('video/')) category = 'video';
-                    else if (selectedFile.type.includes('pdf') || selectedFile.type.startsWith('audio/') || selectedFile.type.includes('document')) category = category === 'link' ? 'document' : category;
-
-                    const progressContainer = document.getElementById('uploadProgressContainer');
-                    const progressBar = document.getElementById('uploadProgressBar');
-                    const percentText = document.getElementById('uploadPercent');
-                    if (progressContainer) progressContainer.classList.remove('hidden');
-                    if (progressBar) progressBar.style.width = '0%';
-                    if (percentText) percentText.innerText = '0%';
-
-                    const safeName = selectedFile.name.replace(/[^\w.\-() ]+/g, '_').slice(0, 120);
-                    const objectPath = `${currentUserId || 'anon'}/${Date.now()}_${safeName}`;
-
-                    // —— Preferir Supabase Storage se configurado ——
-                    if (supabase) {
-                        if (percentText) percentText.innerText = '…';
-                        if (progressBar) progressBar.style.width = '30%';
-                        try {
-                            const { data, error } = await supabase.storage
-                                .from(SUPABASE_BUCKET)
-                                .upload(objectPath, selectedFile, {
-                                    cacheControl: '3600',
-                                    upsert: false,
-                                    contentType: selectedFile.type || 'application/octet-stream'
-                                });
-                            if (error) throw error;
-                            if (progressBar) progressBar.style.width = '80%';
-                            if (percentText) percentText.innerText = '80%';
-
-                            const { data: pub } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(data.path);
-                            const downloadUrl = pub?.publicUrl || '';
-                            if (!downloadUrl) throw new Error('URL pública em falta — o bucket deve ser Public.');
-
-                            await addDoc(collection(db, 'contents'), {
-                                title,
-                                category,
-                                description,
-                                url: downloadUrl,
-                                storagePath: data.path,
-                                storageProvider: 'supabase',
-                                fileName: selectedFile.name,
-                                fileSize: selectedFile.size,
-                                mimeType: selectedFile.type || '',
-                                createdBy: currentUserId,
-                                createdByName: currentUserName || '',
-                                createdAt: serverTimestamp()
-                            });
-                            if (progressBar) progressBar.style.width = '100%';
-                            if (percentText) percentText.innerText = '100%';
-                            if (progressContainer) progressContainer.classList.add('hidden');
-                            resetAddContentForm();
-                            closeModal('addContentModal');
-                            showToast('Publicado no Supabase! Todos podem ver.', 'success');
-                        } catch (err) {
-                            console.error(err);
-                            const msg = (err && err.message) ? String(err.message) : 'Erro no upload Supabase.';
-                            showToast(msg.includes('Bucket') || msg.includes('row-level')
-                                ? 'Erro Supabase: verifique bucket "contents" público e políticas.'
-                                : ('Erro Supabase: ' + msg.slice(0, 120)), 'error');
-                            if (progressContainer) progressContainer.classList.add('hidden');
-                        } finally {
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50');
-                            submitBtn.innerHTML = 'Enviar Recurso';
-                        }
-                        return;
-                    }
-
-                    // —— Fallback: Firebase Storage ——
-                    const storagePath = `contents/${objectPath}`;
-                    const fileRef = ref(storage, storagePath);
-                    const uploadTask = uploadBytesResumable(fileRef, selectedFile, {
-                        contentType: selectedFile.type || 'application/octet-stream',
-                        customMetadata: {
-                            uploadedBy: currentUserId || '',
-                            originalName: selectedFile.name
-                        }
-                    });
-
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            if (progressBar) progressBar.style.width = `${progress}%`;
-                            if (percentText) percentText.innerText = `${Math.round(progress)}%`;
-                        },
-                        (error) => {
-                            console.error(error);
-                            let msg = 'Erro ao carregar ficheiro.';
-                            if (error && error.code === 'storage/unauthorized') msg = 'Sem permissão de upload. Verifique as regras do Storage.';
-                            else if (error && error.code === 'storage/canceled') msg = 'Envio cancelado.';
-                            else if (error && error.code === 'storage/retry-limit-exceeded') msg = 'Rede instável. Tente novamente.';
-                            showToast(msg, 'error');
-                            if (progressContainer) progressContainer.classList.add('hidden');
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50');
-                            submitBtn.innerHTML = 'Enviar Recurso';
-                        },
-                        async () => {
-                            try {
-                                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                                await addDoc(collection(db, 'contents'), {
-                                    title,
-                                    category,
-                                    description,
-                                    url: downloadUrl,
-                                    storagePath,
-                                    storageProvider: 'firebase',
-                                    fileName: selectedFile.name,
-                                    fileSize: selectedFile.size,
-                                    mimeType: selectedFile.type || '',
-                                    createdBy: currentUserId,
-                                    createdByName: currentUserName || '',
-                                    createdAt: serverTimestamp()
-                                });
-                                if (progressContainer) progressContainer.classList.add('hidden');
-                                resetAddContentForm();
-                                closeModal('addContentModal');
-                                showToast('Publicado! Todos podem ver no site.', 'success');
-                            } catch (err) {
-                                console.error(err);
-                                showToast('Ficheiro enviado, mas falhou ao guardar a publicação.', 'error');
-                            } finally {
-                                submitBtn.disabled = false;
-                                submitBtn.classList.remove('opacity-50');
-                                submitBtn.innerHTML = 'Enviar Recurso';
-                            }
-                        }
-                    );
-                    return;
-
-                } else {
-                    const url = document.getElementById('inputUrl').value.trim();
-                    if (!url) {
-                        showToast('Insira um URL válido.', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-50');
-                        submitBtn.innerHTML = 'Enviar Recurso';
-                        return;
-                    }
-
-                    await addDoc(collection(db, 'contents'), {
-                        title,
-                        category,
-                        description,
-                        url,
-                        createdBy: currentUserId,
-                        createdByName: currentUserName || '',
-                        createdAt: serverTimestamp()
-                    });
-
-                    resetAddContentForm();
-                    closeModal('addContentModal');
-                    showToast('Link publicado com sucesso!', 'success');
-                }
+                // Título automático: primeiras palavras do texto (só para listagens/admin)
+                const autoTitle = text.length > 60 ? text.slice(0, 57).trim() + '…' : text;
+                await addDoc(collection(db, 'contents'), {
+                    title: autoTitle,
+                    category: 'text',
+                    description: text,
+                    text: text,
+                    url: '',
+                    likes: [],
+                    likeCount: 0,
+                    createdBy: currentUserId,
+                    createdByName: currentUserName || '',
+                    createdAt: serverTimestamp()
+                });
+                resetAddContentForm();
+                closeModal('addContentModal');
+                showToast('Publicação criada!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Erro ao guardar recurso.', 'error');
+                showToast('Erro ao publicar. Tente novamente.', 'error');
             } finally {
-                if (currentAddTab !== 'upload') {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50');
-                    submitBtn.innerHTML = 'Enviar Recurso';
-                }
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane text-base"></i><span>Publicar agora</span>';
+                updatePostCharCount();
             }
         }
 
         function resetAddContentForm() {
-            document.getElementById('addContentForm').reset();
-            clearSelectedFile();
-            const progressContainer = document.getElementById('uploadProgressContainer');
-            const progressBar = document.getElementById('uploadProgressBar');
-            if (progressContainer) progressContainer.classList.add('hidden');
-            if (progressBar) progressBar.style.width = '0%';
-            setCategoryUI('image');
-            switchAddTab('upload');
+            const form = document.getElementById('addContentForm');
+            if (form) form.reset();
+            const ta = document.getElementById('inputPostText');
+            if (ta) ta.value = '';
+            updatePostCharCount();
         }
 
         function detectMediaFromUrl(url) {
@@ -3860,8 +3532,11 @@
             leaveEntertainmentViewers();
             leaveContentComments();
 
-            document.getElementById('viewTitle').innerText = item.title;
-            document.getElementById('viewDescription').innerText = item.description || "Sem descrição disponível.";
+            const bodyText = item.text || item.description || '';
+            document.getElementById('viewTitle').innerText = item.category === 'text'
+                ? (item.createdByName || 'Publicação')
+                : (item.title || 'Publicação');
+            document.getElementById('viewDescription').innerText = bodyText || '';
             
             const downloadBtn = document.getElementById('viewDownloadBtn');
             const actionContainer = document.getElementById('viewActionContainer');
@@ -3870,7 +3545,9 @@
             
             const categoryDate = document.getElementById('viewCategoryDate');
             const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-PT') : 'Recente';
-            if (categoryDate) categoryDate.innerText = `${(item.category || 'link').toUpperCase()} • ${dateStr}`;
+            if (categoryDate) categoryDate.innerText = item.category === 'text'
+                ? `Publicação • ${dateStr}`
+                : `${(item.category || 'link').toUpperCase()} • ${dateStr}`;
 
             const container = document.getElementById('viewContainer');
             const typeIcon = document.getElementById('viewTypeIcon');
@@ -4439,6 +4116,7 @@
         window.setCategoryUI = setCategoryUI;
         window.handleFileSelect = handleFileSelect;
         window.handleFormSubmit = handleFormSubmit;
+        window.updatePostCharCount = updatePostCharCount;
         window.viewContent = viewContent;
         window.deleteContent = deleteContent;
         window.openAdminAccess = openAdminAccess;
