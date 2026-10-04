@@ -2734,7 +2734,10 @@
                 unsubscribeContents = null;
             }
             const applyContents = (snapshot) => {
-                contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                contents = snapshot.docs.map(docSnap => {
+                    const data = docSnap.data() || {};
+                    return { id: docSnap.id, ...data, visibility: data.visibility || 'public' };
+                }).filter(item => item.visibility === 'public' || item.createdBy === currentUserId || isAdmin || item.isVirtualChannel);
                 // Ordenar localmente se necessário
                 contents.sort((a, b) => {
                     const ta = a.createdAt?.seconds || 0;
@@ -2881,9 +2884,14 @@
                                         <i class="fa-solid ${catIcon} mr-1"></i>${catBadge}
                                     </span>
                                     ${isOwner ? `
-                                        <button onclick="window.deleteContent('${item.id}', '${item.storagePath || ''}')" class="text-slate-400 hover:text-red-500 transition text-xs p-1" title="Eliminar">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                        <div class="flex items-center gap-1">
+                                            <button onclick="window.editOwnContent('${item.id}')" class="text-slate-400 hover:text-brand-500 transition text-xs p-1" title="Editar publicação">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button onclick="window.deleteContent('${item.id}', '${item.storagePath || ''}')" class="text-slate-400 hover:text-red-500 transition text-xs p-1" title="Eliminar">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
                                     ` : ''}
                                 </div>
                                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-1 mb-1">${escapeHTML(item.title)}</h3>
@@ -3469,6 +3477,7 @@
                                     mimeType: selectedFile.type || driveFile.mimeType || '',
                                     createdBy: currentUserId,
                                     createdByName: currentUserName || '',
+                                    visibility: 'public',
                                     createdAt: serverTimestamp()
                                 });
 
@@ -3519,6 +3528,7 @@
                                 mimeType: selectedFile.type || '',
                                 createdBy: currentUserId,
                                 createdByName: currentUserName || '',
+                                visibility: 'public',
                                 createdAt: serverTimestamp()
                             });
                             if (progressBar) progressBar.style.width = '100%';
@@ -3586,6 +3596,7 @@
                                     mimeType: selectedFile.type || '',
                                     createdBy: currentUserId,
                                     createdByName: currentUserName || '',
+                                    visibility: 'public',
                                     createdAt: serverTimestamp()
                                 });
                                 if (progressContainer) progressContainer.classList.add('hidden');
@@ -3621,6 +3632,7 @@
                         url,
                         createdBy: currentUserId,
                         createdByName: currentUserName || '',
+                        visibility: 'public',
                         createdAt: serverTimestamp()
                     });
 
@@ -3967,11 +3979,42 @@
             openModal('viewContentModal');
         }
 
+        async function editOwnContent(id) {
+            const item = contents.find(c => c.id === id);
+            if (!item) return;
+            if (!isAdmin && item.createdBy !== currentUserId) {
+                showToast("Só podes editar as tuas próprias publicações.", "error");
+                return;
+            }
+            const title = window.prompt("Título da publicação:", item.title || '');
+            if (title === null) return;
+            const description = window.prompt("Descrição:", item.description || '');
+            if (description === null) return;
+            try {
+                await updateDoc(doc(db, "contents", id), {
+                    title: title.trim() || item.title || 'Publicação',
+                    description: description.trim(),
+                    visibility: 'public',
+                    updatedAt: serverTimestamp()
+                });
+                showToast("Publicação atualizada e sincronizada para todos.", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Não foi possível atualizar a publicação.", "error");
+            }
+        }
+
         async function deleteContent(id, storagePath) {
+            const item = contents.find(c => c.id === id);
+            if (!item) return;
+            const canManage = isAdmin || (item.createdBy && item.createdBy === currentUserId);
+            if (!canManage) {
+                showToast("Só o autor da publicação ou o administrador pode eliminá-la.", "error");
+                return;
+            }
             if (!confirm("Tem a certeza de que deseja eliminar este recurso?")) return;
 
             try {
-                const item = contents.find(c => c.id === id);
                 await deleteDoc(doc(db, "contents", id));
                 if (storagePath) {
                     if (item && item.storageProvider === 'supabase' && supabase) {
@@ -4146,7 +4189,7 @@
             const category = document.getElementById('editCategory').value;
             if (!title || !id) return;
             try {
-                await updateDoc(doc(db, "contents", id), { title, description, url, category });
+                await updateDoc(doc(db, "contents", id), { title, description, url, category, visibility: "public", updatedAt: serverTimestamp() });
                 closeModal('editContentModal');
                 showToast("Publicação atualizada!", "success");
                 renderAdminContents();
@@ -4389,6 +4432,7 @@
         window.handleFileSelect = handleFileSelect;
         window.handleFormSubmit = handleFormSubmit;
         window.viewContent = viewContent;
+        window.editOwnContent = editOwnContent;
         window.deleteContent = deleteContent;
         window.openAdminAccess = openAdminAccess;
         window.validateAdminKey = validateAdminKey;
