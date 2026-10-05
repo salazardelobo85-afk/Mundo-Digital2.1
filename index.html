@@ -367,6 +367,12 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="callDuration" class="px-3 py-1 bg-slate-800/80 text-white text-xs rounded-full font-mono hidden">00:00</span>
+                    <button type="button" onclick="window.openAddCallMember()" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center btn-press" title="Adicionar membros">
+                        <i class="fa-solid fa-user-plus text-sm"></i>
+                    </button>
+                    <button type="button" onclick="window.minimizeCall()" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center btn-press" title="Voltar ao site (chamada em segundo plano)">
+                        <i class="fa-solid fa-chevron-down text-sm"></i>
+                    </button>
                 </div>
             </div>
 
@@ -398,6 +404,39 @@
                 <button onclick="window.endCall()" class="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-lg transform hover:scale-105 btn-press" title="Terminar Chamada">
                     <i class="fa-solid fa-phone-slash text-xl"></i>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAMADA MINIMIZADA (segundo plano) -->
+    <div id="miniCallBar" class="hidden fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[125] w-[min(100%-2rem,24rem)]">
+        <div class="bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl rounded-2xl px-3 py-2.5 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm shrink-0" id="miniCallAvatar">U</div>
+            <div class="flex-1 min-w-0 cursor-pointer" onclick="window.expandCall()">
+                <p class="text-white text-xs font-semibold truncate" id="miniCallName">Em chamada</p>
+                <p class="text-[10px] text-emerald-400 font-mono" id="miniCallDuration">00:00</p>
+            </div>
+            <button type="button" onclick="window.toggleMute()" class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center btn-press" title="Mute" id="miniMuteBtn">
+                <i class="fa-solid fa-microphone text-sm"></i>
+            </button>
+            <button type="button" onclick="window.expandCall()" class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center btn-press" title="Expandir">
+                <i class="fa-solid fa-up-right-and-down-left-from-center text-sm"></i>
+            </button>
+            <button type="button" onclick="window.endCall()" class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center btn-press" title="Terminar">
+                <i class="fa-solid fa-phone-slash text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ADICIONAR MEMBROS À CHAMADA -->
+    <div id="addCallMemberModal" class="fixed inset-0 z-[145] flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-sm">Adicionar à chamada</h3>
+                <button type="button" onclick="window.closeModal('addCallMemberModal')" class="p-1 text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-2 max-h-72 overflow-y-auto custom-scrollbar" id="addCallMemberList">
+                <p class="text-xs text-slate-400 p-4 text-center">A carregar...</p>
             </div>
         </div>
     </div>
@@ -1667,44 +1706,95 @@
         let unsubscribeEntertainmentChat = null;
         let entertainmentChatOpen = false;
 
-        // STUN (descoberta) + TURN (retransmissão quando P2P falha)
-        // TURN público Open Relay — bom para demonstração; em produção use o seu coturn/Metered pago
+        // STUN + TURN — múltiplos servidores para reduzir falhas
         const TURN_USER = 'openrelayproject';
         const TURN_PASS = 'openrelayproject';
-        const rtcConfig = {
-            iceServers: [
-                // STUN
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun.cloudflare.com:3478' },
-                { urls: 'stun:openrelay.metered.ca:80' },
-                // TURN UDP / TCP / TLS (atravessa NATs e firewalls difíceis)
-                {
-                    urls: [
-                        'turn:openrelay.metered.ca:80',
-                        'turn:openrelay.metered.ca:80?transport=tcp',
-                        'turn:openrelay.metered.ca:443',
-                        'turn:openrelay.metered.ca:443?transport=tcp',
-                        'turns:openrelay.metered.ca:443'
-                    ],
-                    username: TURN_USER,
-                    credential: TURN_PASS
-                },
-                {
-                    urls: [
-                        'turn:openrelay.metered.ca:443?transport=tcp',
-                        'turns:openrelay.metered.ca:443'
-                    ],
-                    username: TURN_USER,
-                    credential: TURN_PASS
-                }
-            ],
-            iceCandidatePoolSize: 16,
-            bundlePolicy: 'max-bundle',
-            rtcpMuxPolicy: 'require',
-            iceTransportPolicy: 'all' // tenta direto + relay (TURN)
-        };
+        let rtcConfig = buildRtcConfig();
+        let iceHealth = { ok: true, lastCheck: 0, stunOk: false, turnOk: false };
+
+        function buildRtcConfig() {
+            return {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun.cloudflare.com:3478' },
+                    { urls: 'stun:stun.stunprotocol.org:3478' },
+                    { urls: 'stun:openrelay.metered.ca:80' },
+                    {
+                        urls: [
+                            'turn:openrelay.metered.ca:80',
+                            'turn:openrelay.metered.ca:443',
+                            'turn:openrelay.metered.ca:443?transport=tcp',
+                            'turns:openrelay.metered.ca:443'
+                        ],
+                        username: TURN_USER,
+                        credential: TURN_PASS
+                    },
+                    {
+                        urls: [
+                            'turn:openrelay.metered.ca:80?transport=tcp',
+                            'turn:openrelay.metered.ca:443?transport=tcp'
+                        ],
+                        username: TURN_USER,
+                        credential: TURN_PASS
+                    }
+                ],
+                iceCandidatePoolSize: 16,
+                bundlePolicy: 'max-bundle',
+                rtcpMuxPolicy: 'require',
+                iceTransportPolicy: 'all'
+            };
+        }
+
+        /** Testa STUN/TURN a cada 60s (e ao arrancar) */
+        async function checkIceHealth() {
+            try {
+                const pc = new RTCPeerConnection(buildRtcConfig());
+                let stunOk = false;
+                let turnOk = false;
+                const done = new Promise((resolve) => {
+                    const t = setTimeout(() => resolve(), 4500);
+                    pc.onicecandidate = (e) => {
+                        if (!e.candidate) return;
+                        const c = e.candidate.candidate || '';
+                        if (c.includes('typ srflx') || c.includes('typ host')) stunOk = true;
+                        if (c.includes('typ relay')) turnOk = true;
+                        if (stunOk && turnOk) {
+                            clearTimeout(t);
+                            resolve();
+                        }
+                    };
+                });
+                pc.createDataChannel('health');
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await done;
+                try { pc.close(); } catch (_) {}
+                iceHealth = { ok: stunOk || turnOk, lastCheck: Date.now(), stunOk, turnOk };
+                rtcConfig = buildRtcConfig();
+                return iceHealth;
+            } catch (e) {
+                iceHealth = { ok: false, lastCheck: Date.now(), stunOk: false, turnOk: false, error: String(e) };
+                return iceHealth;
+            }
+        }
+
+        // Verificação periódica de estabilidade STUN/TURN
+        setInterval(() => { checkIceHealth().catch(() => {}); }, 60000);
+        setTimeout(() => { checkIceHealth().catch(() => {}); }, 3000);
+
+        // Manter media ativa em segundo plano (quando possível no browser)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && (peerConnection || activeCallId)) {
+                try {
+                    const remoteVid = document.getElementById('remoteVideo');
+                    const localVid = document.getElementById('localVideo');
+                    if (remoteVid && remoteStream) { remoteVid.srcObject = remoteStream; remoteVid.play().catch(() => {}); }
+                    if (localVid && localStream) { localVid.srcObject = localStream; localVid.play().catch(() => {}); }
+                } catch (_) {}
+            }
+        });
 
         function setCallStatus(text, colorClass) {
             const el = document.getElementById('callStatusText');
@@ -1804,29 +1894,57 @@
         }
 
         async function getMediaStream(type) {
-            const constraints = {
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    channelCount: 1
-                },
-                video: type === 'video' ? {
-                    width: { ideal: 640, max: 1280 },
-                    height: { ideal: 480, max: 720 },
-                    frameRate: { ideal: 24, max: 30 },
-                    facingMode: 'user'
-                } : false
-            };
-            try {
-                return await navigator.mediaDevices.getUserMedia(constraints);
-            } catch (e1) {
-                // Fallback mais simples (alguns dispositivos rejeitam constraints avançadas)
-                return await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: type === 'video'
-                });
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('O navegador não suporta câmara/microfone. Use HTTPS ou Chrome/Firefox.');
             }
+            const wantVideo = type === 'video';
+            const attempts = [];
+            if (wantVideo) {
+                attempts.push({
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                attempts.push({ audio: true, video: { facingMode: 'user' } });
+                attempts.push({ audio: true, video: true });
+            } else {
+                attempts.push({
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+                    video: false
+                });
+                attempts.push({ audio: true, video: false });
+            }
+            let lastErr = null;
+            for (const constraints of attempts) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    // Garantir pelo menos uma faixa de áudio
+                    if (!stream.getAudioTracks().length && !stream.getVideoTracks().length) {
+                        stream.getTracks().forEach(t => t.stop());
+                        continue;
+                    }
+                    return stream;
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+            // Último recurso: só áudio se vídeo falhou
+            if (wantVideo) {
+                try {
+                    const audioOnly = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    showToast('Câmara indisponível — chamada com áudio. Permita a câmara nas definições do site.', 'info');
+                    return audioOnly;
+                } catch (e2) {
+                    lastErr = e2;
+                }
+            }
+            const name = lastErr && lastErr.name;
+            if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+                throw new Error('Permissão negada. Permita microfone/câmara no navegador e tente de novo.');
+            }
+            if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+                throw new Error('Nenhum microfone/câmara encontrado neste dispositivo.');
+            }
+            throw lastErr || new Error('Não foi possível aceder à câmara/microfone.');
         }
 
         function escapeHTML(str) {
@@ -3466,7 +3584,10 @@
                 callSeconds++;
                 const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
                 const secs = String(callSeconds % 60).padStart(2, '0');
-                if (durationEl) durationEl.innerText = `${mins}:${secs}`;
+                const t = `${mins}:${secs}`;
+                if (durationEl) durationEl.innerText = t;
+                const miniDur = document.getElementById('miniCallDuration');
+                if (miniDur) miniDur.innerText = t;
             }, 1000);
         }
 
@@ -3488,6 +3609,19 @@
             callConnectedOnce = false;
             isMuted = false;
             isVideoOff = false;
+            const mini = document.getElementById('miniCallBar');
+            if (mini) mini.classList.add('hidden');
+            // Fechar peers extra (chamada em grupo)
+            if (window._callExtraPeers) {
+                Object.values(window._callExtraPeers).forEach(entry => {
+                    try { if (entry.unsub) entry.unsub(); } catch (_) {}
+                    try { if (entry.pc) entry.pc.close(); } catch (_) {}
+                    if (entry.callId) {
+                        updateDoc(doc(db, 'calls', entry.callId), { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
+                    }
+                });
+                window._callExtraPeers = {};
+            }
             isScreenSharing = false;
             if (screenStream) {
                 screenStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
@@ -3548,6 +3682,168 @@
             showToast('Chamada terminada.', 'info');
         }
 
+        function minimizeCall() {
+            if (!peerConnection && !activeCallId) {
+                showToast('Nenhuma chamada ativa.', 'info');
+                return;
+            }
+            const name = document.getElementById('callPeerName')?.innerText || 'Em chamada';
+            const av = document.getElementById('callPeerAvatar')?.innerText || 'U';
+            const mini = document.getElementById('miniCallBar');
+            const mn = document.getElementById('miniCallName');
+            const ma = document.getElementById('miniCallAvatar');
+            if (mn) mn.textContent = name;
+            if (ma) ma.textContent = av;
+            if (mini) mini.classList.remove('hidden');
+            closeModal('callModal');
+            // Continuar a ouvir em segundo plano (stream não é parado)
+            try {
+                const remoteVid = document.getElementById('remoteVideo');
+                if (remoteVid) remoteVid.play().catch(() => {});
+            } catch (_) {}
+            showToast('Chamada em segundo plano — pode usar o site.', 'success');
+        }
+
+        function expandCall() {
+            const mini = document.getElementById('miniCallBar');
+            if (mini) mini.classList.add('hidden');
+            if (activeCallId || peerConnection) {
+                openModal('callModal');
+                try {
+                    const localVid = document.getElementById('localVideo');
+                    const remoteVid = document.getElementById('remoteVideo');
+                    if (localVid && localStream) { localVid.srcObject = localStream; localVid.play().catch(() => {}); }
+                    if (remoteVid && remoteStream) { remoteVid.srcObject = remoteStream; remoteVid.play().catch(() => {}); }
+                } catch (_) {}
+            }
+        }
+
+        function openAddCallMember() {
+            if (!activeCallId && !peerConnection) {
+                showToast('Inicie uma chamada primeiro.', 'info');
+                return;
+            }
+            const list = document.getElementById('addCallMemberList');
+            if (!list) return;
+            const inCall = new Set([currentUserId, activeChatUserId].filter(Boolean));
+            // Também excluir já convidados
+            if (window._callExtraPeers) {
+                Object.keys(window._callExtraPeers).forEach(id => inCall.add(id));
+            }
+            const candidates = allUsers.filter(u => !inCall.has(u.id));
+            if (!candidates.length) {
+                list.innerHTML = '<p class="text-xs text-slate-400 p-4 text-center">Não há mais contactos para adicionar.</p>';
+            } else {
+                list.innerHTML = candidates.map(u => {
+                    const n = getDisplayName(u);
+                    return `<button type="button" onclick="window.inviteToCall('${u.id}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-left btn-press">
+                        <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">${escapeHTML(n.charAt(0).toUpperCase())}</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-semibold truncate">${escapeHTML(n)}</p>
+                            <p class="text-[10px] ${u.online?'text-emerald-500':'text-slate-400'}">${u.online?'Online':'Offline'}</p>
+                        </div>
+                        <i class="fa-solid fa-phone text-brand-500 text-sm"></i>
+                    </button>`;
+                }).join('');
+            }
+            openModal('addCallMemberModal');
+        }
+
+        async function inviteToCall(userId) {
+            if (!userId || !currentUserId) return;
+            if (!localStream) {
+                showToast('Aguarde a chamada estar ligada.', 'info');
+                return;
+            }
+            closeModal('addCallMemberModal');
+            const target = allUsers.find(u => u.id === userId);
+            const targetName = target ? getDisplayName(target) : 'Utilizador';
+            try {
+                if (!window._callExtraPeers) window._callExtraPeers = {};
+                if (window._callExtraPeers[userId]) {
+                    showToast('Já convidado.', 'info');
+                    return;
+                }
+
+                const pc = new RTCPeerConnection(rtcConfig);
+                wirePeerConnectionEvents(pc);
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+                // Áudio/vídeo extra: misturar no remoteStream principal (estrela — anfitrião)
+                pc.ontrack = (e) => {
+                    e.streams[0].getTracks().forEach(track => {
+                        if (remoteStream && !remoteStream.getTracks().some(t => t.id === track.id)) {
+                            remoteStream.addTrack(track);
+                        }
+                    });
+                    const remoteVid = document.getElementById('remoteVideo');
+                    if (remoteVid && remoteStream) {
+                        remoteVid.srcObject = remoteStream;
+                        remoteVid.play().catch(() => {});
+                    }
+                };
+
+                const callDocRef = doc(collection(db, 'calls'));
+                const callerCandidates = collection(callDocRef, 'callerCandidates');
+                pc.onicecandidate = (e) => {
+                    if (e.candidate) addDoc(callerCandidates, e.candidate.toJSON()).catch(() => {});
+                };
+
+                const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+                await pc.setLocalDescription(offer);
+
+                await setDoc(callDocRef, {
+                    callerId: currentUserId,
+                    callerName: currentUserName,
+                    receiverId: userId,
+                    type: 'video',
+                    status: 'offered',
+                    conferenceId: activeCallId || null,
+                    parentCallId: activeCallId || null,
+                    offer: { type: offer.type, sdp: offer.sdp },
+                    createdAt: serverTimestamp()
+                });
+
+                window._callExtraPeers[userId] = { pc, callId: callDocRef.id, unsub: null };
+
+                const unsub = onSnapshot(callDocRef, async (snap) => {
+                    const data = snap.data();
+                    if (!data) return;
+                    if (data.status === 'accepted' && pc && !pc.currentRemoteDescription && data.answer) {
+                        try {
+                            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            showToast(`${targetName} entrou na chamada.`, 'success');
+                        } catch (e) { console.warn(e); }
+                    }
+                    if (data.status === 'ended' || data.status === 'rejected') {
+                        try { pc.close(); } catch (_) {}
+                        delete window._callExtraPeers[userId];
+                        if (unsub) unsub();
+                    }
+                });
+                window._callExtraPeers[userId].unsub = unsub;
+
+                // ICE do receptor
+                onSnapshot(collection(callDocRef, 'receiverCandidates'), (snap) => {
+                    snap.docChanges().forEach(async (change) => {
+                        if (change.type === 'added') {
+                            try { await pc.addIceCandidate(new RTCIceCandidate(change.doc.data())); } catch (_) {}
+                        }
+                    });
+                });
+
+                showToast(`Convite enviado a ${targetName}.`, 'success');
+                // Atualizar nome no header
+                const nameEl = document.getElementById('callPeerName');
+                if (nameEl && !nameEl.innerText.includes('+')) {
+                    nameEl.innerText = nameEl.innerText + ' +';
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Não foi possível adicionar à chamada.', 'error');
+            }
+        }
+
         function toggleMute() {
             if (!localStream) return;
             const audioTrack = localStream.getAudioTracks()[0];
@@ -3555,26 +3851,62 @@
                 audioTrack.enabled = !audioTrack.enabled;
                 isMuted = !audioTrack.enabled;
                 const btn = document.getElementById('muteBtn');
-                if (btn) {
-                    btn.innerHTML = isMuted 
-                        ? '<i class="fa-solid fa-microphone-slash text-lg text-red-400"></i>' 
-                        : '<i class="fa-solid fa-microphone text-lg"></i>';
-                }
+                const icon = isMuted 
+                    ? '<i class="fa-solid fa-microphone-slash text-lg text-red-400"></i>' 
+                    : '<i class="fa-solid fa-microphone text-lg"></i>';
+                if (btn) btn.innerHTML = icon;
+                const miniBtn = document.getElementById('miniMuteBtn');
+                if (miniBtn) miniBtn.innerHTML = isMuted 
+                    ? '<i class="fa-solid fa-microphone-slash text-sm text-red-400"></i>' 
+                    : '<i class="fa-solid fa-microphone text-sm"></i>';
             }
         }
 
-        function toggleVideo() {
+        async function toggleVideo() {
             if (!localStream || isScreenSharing) return;
-            const videoTrack = localStream.getVideoTracks()[0];
-            if (videoTrack) {
+            let videoTrack = localStream.getVideoTracks()[0];
+            // Se não há câmara (chamada só áudio), pedir agora
+            if (!videoTrack) {
+                try {
+                    const cam = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user' },
+                        audio: false
+                    });
+                    videoTrack = cam.getVideoTracks()[0];
+                    if (!videoTrack) return;
+                    localStream.addTrack(videoTrack);
+                    if (peerConnection) {
+                        peerConnection.addTrack(videoTrack, localStream);
+                        // Renegociar se possível
+                        try {
+                            const offer = await peerConnection.createOffer();
+                            await peerConnection.setLocalDescription(offer);
+                            if (activeCallId) {
+                                await updateDoc(doc(db, 'calls', activeCallId), {
+                                    offer: { type: offer.type, sdp: offer.sdp },
+                                    renegotiate: Date.now()
+                                });
+                            }
+                        } catch (_) {}
+                    }
+                    const localVid = document.getElementById('localVideo');
+                    if (localVid) { localVid.srcObject = localStream; localVid.play().catch(() => {}); }
+                    document.getElementById('audioCallPlaceholder')?.classList.add('hidden');
+                    document.getElementById('remoteVideo')?.classList.remove('hidden');
+                    isVideoOff = false;
+                } catch (e) {
+                    showToast('Não foi possível ligar a câmara. Verifique as permissões.', 'error');
+                    return;
+                }
+            } else {
                 videoTrack.enabled = !videoTrack.enabled;
                 isVideoOff = !videoTrack.enabled;
-                const btn = document.getElementById('videoToggleBtn');
-                if (btn) {
-                    btn.innerHTML = isVideoOff 
-                        ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>' 
-                        : '<i class="fa-solid fa-video text-lg"></i>';
-                }
+            }
+            const btn = document.getElementById('videoToggleBtn');
+            if (btn) {
+                btn.innerHTML = isVideoOff 
+                    ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>' 
+                    : '<i class="fa-solid fa-video text-lg"></i>';
             }
         }
 
@@ -3624,9 +3956,10 @@
                 return;
             }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                showToast('Este dispositivo/navegador não suporta partilha de ecrã.', 'error');
+                showToast('Este dispositivo/navegador não suporta partilha de ecrã. Use Chrome/Edge no computador.', 'error');
                 return;
             }
+            // O browser vai pedir autorização do sistema para capturar o ecrã
 
             // Parar partilha
             if (isScreenSharing) {
@@ -3667,11 +4000,10 @@
 
             // Iniciar partilha
             try {
+                // Pedido de autorização ao sistema (ecrã / janela / separador)
+                showToast('Autorize a partilha de ecrã na janela do sistema…', 'info');
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: {
-                        displaySurface: 'monitor',
-                        frameRate: { ideal: 15, max: 30 }
-                    },
+                    video: true,
                     audio: false
                 });
                 const screenTrack = screenStream.getVideoTracks()[0];
@@ -3719,10 +4051,20 @@
                 showToast("Selecione um utilizador para ligar.", "error");
                 return;
             }
-            if (activeCallId || peerConnection) {
+            // Sem limite diário — só bloqueia se já houver chamada ativa de verdade
+            if (peerConnection && (peerConnection.connectionState === 'connected' || peerConnection.connectionState === 'connecting')) {
+                showToast("Já existe uma chamada em curso. Termine-a antes de iniciar outra.", "info");
+                return;
+            }
+            if (activeCallId && peerConnection) {
                 showToast("Já existe uma chamada em curso.", "info");
                 return;
             }
+            // Limpar estado fantasma de chamada anterior
+            if (activeCallId && !peerConnection) {
+                activeCallId = null;
+            }
+            callCleanupRunning = false;
 
             const targetUser = allUsers.find(u => u.id === activeChatUserId);
             const targetName = getDisplayName(targetUser);
@@ -3791,7 +4133,7 @@
 
                 const offerDescription = await peerConnection.createOffer({
                     offerToReceiveAudio: true,
-                    offerToReceiveVideo: type === 'video'
+                    offerToReceiveVideo: true
                 });
                 await peerConnection.setLocalDescription(offerDescription);
 
@@ -3861,11 +4203,13 @@
 
             } catch (err) {
                 console.error(err);
-                const msg = (err && err.name === 'NotAllowedError')
-                    ? 'Permissão de microfone/câmara negada.'
-                    : 'Impossível aceder aos dispositivos de mídia.';
+                const msg = (err && err.message) ? err.message
+                    : (err && err.name === 'NotAllowedError')
+                    ? 'Permissão de microfone/câmara negada. Autorize no navegador.'
+                    : 'Impossível aceder à câmara/microfone.';
                 showToast(msg, 'error');
-                cleanupCall();
+                callCleanupRunning = false;
+                await cleanupCall();
             }
         }
 
@@ -5816,6 +6160,11 @@
         window.toggleScreenShare = toggleScreenShare;
         window.toggleVideo = toggleVideo;
         window.endCall = endCall;
+        window.minimizeCall = minimizeCall;
+        window.expandCall = expandCall;
+        window.openAddCallMember = openAddCallMember;
+        window.inviteToCall = inviteToCall;
+
         window.rejectIncomingCall = rejectIncomingCall;
         window.acceptIncomingCall = acceptIncomingCall;
         window.startCall = startCall;
