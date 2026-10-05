@@ -340,6 +340,19 @@
             25% { transform: translateY(-4px) rotate(-6deg); }
             75% { transform: translateY(-2px) rotate(6deg); }
         }
+
+        @keyframes mentorGlow {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .mentor-badge-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            animation: mentorGlow 2.2s ease-in-out infinite;
+        }
+        .mentor-diamond { filter: drop-shadow(0 0 6px rgba(56,189,248,0.6)); }
+        .mentor-medal { filter: drop-shadow(0 0 6px rgba(251,191,36,0.55)); }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -367,8 +380,8 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="callDuration" class="px-3 py-1 bg-slate-800/80 text-white text-xs rounded-full font-mono hidden">00:00</span>
-                    <button type="button" onclick="window.openAddCallMember()" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center btn-press" title="Adicionar membros">
-                        <i class="fa-solid fa-user-plus text-sm"></i>
+                    <button type="button" onclick="window.openAddCallMember()" class="h-9 px-3 rounded-full bg-slate-800/90 hover:bg-slate-700 text-white flex items-center gap-1.5 btn-press text-[11px] font-semibold border border-white/10" title="Adicionar membros">
+                        <i class="fa-solid fa-user-plus text-xs"></i><span class="hidden sm:inline">Adicionar</span>
                     </button>
                     <button type="button" onclick="window.minimizeCall()" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center btn-press" title="Voltar ao site (chamada em segundo plano)">
                         <i class="fa-solid fa-chevron-down text-sm"></i>
@@ -377,7 +390,7 @@
             </div>
 
             <div class="flex-1 relative flex items-center justify-center bg-slate-950 overflow-hidden">
-                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                <video id="remoteVideo" autoplay playsinline webkit-playsinline class="w-full h-full object-cover bg-slate-950"></video>
                 
                 <div id="audioCallPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 hidden">
                     <div class="w-24 h-24 rounded-full bg-brand-600/30 text-brand-400 flex items-center justify-center text-4xl mb-4 animate-pulse">
@@ -387,7 +400,7 @@
                 </div>
 
                 <div class="absolute bottom-28 right-4 sm:bottom-6 sm:right-6 w-28 sm:w-48 h-36 sm:h-32 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10">
-                    <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                    <video id="localVideo" autoplay playsinline webkit-playsinline muted class="w-full h-full object-cover bg-slate-800"></video>
                 </div>
             </div>
 
@@ -521,7 +534,7 @@
                 </button>
                 <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
                     <i class="fa-solid fa-comments text-lg"></i>
-                    <span id="chatBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-brand-500 rounded-full animate-ping"></span>
+                    <span id="chatBadge" class="hidden absolute -top-0.5 -right-0.5 min-w-[1.15rem] h-[1.15rem] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800">0</span>
                 </button>
 
                 <button id="enableNotificationsBtn" onclick="window.requestNotificationPermission()" title="Ativar Notificações" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
@@ -708,8 +721,29 @@
                 <div><label class="text-xs font-semibold">Nome</label><input id="profileNameInput" required maxlength="60" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
                 <div><label class="text-xs font-semibold">Bio</label><textarea id="profileBioInput" maxlength="180" rows="3" placeholder="Fale um pouco sobre si..." class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none"></textarea></div>
                 <div><label class="text-xs font-semibold">Telefone</label><input id="profilePhoneInput" maxlength="30" placeholder="Opcional" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-xs font-semibold">País</label><input id="profileCountryInput" maxlength="60" placeholder="País" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                    <div><label class="text-xs font-semibold">Província</label><input id="profileProvinceInput" maxlength="60" placeholder="Província" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                    <div><label class="text-xs font-semibold">Cidade</label><input id="profileCityInput" maxlength="60" placeholder="Cidade" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                    <div><label class="text-xs font-semibold">Bairro</label><input id="profileNeighborhoodInput" maxlength="60" placeholder="Bairro" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="window.captureProfileGps()" class="flex-1 py-2.5 rounded-xl border border-brand-500/40 text-brand-600 text-xs font-semibold btn-press"><i class="fa-solid fa-location-crosshairs mr-1"></i>GPS atual</button>
+                    <p id="profileGpsHint" class="flex-1 text-[10px] text-slate-400 self-center">Localização atualiza a cada 7 dias</p>
+                </div>
                 <button class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar perfil</button>
             </form>
+        </div>
+    </div>
+
+
+    <div id="callHistoryModal" class="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-phone text-emerald-500 mr-2"></i>Chamadas</h3>
+                <button onclick="window.closeModal('callHistoryModal')" class="p-2 text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="callHistoryList" class="flex-1 overflow-y-auto custom-scrollbar p-2 min-h-0"></div>
         </div>
     </div>
 
@@ -978,16 +1012,32 @@
                                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="window.openMyProfile()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="O meu perfil">
+                            <button onclick="window.openMyProfile()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="O meu perfil">
                                 <i class="fa-solid fa-user text-base text-brand-500"></i>
                                 <span class="text-[10px] font-semibold">Perfil</span>
                             </button>
-                            <button onclick="window.openCreateGroup()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="Novo grupo">
+                            <button onclick="window.openCreateGroup()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="Novo grupo">
                                 <i class="fa-solid fa-users text-base text-indigo-500"></i>
                                 <span class="text-[10px] font-semibold">Novo grupo</span>
                             </button>
+                            <button onclick="window.openCallHistory()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-600 dark:text-slate-200 transition btn-press shadow-sm" title="Chamadas">
+                                <i class="fa-solid fa-phone text-base text-emerald-500"></i>
+                                <span class="text-[10px] font-semibold">Chamadas</span>
+                            </button>
                         </div>
-                        <div class="px-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Conversas</div>
+                        <div class="flex items-center justify-between px-1 pt-1">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Conversas</span>
+                            <div class="relative">
+                                <button type="button" onclick="window.toggleChatMenu()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 btn-press" title="Menu">
+                                    <i class="fa-solid fa-bars"></i>
+                                </button>
+                                <div id="chatSideMenu" class="hidden absolute right-0 top-full mt-1 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 py-1">
+                                    <button onclick="window.chatMenuAction('newCall')" class="w-full text-left px-3 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 btn-press"><i class="fa-solid fa-phone mr-2 text-emerald-500"></i>Nova chamada</button>
+                                    <button onclick="window.chatMenuAction('groupCall')" class="w-full text-left px-3 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 btn-press"><i class="fa-solid fa-users mr-2 text-indigo-500"></i>Chamada em grupo</button>
+                                    <button onclick="window.chatMenuAction('clearHistory')" class="w-full text-left px-3 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 text-red-500 btn-press"><i class="fa-solid fa-trash mr-2"></i>Apagar histórico de chamadas</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="usersList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
                         <div class="p-4 text-center text-xs text-slate-400">A carregar utilizadores...</div>
@@ -1053,6 +1103,9 @@
                     <form id="chatForm" onsubmit="window.sendChatMessage(event)" class="p-2.5 sm:p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-1.5 hidden chat-input-safe shrink-0 relative z-10">
                         <button type="button" onclick="window.openEmojiMixer()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Fusão de emojis">
                             <i class="fa-solid fa-face-smile"></i>
+                        </button>
+                        <button type="button" id="liveLocBtn" onclick="window.toggleLiveLocation()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 btn-press shrink-0" title="Localização em tempo real">
+                            <i class="fa-solid fa-location-dot"></i>
                         </button>
                         <input type="text" id="chatInput" placeholder="Escreva a sua mensagem..." autocomplete="off" oninput="window.handleTypingInput()"
                                class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -1423,11 +1476,16 @@
         }
 
         function updateAppBadge() {
-            const total = Object.values(unreadCounts).reduce((a, b) => a + (b || 0), 0);
+            const total = Object.values(unreadCounts).reduce((a, b) => a + (Number(b) || 0), 0);
             const badge = document.getElementById('chatBadge');
             if (badge) {
-                if (total > 0) badge.classList.remove('hidden');
-                else badge.classList.add('hidden');
+                if (total > 0) {
+                    badge.classList.remove('hidden');
+                    badge.textContent = total > 99 ? '99+' : String(total);
+                } else {
+                    badge.classList.add('hidden');
+                    badge.textContent = '0';
+                }
             }
             try {
                 if (navigator.setAppBadge) {
@@ -1781,7 +1839,7 @@
         }
 
         // Verificação periódica de estabilidade STUN/TURN
-        setInterval(() => { checkIceHealth().catch(() => {}); }, 60000);
+        setInterval(() => { checkIceHealth().catch(() => {}); }, 30000);
         setTimeout(() => { checkIceHealth().catch(() => {}); }, 3000);
 
         // Manter media ativa em segundo plano (quando possível no browser)
@@ -1945,6 +2003,45 @@
                 throw new Error('Nenhum microfone/câmara encontrado neste dispositivo.');
             }
             throw lastErr || new Error('Não foi possível aceder à câmara/microfone.');
+        }
+
+
+        function attachRemoteMedia(event) {
+            const remoteVid = document.getElementById('remoteVideo');
+            const placeholder = document.getElementById('audioCallPlaceholder');
+            if (!remoteStream) remoteStream = new MediaStream();
+
+            // Preferir stream completo do evento; senão adicionar a track
+            if (event.streams && event.streams[0]) {
+                event.streams[0].getTracks().forEach(track => {
+                    if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                        remoteStream.addTrack(track);
+                    }
+                });
+            } else if (event.track) {
+                if (!remoteStream.getTracks().some(t => t.id === event.track.id)) {
+                    remoteStream.addTrack(event.track);
+                }
+            }
+
+            if (remoteVid) {
+                // Reatribuir srcObject para forçar redesenho em alguns browsers
+                remoteVid.srcObject = remoteStream;
+                remoteVid.playsInline = true;
+                remoteVid.setAttribute('playsinline', '');
+                remoteVid.muted = false;
+                const playP = remoteVid.play();
+                if (playP && playP.catch) playP.catch(() => {});
+            }
+
+            const hasVideo = remoteStream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
+            if (hasVideo) {
+                if (placeholder) placeholder.classList.add('hidden');
+                if (remoteVid) remoteVid.classList.remove('hidden');
+                setCallStatus('Vídeo conectado', 'text-emerald-400');
+            } else if (remoteStream.getAudioTracks().length) {
+                setCallStatus('Áudio conectado', 'text-emerald-400');
+            }
         }
 
         function escapeHTML(str) {
@@ -3084,8 +3181,22 @@
             document.getElementById('profileNameInput').value = d.name || currentUserName || '';
             document.getElementById('profileBioInput').value = d.bio || '';
             document.getElementById('profilePhoneInput').value = d.phone || '';
+            const setv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+            setv('profileCountryInput', d.country);
+            setv('profileProvinceInput', d.province);
+            setv('profileCityInput', d.city);
+            setv('profileNeighborhoodInput', d.neighborhood);
+            const hint = document.getElementById('profileGpsHint');
+            if (hint && d.gpsUpdatedAt) {
+                const days = Math.floor((Date.now() - d.gpsUpdatedAt) / 86400000);
+                hint.textContent = days >= 7 ? 'GPS desatualizado — atualize' : `GPS atualizado há ${days}d (renova aos 7d)`;
+            }
             selectedProfileImageFile = null;
             setProfilePreview(d.photoURL || '', d.name || currentUserName);
+            // Auto GPS se > 7 dias
+            if (!d.gpsUpdatedAt || (Date.now() - d.gpsUpdatedAt) > 7 * 86400000) {
+                setTimeout(() => captureProfileGps(true), 400);
+            }
             openModal('profileModal');
         }
 
@@ -3098,10 +3209,16 @@
         async function saveMyProfile(e) {
             e.preventDefault(); if(!currentUserId) return;
             const name=document.getElementById('profileNameInput').value.trim(); const bio=document.getElementById('profileBioInput').value.trim(); const phone=document.getElementById('profilePhoneInput').value.trim();
+            const country=(document.getElementById('profileCountryInput')?.value||'').trim();
+            const province=(document.getElementById('profileProvinceInput')?.value||'').trim();
+            const city=(document.getElementById('profileCityInput')?.value||'').trim();
+            const neighborhood=(document.getElementById('profileNeighborhoodInput')?.value||'').trim();
             let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
             try {
                 if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
-                await setDoc(doc(db,'users',currentUserId),{uid:currentUserId,name,bio,phone,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()},{merge:true});
+                const payload={uid:currentUserId,name,bio,phone,country,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
+                if (window._pendingGps) { payload.lat=window._pendingGps.lat; payload.lng=window._pendingGps.lng; payload.gpsUpdatedAt=Date.now(); window._pendingGps=null; }
+                await setDoc(doc(db,'users',currentUserId),payload,{merge:true});
                 currentUserName=name; localStorage.setItem('mundo_digital_username',name); updateAuthUI(auth.currentUser); setProfilePreview(photoURL,name); showToast('Perfil atualizado com sucesso!','success'); closeModal('profileModal');
             } catch(err){ console.error(err); showToast('Não foi possível guardar o perfil.','error'); }
         }
@@ -3109,7 +3226,12 @@
             if(!activeChatUserId) return;
             const u=activeChatType==='group'?activeGroup:allUsers.find(x=>x.id===activeChatUserId); if(!u) return;
             const img=document.getElementById('contactProfileAvatarImg'), fb=document.getElementById('contactProfileFallback'); const name=u.name||u.groupName||'Grupo';
-            document.getElementById('contactProfileName').textContent=name; document.getElementById('contactProfileBio').textContent=u.bio||u.description||''; document.getElementById('contactProfilePhone').textContent=u.phone||'';
+            document.getElementById('contactProfileName').textContent=name;
+            const bioEl=document.getElementById('contactProfileBio');
+            const loc=[u.country,u.province,u.city,u.neighborhood].filter(Boolean).join(' · ');
+            const mentor=mentorBadgeHtml(u);
+            if(bioEl) bioEl.innerHTML=(mentor?mentor+'<br>':'')+escapeHTML(u.bio||u.description||'')+(loc?'<br><span class="text-[11px] text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>'+escapeHTML(loc)+'</span>':'');
+            document.getElementById('contactProfilePhone').textContent=u.phone||'';
             if(u.photoURL||u.avatar){img.src=u.photoURL||u.avatar;img.classList.remove('hidden');fb.classList.add('hidden');} else {img.classList.add('hidden');fb.classList.remove('hidden');fb.textContent=name.charAt(0).toUpperCase();}
             openModal('contactProfileModal');
         }
@@ -3673,6 +3795,16 @@
                 try {
                     await updateDoc(doc(db, "calls", endedId), { status: 'ended', endedAt: serverTimestamp() });
                 } catch (e) {}
+                try {
+                    const name = document.getElementById('callPeerName')?.innerText || 'Contacto';
+                    logCallHistory({
+                        name,
+                        type: (localStream && localStream.getVideoTracks().length) ? 'video' : 'audio',
+                        at: Date.now(),
+                        durationSec: typeof callSeconds === 'number' ? callSeconds : 0,
+                        callId: endedId
+                    });
+                } catch (_) {}
             }
             callCleanupRunning = false;
         }
@@ -3696,10 +3828,15 @@
             if (ma) ma.textContent = av;
             if (mini) mini.classList.remove('hidden');
             closeModal('callModal');
-            // Continuar a ouvir em segundo plano (stream não é parado)
             try {
                 const remoteVid = document.getElementById('remoteVideo');
-                if (remoteVid) remoteVid.play().catch(() => {});
+                if (remoteVid) {
+                    remoteVid.play().catch(() => {});
+                    // Picture-in-Picture do sistema (quando suportado)
+                    if (document.pictureInPictureEnabled && remoteVid.srcObject && !document.pictureInPictureElement) {
+                        remoteVid.requestPictureInPicture().catch(() => {});
+                    }
+                }
             } catch (_) {}
             showToast('Chamada em segundo plano — pode usar o site.', 'success');
         }
@@ -3771,16 +3908,7 @@
 
                 // Áudio/vídeo extra: misturar no remoteStream principal (estrela — anfitrião)
                 pc.ontrack = (e) => {
-                    e.streams[0].getTracks().forEach(track => {
-                        if (remoteStream && !remoteStream.getTracks().some(t => t.id === track.id)) {
-                            remoteStream.addTrack(track);
-                        }
-                    });
-                    const remoteVid = document.getElementById('remoteVideo');
-                    if (remoteVid && remoteStream) {
-                        remoteVid.srcObject = remoteStream;
-                        remoteVid.play().catch(() => {});
-                    }
+                    attachRemoteMedia(e);
                 };
 
                 const callDocRef = doc(collection(db, 'calls'));
@@ -4110,13 +4238,7 @@
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
                 peerConnection.ontrack = (e) => {
-                    e.streams[0].getTracks().forEach(track => {
-                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
-                            remoteStream.addTrack(track);
-                        }
-                    });
-                    if (remoteVid) remoteVid.play().catch(() => {});
-                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
+                    attachRemoteMedia(e);
                 };
 
                 const callDocRef = doc(collection(db, "calls"));
@@ -4266,13 +4388,7 @@
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
                 peerConnection.ontrack = (e) => {
-                    e.streams[0].getTracks().forEach(track => {
-                        if (!remoteStream.getTracks().some(t => t.id === track.id)) {
-                            remoteStream.addTrack(track);
-                        }
-                    });
-                    if (remoteVid) remoteVid.play().catch(() => {});
-                    setCallStatus('A receber áudio/vídeo...', 'text-emerald-400');
+                    attachRemoteMedia(e);
                 };
 
                 const callerCandidates = collection(callDocRef, "callerCandidates");
@@ -5392,19 +5508,27 @@
             list.innerHTML = users.map(u => {
                 const name = u.name || u.email || u.id.substring(0, 8);
                 const online = u.online ? '<span class="text-emerald-500 text-[10px] font-medium">Online</span>' : '<span class="text-slate-400 text-[10px]">Offline</span>';
+                const badge = mentorBadgeHtml(u);
                 return `
-                    <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">${(name.charAt(0) || 'U').toUpperCase()}</div>
-                            <div class="min-w-0">
-                                <p class="text-xs font-semibold truncate">${escapeHTML(name)}</p>
-                                <p class="text-[10px] text-slate-400 truncate">${escapeHTML(u.email || u.id)}</p>
-                                ${online}
+                    <div class="flex flex-col gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">${(name.charAt(0) || 'U').toUpperCase()}</div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold truncate flex items-center gap-1">${escapeHTML(name)} ${badge}</p>
+                                    <p class="text-[10px] text-slate-400 truncate">${escapeHTML(u.email || u.id)}</p>
+                                    ${online}
+                                </div>
                             </div>
+                            <button onclick="window.adminDeleteUser('${u.id}')" class="px-2.5 py-1.5 text-[11px] font-medium bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition shrink-0" title="Eliminar utilizador">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
-                        <button onclick="window.adminDeleteUser('${u.id}')" class="px-2.5 py-1.5 text-[11px] font-medium bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition shrink-0" title="Eliminar utilizador">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="window.adminSetMentorStatus('${u.id}','mentorado')" class="px-2 py-1 text-[10px] font-semibold rounded-lg bg-sky-500/10 text-sky-600 btn-press">💎 Mentorado</button>
+                            <button onclick="window.adminSetMentorStatus('${u.id}','aluno')" class="px-2 py-1 text-[10px] font-semibold rounded-lg bg-amber-500/10 text-amber-600 btn-press">🏅 Em Mentoria</button>
+                            <button onclick="window.adminSetMentorStatus('${u.id}','')" class="px-2 py-1 text-[10px] font-semibold rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">Remover marca</button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -5816,10 +5940,15 @@
             const views = Array.isArray(s.viewers) ? s.viewers.length : 0;
             const mine = s.uid === currentUserId;
             const crown = (() => { const u = allUsers.find(x => x.id === s.uid); return u && isSiteAdminUser(u) ? ' <i class="fa-solid fa-crown text-amber-400 text-[10px]"></i>' : ''; })();
+            const created = s.createdAtMs || Date.now();
+            const expires = s.expiresAtMs || (created + 86400000);
+            const hoursOn = Math.max(0, Math.floor((Date.now() - created) / 3600000));
+            const hoursLeft = Math.max(0, Math.ceil((expires - Date.now()) / 3600000));
             return `<div class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
                 <button type="button" onclick="window.openStatusView('${s.id}')" class="flex items-center gap-3 flex-1 min-w-0 text-left btn-press">
                     <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 to-pink-500 shrink-0"><div class="w-full h-full rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold">${name.charAt(0)}</div></div>
-                    <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${name}${crown}</p><p class="text-[10px] text-slate-400 truncate">${escapeHTML((s.text||'').slice(0,40))}</p></div>
+                    <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate">${name}${crown}</p><p class="text-[10px] text-slate-400 truncate">${escapeHTML((s.text||'').slice(0,40))}</p>
+                    <p class="text-[9px] text-slate-400 mt-0.5">No ar: ${hoursOn}h · Restam: ${hoursLeft}h</p></div>
                     <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-solid fa-eye mr-0.5"></i>${views}</span>
                 </button>
                 ${mine ? `<button type="button" onclick="window.deleteMyStatus('${s.id}')" class="p-2 text-red-500 hover:bg-red-500/10 rounded-lg btn-press shrink-0" title="Eliminar status"><i class="fa-solid fa-trash text-xs"></i></button>` : ''}
@@ -6115,6 +6244,191 @@
         openContactProfile = openContactProfileEnhanced;
 
 
+
+        // ===== GPS perfil / localização live / mentoria / histórico chamadas =====
+        window._pendingGps = null;
+        let liveLocationWatchId = null;
+        let liveLocationActive = false;
+
+        function captureProfileGps(silent) {
+            if (!navigator.geolocation) {
+                if (!silent) showToast('GPS não disponível neste dispositivo.', 'error');
+                return;
+            }
+            if (!silent) showToast('A obter localização…', 'info');
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                window._pendingGps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const hint = document.getElementById('profileGpsHint');
+                if (hint) hint.textContent = `GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+                if (currentUserId) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUserId), {
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude,
+                            gpsUpdatedAt: Date.now()
+                        }, { merge: true });
+                    } catch (_) {}
+                }
+                if (!silent) showToast('Localização atualizada.', 'success');
+            }, () => {
+                if (!silent) showToast('Permita a localização nas definições do navegador.', 'error');
+            }, { enableHighAccuracy: true, timeout: 12000 });
+        }
+
+        function toggleLiveLocation() {
+            if (liveLocationActive) {
+                stopLiveLocation();
+                return;
+            }
+            if (!activeChatUserId) {
+                showToast('Abra uma conversa primeiro.', 'info');
+                return;
+            }
+            if (!confirm('Partilhar a sua localização em tempo real nesta conversa? Pode parar quando quiser.')) return;
+            if (!navigator.geolocation) {
+                showToast('GPS não disponível.', 'error');
+                return;
+            }
+            liveLocationActive = true;
+            const btn = document.getElementById('liveLocBtn');
+            if (btn) { btn.classList.add('bg-emerald-600', 'text-white'); btn.classList.remove('bg-slate-100'); }
+            liveLocationWatchId = navigator.geolocation.watchPosition(async (pos) => {
+                if (!liveLocationActive || !activeChatUserId || !currentUserId) return;
+                const text = `📍 Localização em tempo real: https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                try {
+                    if (activeChatType === 'group') {
+                        await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), {
+                            senderId: currentUserId, senderName: currentUserName, text, type: 'location',
+                            lat: pos.coords.latitude, lng: pos.coords.longitude, live: true, createdAt: serverTimestamp()
+                        });
+                    } else {
+                        const chatId = [currentUserId, activeChatUserId].sort().join('_');
+                        await addDoc(collection(db, 'chats', chatId, 'messages'), {
+                            senderId: currentUserId, receiverId: activeChatUserId, text, type: 'location',
+                            lat: pos.coords.latitude, lng: pos.coords.longitude, live: true, status: 'sent', createdAt: serverTimestamp()
+                        });
+                    }
+                } catch (_) {}
+            }, () => {
+                showToast('Não foi possível obter localização.', 'error');
+                stopLiveLocation();
+            }, { enableHighAccuracy: true, maximumAge: 5000 });
+            showToast('A partilhar localização. Toque de novo para parar.', 'success');
+        }
+        function stopLiveLocation() {
+            liveLocationActive = false;
+            if (liveLocationWatchId != null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(liveLocationWatchId);
+                liveLocationWatchId = null;
+            }
+            const btn = document.getElementById('liveLocBtn');
+            if (btn) { btn.classList.remove('bg-emerald-600', 'text-white'); btn.classList.add('bg-slate-100'); }
+            showToast('Partilha de localização parada.', 'info');
+        }
+
+        function mentorBadgeHtml(u) {
+            if (!u) return '';
+            if (u.mentorStatus === 'mentorado') {
+                return `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-diamond text-sm">💎</span><span class="mentor-badge-label text-sky-500">Mentorado</span></span>`;
+            }
+            if (u.mentorStatus === 'aluno') {
+                return `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-medal text-sm">🏅</span><span class="mentor-badge-label text-amber-500">Em Mentoria/Aluno</span></span>`;
+            }
+            return '';
+        }
+
+        async function adminSetMentorStatus(uid, status) {
+            if (!isAdmin) return;
+            try {
+                await updateDoc(doc(db, 'users', uid), { mentorStatus: status || null, mentorSetBy: currentUserId, mentorSetAt: Date.now() });
+                showToast(status ? 'Marca atualizada.' : 'Marca removida.', 'success');
+                renderAdminUsers();
+            } catch (e) {
+                showToast('Erro ao atualizar marca.', 'error');
+            }
+        }
+
+        // Histórico de chamadas (localStorage + log ao terminar)
+        function getCallHistory() {
+            try { return JSON.parse(localStorage.getItem('mundo_digital_call_history') || '[]') || []; } catch (_) { return []; }
+        }
+        function saveCallHistory(list) {
+            try { localStorage.setItem('mundo_digital_call_history', JSON.stringify(list.slice(0, 100))); } catch (_) {}
+        }
+        function logCallHistory(entry) {
+            const list = getCallHistory();
+            list.unshift(entry);
+            saveCallHistory(list);
+        }
+        function openCallHistory() {
+            const list = document.getElementById('callHistoryList');
+            const hist = getCallHistory();
+            if (!list) return;
+            if (!hist.length) {
+                list.innerHTML = '<p class="text-xs text-slate-400 p-6 text-center">Ainda não há chamadas registadas.</p>';
+            } else {
+                list.innerHTML = hist.map(h => {
+                    const d = new Date(h.at || Date.now());
+                    const date = d.toLocaleDateString('pt-PT') + ' ' + d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+                    const dur = h.durationSec != null ? `${Math.floor(h.durationSec/60)}m ${h.durationSec%60}s` : '—';
+                    return `<div class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                        <div class="w-10 h-10 rounded-full bg-emerald-600/15 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-${h.type==='video'?'video':'phone'}"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-semibold truncate">${escapeHTML(h.name || 'Contacto')}</p>
+                            <p class="text-[10px] text-slate-400">${date} · ${dur}</p>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            openModal('callHistoryModal');
+            document.getElementById('chatSideMenu')?.classList.add('hidden');
+        }
+        function toggleChatMenu() {
+            document.getElementById('chatSideMenu')?.classList.toggle('hidden');
+        }
+        function chatMenuAction(action) {
+            document.getElementById('chatSideMenu')?.classList.add('hidden');
+            if (action === 'newCall') {
+                if (!activeChatUserId) showToast('Abra uma conversa e use o botão de chamada.', 'info');
+                else startCall('audio');
+            } else if (action === 'groupCall') {
+                openCreateGroup();
+                showToast('Crie ou abra um grupo e inicie a chamada a partir do chat.', 'info');
+            } else if (action === 'clearHistory') {
+                if (confirm('Apagar todo o histórico de chamadas neste dispositivo?')) {
+                    saveCallHistory([]);
+                    showToast('Histórico apagado.', 'success');
+                }
+            }
+        }
+
+        // Estabilidade consolidada (evita dezenas de intervalos pesados)
+        setInterval(() => {
+            try {
+                updateAppBadge();
+                // Tema: garantir ícone coerente
+                const dark = document.documentElement.classList.contains('dark');
+                const themeBtn = document.getElementById('themeToggleBtn');
+                if (themeBtn && !themeBtn.dataset.locked) {
+                    const icon = themeBtn.querySelector('i');
+                    if (icon) icon.className = dark ? 'fa-solid fa-sun text-lg' : 'fa-solid fa-moon text-lg';
+                }
+            } catch (_) {}
+        }, 30000);
+
+        setInterval(() => {
+            // Heartbeat leve a cada 5s só durante chamada
+            if (peerConnection && activeCallId) {
+                try {
+                    const st = peerConnection.iceConnectionState;
+                    if (st === 'failed' || st === 'disconnected') {
+                        /* ICE restart já tratado noutro sítio */
+                    }
+                } catch (_) {}
+            }
+        }, 5000);
+
+
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.toggleTheme = toggleTheme;
@@ -6271,6 +6585,13 @@
             showToast('Sem internet.', 'error');
         });
         updateOfflineBanner();
+
+        window.captureProfileGps = captureProfileGps;
+        window.toggleLiveLocation = toggleLiveLocation;
+        window.adminSetMentorStatus = adminSetMentorStatus;
+        window.openCallHistory = openCallHistory;
+        window.toggleChatMenu = toggleChatMenu;
+        window.chatMenuAction = chatMenuAction;
     </script>
 </body>
 </html>
