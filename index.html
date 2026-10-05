@@ -2,11 +2,7 @@
 <html lang="pt-PT" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mundo Digital - Publicações, Chat & Chamadas</title>
     
     <!-- Tailwind CSS CDN -->
@@ -407,53 +403,20 @@
         }
         #siteAnnouncementHost {
             position: fixed;
-            top: max(.65rem, env(safe-area-inset-top));
-            right: max(.65rem, env(safe-area-inset-right));
-            left: max(.65rem, env(safe-area-inset-left));
+            top: 0; left: 0; right: 0;
             z-index: 200;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 0.5rem;
+            gap: 0.35rem;
+            padding: 0.5rem;
             pointer-events: none;
         }
         #siteAnnouncementHost > div {
             pointer-events: auto;
-            width: min(23rem, calc(100vw - 1.3rem));
-            border-radius: 1.05rem;
-            padding: .72rem .8rem;
-            box-shadow: 0 12px 38px rgba(0,0,0,.28);
-            animation: annSlide .35s cubic-bezier(.16,1,.3,1);
-            cursor: pointer;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-        #siteAnnouncementHost .ann-bubble-main {
-            display:flex; align-items:center; gap:.7rem; min-width:0;
-        }
-        #siteAnnouncementHost .ann-bubble-icon {
-            width:2.25rem; height:2.25rem; flex:0 0 2.25rem; border-radius:.75rem;
-            display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.16);
-        }
-        #siteAnnouncementHost .ann-bubble-title {
-            font-size:.78rem; font-weight:800; line-height:1.25; overflow:hidden;
-            text-overflow:ellipsis; white-space:nowrap;
-        }
-        #siteAnnouncementHost .ann-bubble-meta {
-            margin-top:.16rem; font-size:.62rem; opacity:.8;
-        }
-        #siteAnnouncementHost .ann-bubble-close {
-            width:1.8rem; height:1.8rem; border-radius:999px; flex:0 0 1.8rem;
-            display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.10);
-        }
-        #siteAnnouncementHost .ann-bubble-close:hover { background:rgba(255,255,255,.2); }
-        @media (max-width: 640px) {
-            #siteAnnouncementHost {
-                top: max(.45rem, env(safe-area-inset-top));
-                right: .5rem; left: .5rem;
-                align-items: center;
-            }
-            #siteAnnouncementHost > div { width: min(100%, 24rem); }
+            border-radius: 0.85rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            animation: annSlide 0.35s ease;
         }
         @keyframes annSlide {
             from { transform: translateY(-120%); opacity: 0; }
@@ -582,105 +545,75 @@
         #profileForm .profile-actions { position: sticky; bottom: 0; padding-top: .5rem; background: linear-gradient(to top, rgb(255 255 255), rgb(255 255 255 / .92), transparent); }
         .dark #profileForm .profile-actions { background: linear-gradient(to top, rgb(30 41 59), rgb(30 41 59 / .92), transparent); }
 
-        .header-bubble { position: relative; z-index: 95; }
+        .header-bubble { position: relative; }
         .header-bubble-panel {
             position: absolute;
             right: 0;
             top: calc(100% + .55rem);
-            width: min(16rem, calc(100vw - 1.5rem));
-            max-height: min(70dvh, 28rem);
-            overflow-y: auto;
+            width: 12.5rem;
             padding: .45rem;
             border: 1px solid rgb(226 232 240 / .9);
             background: rgb(255 255 255 / .98);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(14px);
             border-radius: 1rem;
-            box-shadow: 0 18px 50px rgb(15 23 42 / .24);
-            z-index: 9999;
-            transform-origin: top right;
-            animation: headerPanelIn .16s cubic-bezier(.16,1,.3,1);
-        }
-        @keyframes headerPanelIn {
-            from { opacity: 0; transform: translateY(-5px) scale(.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            box-shadow: 0 16px 40px rgb(15 23 42 / .18);
+            z-index: 80;
         }
         .dark .header-bubble-panel { border-color: rgb(51 65 85 / .9); background: rgb(15 23 42 / .98); }
-        .header-bubble-panel button {
-            width: 100%; min-height: 2.75rem; display: flex; align-items: center;
-            gap: .65rem; padding: .7rem .75rem; border-radius: .8rem; font-size: .78rem;
-            font-weight: 600; text-align: left; white-space: normal; line-height: 1.25;
-        }
+        .header-bubble-panel button { width: 100%; display: flex; align-items: center; gap: .65rem; padding: .65rem .7rem; border-radius: .75rem; font-size: .75rem; font-weight: 600; text-align: left; }
         .header-bubble-panel button:hover { background: rgb(241 245 249); }
         .dark .header-bubble-panel button:hover { background: rgb(30 41 59); }
-        .header-bubble-panel button:active { transform: scale(.98); }
         .header-bubble-panel .bubble-sep { height: 1px; margin: .3rem .4rem; background: rgb(226 232 240); }
         .dark .header-bubble-panel .bubble-sep { background: rgb(51 65 85); }
-
-        @media (max-width: 767px) {
-            header { overflow: visible !important; }
-            header > div { gap: .45rem !important; }
-            header .header-search-wrap { order: 3; flex-basis: 100%; max-width: none !important; margin: 0 !important; }
-            header .header-actions { gap: .25rem !important; }
-            header .header-action-label { display: none !important; }
-            header .header-bubble-trigger { padding: .65rem !important; min-width: 2.75rem; justify-content: center; }
-            header .header-bubble-trigger .chevron { display: none; }
-            header .header-bubble-panel {
-                position: fixed !important;
-                top: var(--md-header-panel-top, 4.5rem) !important;
-                right: .75rem !important;
-                left: auto !important;
-                width: min(19rem, calc(100vw - 1.5rem)) !important;
-                max-height: calc(100dvh - var(--md-header-panel-top, 4.5rem) - .75rem);
-                overflow-y: auto;
-            }
-            header #authBtn { padding: .65rem !important; min-width: 2.75rem; justify-content: center; }
-            header #authBtnText { display: none !important; }
-            header #adminBtn { padding: .65rem !important; }
-        }
-        @media (min-width: 768px) {
-            header .header-action-label { display: inline; }
-        }
         @media (max-width: 640px) {
             #profileModal { padding: .5rem; align-items: center; }
             #profileModal > div { max-height: 84dvh; border-radius: 1rem; margin: 0; }
             #profileModal .profile-modal-header { padding: .7rem .85rem; }
+            .header-bubble-panel { width: 11.5rem; }
         }
-
-        .md-admin-type-menu { position: relative; }
-        .md-admin-type-button {
-            width: 100%; display: flex; align-items: center; justify-content: space-between;
-            gap: .75rem; padding: .72rem .8rem; border-radius: .85rem;
-            border: 1px solid rgb(148 163 184 / .35);
-            background: rgb(255 255 255 / .92); font-size: .78rem; font-weight: 700;
-            text-align: left; transition: .15s ease;
+    
+        /* ===== DESEMPENHO MUNDO DIGITAL ===== */
+        body.performance-best *,
+        body.performance-best *::before,
+        body.performance-best *::after {
+            animation: none !important;
+            transition: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            scroll-behavior: auto !important;
         }
-        .dark .md-admin-type-button { background: rgb(36 47 61 / .95); border-color: rgb(71 85 105 / .8); color: white; }
-        .md-admin-type-button:hover { border-color: rgb(14 165 233 / .6); }
-        .md-admin-type-options {
-            position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + .4rem);
-            padding: .35rem; border-radius: .9rem; background: rgb(255 255 255 / .99);
-            border: 1px solid rgb(226 232 240); box-shadow: 0 18px 45px rgb(15 23 42 / .2);
-            max-height: 16rem; overflow-y: auto;
+        body.performance-best .post-card:hover,
+        body.performance-best .wallpaper-tile:hover,
+        body.performance-best .post-bg-swatch:hover { transform: none !important; box-shadow: none !important; }
+        body.performance-memory .infinite-animation,
+        body.performance-memory [class*="animate-"],
+        body.performance-memory .emoji-anim,
+        body.performance-memory #viewersBadge.live,
+        body.performance-memory .unread-badge.pulse,
+        body.performance-memory .skeleton-line {
+            animation: none !important;
         }
-        .dark .md-admin-type-options { background: rgb(15 23 42 / .99); border-color: rgb(51 65 85); }
-        .md-admin-type-option {
-            width: 100%; display: flex; align-items: flex-start; gap: .6rem; padding: .65rem .7rem;
-            border-radius: .7rem; font-size: .74rem; font-weight: 600; text-align: left;
+        body.performance-memory .post-card,
+        body.performance-memory .msg-bubble-me,
+        body.performance-memory .msg-bubble-them,
+        body.performance-memory #chatMainArea.has-wallpaper #chatActiveHeader,
+        body.performance-memory #chatMainArea.has-wallpaper #chatForm {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
-        .md-admin-type-option:hover { background: rgb(241 245 249); }
-        .dark .md-admin-type-option:hover { background: rgb(30 41 59); }
-        .md-duration-preset {
-            padding:.55rem .65rem; border-radius:.75rem; border:1px solid rgb(148 163 184 / .35);
-            background:rgb(248 250 252 / .9); color:rgb(51 65 85); font-size:.72rem; font-weight:800; transition:.15s ease;
+        body.performance-memory .post-card:hover,
+        body.performance-memory .wallpaper-tile:hover,
+        body.performance-memory .post-bg-swatch:hover { transform: none !important; }
+        body.performance-max img,
+        body.performance-max video,
+        body.performance-max iframe { content-visibility: auto; }
+        #performanceModal .perf-option { transition: background-color .12s, border-color .12s; }
+        #performanceModal .perf-option.active { border-color: rgb(14 165 233); background: rgb(14 165 233 / .10); }
+        @media (prefers-reduced-motion: reduce) {
+            body *,
+            body *::before,
+            body *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
         }
-        .md-duration-preset:hover, .md-duration-preset:focus-visible {
-            border-color:rgb(14 165 233 / .65); background:rgb(224 242 254); color:rgb(3 105 161); outline:none;
-        }
-        .dark .md-duration-preset { background:rgb(30 41 59); color:rgb(226 232 240); border-color:rgb(71 85 105); }
-        .dark .md-duration-preset:hover, .dark .md-duration-preset:focus-visible { background:rgb(15 118 110 / .18); border-color:rgb(56 189 248 / .65); color:rgb(125 211 252); }
-        #siteAnnouncementHost > div.ann-closing { animation: annClose .18s ease forwards !important; }
-        @keyframes annClose { to { opacity: 0; transform: translateY(-8px) scale(.98); } }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -835,6 +768,32 @@
         </div>
     </div>
 
+
+    <!-- MODAL DE DESEMPENHO -->
+    <div id="performanceModal" class="fixed inset-0 z-[180] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 p-5">
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <h3 class="font-bold text-lg">Desempenho</h3>
+                    <p class="text-xs text-slate-500">Escolha quanto o Mundo Digital deve usar do seu dispositivo.</p>
+                </div>
+                <button onclick="window.closeModal('performanceModal')" class="p-2 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-2 mt-4">
+                <button type="button" data-perf="best" onclick="window.setPerformanceMode('best')" class="perf-option w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-700 btn-press">
+                    <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-bolt"></i></span><span><b class="block text-sm">Melhor desempenho</b><small class="text-xs text-slate-500">Sem animações e efeitos pesados. Ideal para dispositivos lentos.</small></span></div>
+                </button>
+                <button type="button" data-perf="memory" onclick="window.setPerformanceMode('memory')" class="perf-option w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-700 btn-press">
+                    <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-leaf"></i></span><span><b class="block text-sm">Memória económica</b><small class="text-xs text-slate-500">Mantém o visual, mas limita animações e efeitos contínuos.</small></span></div>
+                </button>
+                <button type="button" data-perf="max" onclick="window.setPerformanceMode('max')" class="perf-option w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-700 btn-press">
+                    <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><i class="fa-solid fa-gauge-high"></i></span><span><b class="block text-sm">Memória máxima</b><small class="text-xs text-slate-500">Visual completo, com animações e efeitos quando suportados.</small></span></div>
+                </button>
+            </div>
+            <p id="performanceModeLabel" class="text-[11px] text-slate-400 text-center mt-4"></p>
+        </div>
+    </div>
+
     <!-- NAVBAR (rola com a página – evita conflitos com modais, sticky e overflow) -->
     <header class="relative z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm shrink-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 py-2.5 flex flex-wrap items-center justify-between gap-3">
@@ -848,7 +807,7 @@
                 </span>
             </div>
 
-            <div class="flex-1 max-w-md mx-2 header-search-wrap">
+            <div class="flex-1 max-w-md mx-2">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="searchInput" oninput="window.handleSearchInput(event)" placeholder="Pesquisar publicações, filmes..." 
@@ -856,34 +815,36 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-3 header-actions">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Chatts: mensagens, status e feedback -->
                 <div class="header-bubble">
-                    <button type="button" onclick="window.toggleHeaderBubble('chattsBubble')" title="Chatts" class="header-bubble-trigger flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
-                        <i class="fa-solid fa-comments text-brand-500"></i><span class="header-action-label">Chatts</span>
-                        <i class="fa-solid fa-chevron-down chevron text-[9px] opacity-60"></i>
+                    <button type="button" onclick="window.toggleHeaderBubble('chattsBubble')" title="Chatts" class="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
+                        <i class="fa-solid fa-comments text-brand-500"></i><span>Chatts</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
                         <span id="chatBadge" class="hidden min-w-[1.15rem] h-[1.15rem] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
                     </button>
-                    <div id="chattsBubble" class="header-bubble-panel hidden" role="menu" aria-label="Chatts">
-                        <button type="button" onclick="window.openStatusHub(); window.closeHeaderBubbles();"><i class="fa-solid fa-circle-notch text-brand-500"></i><span>Status e amigos</span></button>
+                    <div id="chattsBubble" class="header-bubble-panel hidden">
+                        <button type="button" onclick="window.openStatusHub(); window.closeHeaderBubbles();"><i class="fa-solid fa-circle-notch text-brand-500"></i><span>Status</span></button>
                         <button type="button" onclick="window.openModal('chatModal'); window.closeHeaderBubbles();"><i class="fa-solid fa-comments text-indigo-500"></i><span>Mensagens e conversas</span></button>
                         <button type="button" onclick="window.openFeedbackModal(); window.closeHeaderBubbles();"><i class="fa-solid fa-comment-dots text-emerald-500"></i><span>Enviar feedback</span></button>
                     </div>
                 </div>
 
+                <!-- Funções: reúne Tema e Notificações -->
                 <div class="header-bubble">
-                    <button type="button" onclick="window.toggleHeaderBubble('funcoesBubble')" title="Funções" class="header-bubble-trigger flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
-                        <i class="fa-solid fa-sliders text-indigo-500"></i><span class="header-action-label">Funções</span>
-                        <i class="fa-solid fa-chevron-down chevron text-[9px] opacity-60"></i>
+                    <button type="button" onclick="window.toggleHeaderBubble('funcoesBubble')" title="Funções" class="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
+                        <i class="fa-solid fa-sliders text-indigo-500"></i><span>Funções</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
                     </button>
-                    <div id="funcoesBubble" class="header-bubble-panel hidden" role="menu" aria-label="Funções">
+                    <div id="funcoesBubble" class="header-bubble-panel hidden">
                         <button id="enableNotificationsBtn" type="button" onclick="window.requestNotificationPermission(); window.closeHeaderBubbles();"><i id="notificationIcon" class="fa-solid fa-bell text-amber-500"></i><span>Notificações</span></button>
                         <button id="themeToggleBtn" type="button" onclick="window.toggleTheme(); window.closeHeaderBubbles();"><i id="themeIcon" class="fa-solid fa-moon text-sky-500"></i><span>Modo escuro / claro</span></button>
-                        <button id="appModeBtn" type="button" onclick="window.toggleAppMode(); window.closeHeaderBubbles();" title="Modo aplicação"><i class="fa-solid fa-expand text-violet-500"></i><span>Modo aplicação</span></button>
+                        <button type="button" onclick="window.openPerformanceModal(); window.closeHeaderBubbles();"><i class="fa-solid fa-gauge-high text-emerald-500"></i><span>Desempenho</span></button>
                     </div>
                 </div>
 
                 <div class="pl-2 border-l border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                    <button id="adminBtn" onclick="window.openAdminAccess()" title="Painel ADM" class="hidden p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-amber-500 transition btn-press">
+                    <button id="adminBtn" onclick="window.openAdminAccess()" title="Painel Admin" class="hidden p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-amber-500 transition">
                         <i class="fa-solid fa-shield-halved text-lg"></i>
                     </button>
                     <button id="authBtn" onclick="window.handleAuthAction()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-xs font-semibold">
@@ -1112,7 +1073,6 @@
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
             <div class="p-6 text-center"><img id="contactProfileAvatarImg" class="w-24 h-24 mx-auto rounded-full object-cover hidden" alt="Perfil"><div id="contactProfileFallback" class="w-24 h-24 mx-auto rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div><h3 id="contactProfileName" class="font-bold text-xl mt-3">Utilizador</h3><p id="contactProfileUsername" class="text-xs text-brand-500 font-medium mt-0.5"></p><p id="contactProfileBio" class="text-sm text-slate-500 mt-2 whitespace-pre-wrap"></p><p id="contactProfilePhone" class="text-xs text-slate-400 mt-2"></p></div>
             <div class="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                <button type="button" id="contactAddFriendBtn" onclick="window.toggleFriendFromProfile()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm btn-press"><i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo</button>
                 <button type="button" id="contactMsgBtn" onclick="window.messageFromProfile()" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm btn-press"><i class="fa-solid fa-comment mr-1"></i>Mensagem</button>
                 <button onclick="window.closeModal('contactProfileModal')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-semibold text-sm btn-press">Fechar</button>
             </div>
@@ -1634,7 +1594,7 @@
                     <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-paper-plane text-white"></i></div>
                     <div>
                         <h3 class="font-bold text-base text-white leading-tight">Painel ADM</h3>
-                        <p class="text-[10px] text-white/80">Painel de controlo</p>
+                        <p class="text-[10px] text-white/80">Gestão · estilo Telegram</p>
                     </div>
                 </div>
                 <button onclick="window.closeModal('adminPanelModal')" class="text-white/90 hover:text-white text-xl p-1 btn-press">
@@ -1673,43 +1633,19 @@
             </div>
             <div id="adminBroadcastPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
                 <div class="max-w-lg mx-auto space-y-3">
-                    <p class="text-xs text-slate-500">O aviso será publicado <strong>em tempo real para todos os utilizadores</strong>. Escolha o título e durante quantos minutos ele deve ficar disponível.</p>
+                    <p class="text-xs text-slate-500">Enviar aviso a <strong>todos os utilizadores</strong>. ADMs com painel ativo não veem no ecrã — só aqui.</p>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-500">Título do aviso</label>
-                        <input id="broadcastTitle" type="text" maxlength="100" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm" placeholder="Ex.: Nova atualização do Mundo Digital">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500">Tipo do aviso</label>
-                        <input type="hidden" id="broadcastType" value="informacao">
-                        <div class="md-admin-type-menu mt-1">
-                            <button type="button" id="broadcastTypeButton" class="md-admin-type-button" onclick="window.toggleBroadcastTypeMenu()">
-                                <span class="flex items-center gap-2"><i id="broadcastTypeIcon" class="fa-solid fa-circle-info text-emerald-500"></i><span id="broadcastTypeLabel">Informação</span></span>
-                                <i class="fa-solid fa-chevron-down text-[10px] opacity-60"></i>
-                            </button>
-                            <div id="broadcastTypeOptions" class="md-admin-type-options hidden" role="menu">
-                                <button type="button" class="md-admin-type-option" onclick="window.selectBroadcastType('atualizacao','Atualização','fa-rotate','text-sky-500')"><i class="fa-solid fa-rotate text-sky-500 mt-0.5"></i><span><strong>Atualização</strong><small class="block text-[10px] text-slate-400">Aviso de atualização</small></span></button>
-                                <button type="button" class="md-admin-type-option" onclick="window.selectBroadcastType('informacao','Informação','fa-circle-info','text-emerald-500')"><i class="fa-solid fa-circle-info text-emerald-500 mt-0.5"></i><span><strong>Informação</strong><small class="block text-[10px] text-slate-400">Informação geral</small></span></button>
-                                <button type="button" class="md-admin-type-option" onclick="window.selectBroadcastType('atencao','Atenção destacada','fa-triangle-exclamation','text-amber-500')"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i><span><strong>Atenção destacada</strong><small class="block text-[10px] text-slate-400">Aviso importante</small></span></button>
-                                <button type="button" class="md-admin-type-option" onclick="window.selectBroadcastType('novidades','Novidades','fa-sparkles','text-violet-500')"><i class="fa-solid fa-sparkles text-violet-500 mt-0.5"></i><span><strong>Novidades</strong><small class="block text-[10px] text-slate-400">Novidade do sistema</small></span></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-500">Duração no ecrã</label>
-                        <div class="grid grid-cols-2 gap-2 mt-1 sm:grid-cols-4">
-                            <button type="button" class="md-duration-preset" onclick="window.setBroadcastDuration(5)">5 min</button>
-                            <button type="button" class="md-duration-preset" onclick="window.setBroadcastDuration(15)">15 min</button>
-                            <button type="button" class="md-duration-preset" onclick="window.setBroadcastDuration(30)">30 min</button>
-                            <button type="button" class="md-duration-preset" onclick="window.setBroadcastDuration(60)">60 min</button>
-                        </div>
-                        <div class="flex items-center gap-2 mt-2">
-                            <input id="broadcastDuration" type="number" min="1" max="1440" value="30" inputmode="numeric" class="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm" placeholder="Minutos">
-                            <span class="text-xs text-slate-400">minutos</span>
-                        </div>
+                        <label class="text-[11px] font-semibold text-slate-500">Tipo</label>
+                        <select id="broadcastType" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm">
+                            <option value="atualizacao">Atualização (fixado · 30 min)</option>
+                            <option value="informacao">Informação / Atenção (Caro Utilizador · 20 min)</option>
+                            <option value="atencao">Atenção destacada (25 min)</option>
+                            <option value="novidades">Novidades (anúncio · 8 min)</option>
+                        </select>
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-500">Mensagem</label>
-                        <textarea id="broadcastText" rows="4" maxlength="800" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm" placeholder="Escreva a informação que todos devem ver..."></textarea>
+                        <textarea id="broadcastText" rows="4" maxlength="800" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm" placeholder="Escreva o aviso..."></textarea>
                     </div>
                     <button type="button" onclick="window.sendAdminBroadcast()" class="w-full py-2.5 rounded-xl bg-[#2AABEE] hover:bg-[#229ED9] text-white font-semibold text-sm btn-press">
                         <i class="fa-solid fa-paper-plane mr-2"></i>Enviar a todos
@@ -1726,32 +1662,6 @@
     </button>
 
     <div id="siteAnnouncementHost" aria-live="polite"></div>
-
-    <!-- JANELA DE AVISO PUBLICADO PELO ADM -->
-    <div id="announcementDetailModal" class="fixed inset-0 z-[220] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200 p-4" role="dialog" aria-modal="true" aria-labelledby="announcementDetailTitle">
-        <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200">
-            <div id="announcementDetailHeader" class="px-5 py-4 bg-gradient-to-r from-sky-600 to-indigo-600 text-white">
-                <div class="flex items-start gap-3">
-                    <div id="announcementDetailIcon" class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0"><i class="fa-solid fa-bullhorn"></i></div>
-                    <div class="min-w-0 flex-1">
-                        <p id="announcementDetailType" class="text-[10px] uppercase tracking-wider font-bold text-white/75">Aviso do administrador</p>
-                        <h3 id="announcementDetailTitle" class="font-extrabold text-base leading-tight break-words">Aviso</h3>
-                    </div>
-                    <button type="button" onclick="window.closeAnnouncementDetail()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center shrink-0 btn-press" aria-label="Fechar janela"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            </div>
-            <div class="p-5">
-                <div id="announcementDetailText" class="text-sm leading-7 text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words"></div>
-                <div class="mt-4 flex items-center justify-between gap-3 text-[10px] text-slate-400">
-                    <span id="announcementDetailAuthor"></span>
-                    <span id="announcementDetailRemaining"></span>
-                </div>
-                <button type="button" onclick="window.closeAnnouncementDetail()" class="mt-5 w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 font-bold text-xs btn-press">
-                    <i class="fa-solid fa-xmark mr-1"></i>Fechar janela
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL EDITAR CONTEÚDO (ADMIN) -->
     <div id="editContentModal" class="fixed inset-0 z-[170] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
@@ -2722,29 +2632,19 @@
                 if (nameInput) nameInput.value = currentUserName;
 
                 const userDocRef = doc(db, "users", currentUserId);
-                try {
-                    const userSnap = await getDoc(userDocRef);
-                    if (userSnap.exists() && userSnap.data().nicknames) {
-                        userNicknames = userSnap.data().nicknames;
-                    }
-                } catch (profileReadError) {
-                    console.warn('Perfil inicial indisponível:', profileReadError);
+                const userSnap = await getDoc(userDocRef);
+                if (userSnap.exists() && userSnap.data().nicknames) {
+                    userNicknames = userSnap.data().nicknames;
                 }
 
-                try {
-                    await setDoc(userDocRef, {
-                        uid: currentUserId,
-                        name: currentUserName,
-                        email: user.email || null,
-                        isAnonymous: user.isAnonymous,
-                        online: true,
-                        lastSeen: new Date().toISOString()
-                    }, { merge: true });
-                } catch (profileWriteError) {
-                    console.warn('Não foi possível atualizar o perfil online:', profileWriteError);
-                }
-
-                try { listenAnnouncements(); } catch (announcementError) { console.warn('Avisos indisponíveis:', announcementError); }
+                await setDoc(userDocRef, {
+                    uid: currentUserId,
+                    name: currentUserName,
+                    email: user.email || null,
+                    isAnonymous: user.isAnonymous,
+                    online: true,
+                    lastSeen: new Date().toISOString()
+                }, { merge: true });
 
                 listenToUsersRealtime();
                 listenToGroupsRealtime();
@@ -3669,14 +3569,8 @@
 
         async function openMyProfile() {
             if (!currentUserId) return;
-            let d = {};
-            try {
-                const snap = await getDoc(doc(db, 'users', currentUserId));
-                d = snap.exists() ? snap.data() : {};
-            } catch (profileReadError) {
-                console.warn('Leitura do perfil falhou:', profileReadError);
-                showToast('Não foi possível carregar os dados do perfil agora.', 'info');
-            }
+            const snap = await getDoc(doc(db, 'users', currentUserId));
+            const d = snap.exists() ? snap.data() : {};
             profileEditSnapshot = { name:d.name||currentUserName||'', bio:d.bio||'', phone:d.phone||'', province:d.province||'', city:d.city||'', neighborhood:d.neighborhood||'', photoURL:d.photoURL||'' };
             document.getElementById('profileNameInput').value = d.name || currentUserName || '';
             document.getElementById('profileBioInput').value = d.bio || '';
@@ -3711,13 +3605,7 @@
             const province=(document.getElementById('profileProvinceInput')?.value||'').trim();
             const city=(document.getElementById('profileCityInput')?.value||'').trim();
             const neighborhood=(document.getElementById('profileNeighborhoodInput')?.value||'').trim();
-            let photoURL='';
-            try {
-                const old = await getDoc(doc(db,'users',currentUserId));
-                if(old.exists()) photoURL=old.data().photoURL||'';
-            } catch (profileReadError) {
-                console.warn('Foto/perfil anterior indisponível:', profileReadError);
-            }
+            let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
             try {
                 if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
                 const payload={uid:currentUserId,name,bio,phone,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
@@ -6117,24 +6005,6 @@
             }
         }
 
-        function toggleAppMode() {
-            const on = !document.body.classList.contains('app-mode');
-            document.body.classList.toggle('app-mode', on);
-            try {
-                if (on) {
-                    const el = document.documentElement;
-                    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                } else {
-                    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                }
-            } catch (_) {}
-            const btn = document.getElementById('appModeBtn');
-            if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress text-lg"></i>' : '<i class="fa-solid fa-expand text-lg"></i>';
-            showToast(on ? 'Modo aplicação ativado' : 'Modo navegador', 'info');
-        }
-
         function renderAdminUsers() {
             const list = document.getElementById('adminUsersList');
             if (!list) return;
@@ -6476,6 +6346,54 @@
             closeModal('viewContentModal');
         }
 
+
+        // ========== DESEMPENHO ==========
+        const PERFORMANCE_KEY = 'mundo_digital_performance_mode';
+        const PERFORMANCE_MODES = {
+            best: 'Melhor desempenho',
+            memory: 'Memória económica',
+            max: 'Memória máxima'
+        };
+        function detectDefaultPerformanceMode() {
+            try {
+                const saved = localStorage.getItem(PERFORMANCE_KEY);
+                if (saved && PERFORMANCE_MODES[saved]) return saved;
+                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const mem = navigator.deviceMemory || 4;
+                const cores = navigator.hardwareConcurrency || 4;
+                if (reduced || mem <= 2 || cores <= 2) return 'best';
+                if (mem <= 4 || cores <= 4) return 'memory';
+            } catch (_) {}
+            return 'max';
+        }
+        function applyPerformanceMode(mode, persist = true) {
+            if (!PERFORMANCE_MODES[mode]) mode = 'memory';
+            document.body.classList.remove('performance-best','performance-memory','performance-max');
+            document.body.classList.add('performance-' + mode);
+            document.documentElement.dataset.performance = mode;
+            if (persist) { try { localStorage.setItem(PERFORMANCE_KEY, mode); } catch (_) {} }
+            document.querySelectorAll('#performanceModal .perf-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.perf === mode);
+            });
+            const label = document.getElementById('performanceModeLabel');
+            if (label) label.textContent = 'Modo atual: ' + PERFORMANCE_MODES[mode];
+        }
+        function setPerformanceMode(mode) {
+            applyPerformanceMode(mode, true);
+            closeModal('performanceModal');
+            showToast(PERFORMANCE_MODES[mode] + ' ativado.', 'success');
+        }
+        function openPerformanceModal() {
+            applyPerformanceMode(document.documentElement.dataset.performance || detectDefaultPerformanceMode(), false);
+            openModal('performanceModal');
+        }
+        function initPerformance() {
+            applyPerformanceMode(detectDefaultPerformanceMode(), false);
+            // Carregamento preguiçoso para mídia que não está visível inicialmente.
+            document.querySelectorAll('img:not([loading])').forEach(img => img.loading = 'lazy');
+            document.querySelectorAll('iframe:not([loading])').forEach(frame => frame.loading = 'lazy');
+        }
+
         // Restore admin session
         (function restoreAdmin() {
             if (localStorage.getItem('mundo_digital_admin_device_lock') === '1') {
@@ -6522,62 +6440,17 @@
         }
 
         function closeHeaderBubbles() {
-            document.querySelectorAll('.header-bubble-panel').forEach(el => {
-                el.classList.add('hidden');
-                el.removeAttribute('data-open');
-            });
-        }
-        function positionHeaderBubble(target, trigger) {
-            if (!target || !trigger || window.innerWidth > 767) return;
-            const rect = trigger.getBoundingClientRect();
-            const panelHeight = Math.min(target.scrollHeight || 300, window.innerHeight * .7);
-            const top = Math.max(8, Math.min(rect.bottom + 8, window.innerHeight - panelHeight - 12));
-            document.documentElement.style.setProperty('--md-header-panel-top', `${top}px`);
+            document.querySelectorAll('.header-bubble-panel').forEach(el => el.classList.add('hidden'));
         }
         function toggleHeaderBubble(id) {
             const target = document.getElementById(id);
             if (!target) return;
             const wasHidden = target.classList.contains('hidden');
             closeHeaderBubbles();
-            if (wasHidden) {
-                target.classList.remove('hidden');
-                target.setAttribute('data-open','1');
-                const trigger = target.parentElement?.querySelector('.header-bubble-trigger');
-                requestAnimationFrame(() => positionHeaderBubble(target, trigger));
-            }
+            if (wasHidden) target.classList.remove('hidden');
         }
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.header-bubble')) closeHeaderBubbles();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeHeaderBubbles();
-                document.getElementById('broadcastTypeOptions')?.classList.add('hidden');
-            }
-        });
-        window.addEventListener('resize', () => {
-            document.querySelectorAll('.header-bubble-panel[data-open="1"]').forEach(panel => {
-                const trigger = panel.parentElement?.querySelector('.header-bubble-trigger');
-                positionHeaderBubble(panel, trigger);
-            });
-        });
-
-        function toggleBroadcastTypeMenu() {
-            document.getElementById('broadcastTypeOptions')?.classList.toggle('hidden');
-        }
-        function selectBroadcastType(value, label, icon, iconColor) {
-            const input = document.getElementById('broadcastType');
-            const labelEl = document.getElementById('broadcastTypeLabel');
-            const iconEl = document.getElementById('broadcastTypeIcon');
-            if (input) input.value = value;
-            if (labelEl) labelEl.textContent = label;
-            if (iconEl) iconEl.className = `fa-solid ${icon} ${iconColor} mt-0.5`;
-            document.getElementById('broadcastTypeOptions')?.classList.add('hidden');
-        }
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.md-admin-type-menu')) {
-                document.getElementById('broadcastTypeOptions')?.classList.add('hidden');
-            }
         });
 
         function openStatusHub() {
@@ -6674,7 +6547,6 @@
                     <p class="text-xs font-semibold truncate cursor-pointer" onclick="window.openUserProfileById('${u.id}')">${escapeHTML(n)}</p>
                     <p class="text-[10px] ${u.online?'text-emerald-500':'text-slate-400'}">${u.online?'Online':'Offline'}</p>
                 </div>
-                <button type="button" onclick="window.toggleFriend('${u.id}')" class="px-2 py-1 rounded-lg text-[10px] font-semibold btn-press ${friend?'bg-slate-200 dark:bg-slate-600':'bg-brand-600 text-white'}">${friend?'Amigo':'Adicionar'}</button>
                 <button type="button" onclick="window.startChatWith('${u.id}');window.closeModal('statusModal');window.openModal('chatModal');" class="p-2 text-brand-500 btn-press"><i class="fa-solid fa-comment"></i></button>
             </div>`;
         }
@@ -6800,7 +6672,6 @@
                     <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10">
                         <span class="text-white text-xs flex-1 truncate">${escapeHTML(v.name || 'Utilizador')}</span>
                         <button type="button" onclick="window.startChatWith('${v.uid}');window.closeModal('viewStatusModal');window.closeModal('statusModal');window.openModal('chatModal');" class="px-2 py-1 rounded-lg bg-brand-600 text-white text-[10px] btn-press">Msg</button>
-                        <button type="button" onclick="window.toggleFriend('${v.uid}')" class="px-2 py-1 rounded-lg bg-white/20 text-white text-[10px] btn-press">Amigo</button>
                     </div>`).join('') || '<p class="text-white/60 text-xs p-2">Sem visualizações</p>';
             }
         }
@@ -6828,20 +6699,7 @@
             const fb = document.getElementById('contactProfileFallback');
             if (u.photoURL) { img.src = u.photoURL; img.classList.remove('hidden'); fb.classList.add('hidden'); }
             else { img.classList.add('hidden'); fb.classList.remove('hidden'); fb.textContent = name.charAt(0).toUpperCase(); }
-            const addBtn = document.getElementById('contactAddFriendBtn');
-            if (addBtn) {
-                const f = isFriend(uid);
-                addBtn.innerHTML = f ? '<i class="fa-solid fa-user-check mr-1"></i>Amigo' : '<i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo';
-            }
             openModal('contactProfileModal');
-        }
-        function toggleFriendFromProfile() {
-            if (profileTargetId) toggleFriend(profileTargetId);
-            const addBtn = document.getElementById('contactAddFriendBtn');
-            if (addBtn && profileTargetId) {
-                const f = isFriend(profileTargetId);
-                addBtn.innerHTML = f ? '<i class="fa-solid fa-user-check mr-1"></i>Amigo' : '<i class="fa-solid fa-user-plus mr-1"></i>Adicionar amigo';
-            }
         }
         function messageFromProfile() {
             if (!profileTargetId) return;
@@ -7316,6 +7174,8 @@
         window.selectPostBgCategory = selectPostBgCategory;
         window.openStatusHub = openStatusHub;
         window.toggleHeaderBubble = toggleHeaderBubble;
+        window.openPerformanceModal = openPerformanceModal;
+        window.setPerformanceMode = setPerformanceMode;
         window.closeHeaderBubbles = closeHeaderBubbles;
         window.setStatusTab = setStatusTab;
         window.openCreateStatus = openCreateStatus;
@@ -7327,7 +7187,6 @@
         window.messageStatusAuthor = messageStatusAuthor;
         window.toggleFriend = toggleFriend;
         window.openUserProfileById = openUserProfileById;
-        window.toggleFriendFromProfile = toggleFriendFromProfile;
         window.messageFromProfile = messageFromProfile;
         window.openChatTempSettings = openChatTempSettings;
         window.setTempDuration = setTempDuration;
@@ -7336,6 +7195,7 @@
         window.msgActionDeleteMenu = msgActionDeleteMenu;
         window.msgActionDeleteBack = msgActionDeleteBack;
         window.msgActionDeleteConfirm = msgActionDeleteConfirm;
+        setTimeout(initPerformance, 0);
 
 
         window.applyPostTextStyle = applyPostTextStyle;
@@ -7344,13 +7204,6 @@
         window.openAdminAccess = openAdminAccess;
         window.validateAdminKey = validateAdminKey;
         window.switchAdminTab = switchAdminTab;
-        window.setBroadcastDuration = setBroadcastDuration;
-        window.toggleBroadcastTypeMenu = toggleBroadcastTypeMenu;
-        window.selectBroadcastType = selectBroadcastType;
-        window.sendAdminBroadcast = sendAdminBroadcast;
-        window.openAnnouncementDetail = openAnnouncementDetail;
-        window.closeAnnouncementDetail = closeAnnouncementDetail;
-        window.dismissAnnouncementBubble = dismissAnnouncementBubble;
         window.adminDeleteUser = adminDeleteUser;
         window.adminEditContent = adminEditContent;
         window.saveEditedContent = saveEditedContent;
@@ -7413,7 +7266,6 @@
         window.chatMenuAction = chatMenuAction;
         window.openFeedbackModal = openFeedbackModal;
         window.submitFeedback = submitFeedback;
-        window.toggleAppMode = toggleAppMode;
         window.stopLiveLocation = stopLiveLocation;
 
 
@@ -7482,76 +7334,37 @@
 
         function playMessageSound() { playNotificationSound(); }
 
-        // ===== Broadcast ADM: avisos em tempo real =====
-        const BROADCAST_DEFAULT_DURATION = 30 * 60 * 1000;
-        const announcementTimers = new Map();
-        const closedAnnouncementIds = new Set();
-        let activeAnnouncementId = null;
-        let announcementDetailTimer = null;
-        let announcementRemainingTimer = null;
-
-        const ANNOUNCEMENT_META = {
-            atualizacao: { label: 'Atualização', icon: 'fa-rotate', color: 'sky' },
-            informacao: { label: 'Informação', icon: 'fa-circle-info', color: 'emerald' },
-            atencao: { label: 'Atenção destacada', icon: 'fa-triangle-exclamation', color: 'amber' },
-            novidades: { label: 'Novidades', icon: 'fa-sparkles', color: 'violet' }
+        // ===== Broadcast ADM =====
+        const BROADCAST_DURATIONS = {
+            atualizacao: 30 * 60 * 1000,
+            informacao: 20 * 60 * 1000,
+            atencao: 25 * 60 * 1000,
+            novidades: 8 * 60 * 1000
         };
 
-        function setBroadcastDuration(minutes) {
-            const input = document.getElementById('broadcastDuration');
-            if (input) input.value = Math.max(1, Math.min(1440, Number(minutes) || 30));
-        }
-
-        function getAnnouncementDuration(a) {
-            const durationMs = Number(a?.durationMs);
-            if (Number.isFinite(durationMs) && durationMs > 0) return durationMs;
-            if (a?.expiresAt && a?.at) {
-                const derived = Number(a.expiresAt) - Number(a.at);
-                if (Number.isFinite(derived) && derived > 0) return derived;
-            }
-            return BROADCAST_DEFAULT_DURATION;
-        }
-
-        function getAnnouncementMeta(type) {
-            return ANNOUNCEMENT_META[type] || ANNOUNCEMENT_META.informacao;
-        }
-
         async function sendAdminBroadcast() {
-            if (!isAdmin || !currentUserId) return showToast('Apenas um ADM autenticado pode publicar avisos.', 'error');
-            const title = (document.getElementById('broadcastTitle')?.value || '').trim();
+            if (!isAdmin) return;
             const type = document.getElementById('broadcastType')?.value || 'informacao';
             const text = (document.getElementById('broadcastText')?.value || '').trim();
-            const minutesRaw = Number(document.getElementById('broadcastDuration')?.value || 30);
-            const minutes = Math.max(1, Math.min(1440, Number.isFinite(minutesRaw) ? Math.round(minutesRaw) : 30));
-            if (!title) return showToast('Defina um título para o aviso.', 'error');
-            if (!text) return showToast('Escreva a informação do aviso.', 'error');
-
-            const durationMs = minutes * 60 * 1000;
-            const at = Date.now();
-            const expiresAt = at + durationMs;
+            if (!text) return showToast('Escreva a mensagem.', 'error');
+            const duration = BROADCAST_DURATIONS[type] || BROADCAST_DURATIONS.informacao;
+            const expiresAt = Date.now() + duration;
             try {
                 await addDoc(collection(db, 'announcements'), {
-                    title,
-                    text,
-                    type,
-                    durationMs,
-                    durationMinutes: minutes,
+                    type, text,
                     createdBy: currentUserId,
-                    createdByName: currentUserName || 'Administrador',
+                    createdByName: currentUserName,
                     createdAt: serverTimestamp(),
-                    at,
+                    at: Date.now(),
                     expiresAt,
                     active: true
                 });
-                const titleInput = document.getElementById('broadcastTitle');
-                const textInput = document.getElementById('broadcastText');
-                if (titleInput) titleInput.value = '';
-                if (textInput) textInput.value = '';
-                showToast(`Aviso publicado para todos durante ${minutes} minuto(s).`, 'success');
+                document.getElementById('broadcastText').value = '';
+                showToast('Aviso enviado a todos os utilizadores.', 'success');
                 renderAdminBroadcastHistory();
             } catch (e) {
                 console.error(e);
-                showToast('Erro ao publicar o aviso.', 'error');
+                showToast('Erro ao enviar aviso.', 'error');
             }
         }
 
@@ -7561,161 +7374,72 @@
             try {
                 const snap = await getDocs(collection(db, 'announcements'));
                 const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-                    .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0)).slice(0, 20);
-                box.innerHTML = items.length ? items.map(a => {
-                    const meta = getAnnouncementMeta(a.type);
-                    const mins = Number(a.durationMinutes) || Math.round(getAnnouncementDuration(a) / 60000);
-                    const expired = a.expiresAt && Number(a.expiresAt) <= Date.now();
-                    return `<div class="p-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs ${expired ? 'opacity-55' : ''}">
-                        <div class="flex items-start justify-between gap-2"><div><span class="font-bold uppercase text-[10px] text-[#2AABEE]">${escapeHTML(meta.label)}</span><p class="font-bold mt-1">${escapeHTML(a.title || 'Sem título')}</p></div><span class="text-[10px] text-slate-400 whitespace-nowrap">${mins} min</span></div>
-                        <p class="mt-1 text-slate-600 dark:text-slate-300">${escapeHTML(a.text || '')}</p>
-                        <p class="text-[10px] text-slate-400 mt-1">${a.at ? new Date(Number(a.at)).toLocaleString('pt-PT') : ''} · ${expired ? 'expirado' : 'ativo'}</p>
-                    </div>`;
-                }).join('') : '<p class="text-[11px] text-slate-400">Sem avisos publicados.</p>';
+                    .sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 15);
+                box.innerHTML = items.length ? items.map(a => `
+                    <div class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-xs">
+                        <span class="font-bold uppercase text-[10px] text-[#2AABEE]">${escapeHTML(a.type || '')}</span>
+                        <p class="mt-1">${escapeHTML(a.text || '')}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">${a.at ? new Date(a.at).toLocaleString('pt-PT') : ''} · expira ${a.expiresAt ? new Date(a.expiresAt).toLocaleTimeString('pt-PT') : ''}</p>
+                    </div>`).join('') : '<p class="text-[11px] text-slate-400">Sem avisos enviados.</p>';
             } catch (_) {
                 box.innerHTML = '<p class="text-[11px] text-slate-400">Histórico indisponível.</p>';
             }
         }
 
         function formatAnnouncementHtml(a) {
-            const meta = getAnnouncementMeta(a.type);
-            const title = escapeHTML(a.title || meta.label);
-            const mins = Number(a.durationMinutes) || Math.max(1, Math.round(getAnnouncementDuration(a) / 60000));
-            return `<div class="ann-bubble-main">
-                <div class="ann-bubble-icon"><i class="fa-solid ${meta.icon}"></i></div>
-                <div class="min-w-0 flex-1"><div class="ann-bubble-title">${title}</div><div class="ann-bubble-meta">${escapeHTML(meta.label)} · ${mins} min · toque para abrir</div></div>
-                <button type="button" aria-label="Fechar aviso" class="ann-bubble-close btn-press" onclick="event.stopPropagation(); window.dismissAnnouncementBubble('${a.id}')"><i class="fa-solid fa-xmark"></i></button>
-            </div>`;
-        }
-
-        function scheduleAnnouncementExpiry(a) {
-            if (!a?.id) return;
-            if (announcementTimers.has(a.id)) clearTimeout(announcementTimers.get(a.id));
-            const left = Math.max(250, Number(a.expiresAt || (Date.now() + getAnnouncementDuration(a))) - Date.now());
-            const timer = setTimeout(() => expireAnnouncement(a.id), left);
-            announcementTimers.set(a.id, timer);
-        }
-
-        function expireAnnouncement(id) {
-            if (announcementTimers.has(id)) clearTimeout(announcementTimers.get(id));
-            announcementTimers.delete(id);
-            document.getElementById('ann-' + id)?.remove();
-            if (activeAnnouncementId === id) closeAnnouncementDetail(true);
-            if (document.getElementById('announcementDetailModal')?.dataset.announcementId === id) closeAnnouncementDetail(true);
+            const t = escapeHTML(a.text || '');
+            if (a.type === 'atualizacao') {
+                return `<div class="font-bold text-sm mb-0.5">🔄 Atualização</div><div class="text-xs leading-relaxed">${t}</div>`;
+            }
+            if (a.type === 'informacao' || a.type === 'atencao') {
+                return `<div class="font-bold text-sm mb-0.5">⚠️ Atenção</div><div class="text-xs leading-relaxed"><span class="font-semibold">Caro Utilizador:</span> ${t}</div>`;
+            }
+            if (a.type === 'novidades') {
+                return `<div class="font-bold text-sm mb-0.5">✨ Novidades</div><div class="text-xs leading-relaxed">${t}</div>`;
+            }
+            return `<div class="text-xs">${t}</div>`;
         }
 
         function showAnnouncementBanner(a) {
+            // ADMs com painel ativo não veem no ecrã
+            if (isAdmin) return;
             const host = document.getElementById('siteAnnouncementHost');
             if (!host || !a || !a.id) return;
-            const now = Date.now();
-            if (a.active === false || (a.expiresAt && Number(a.expiresAt) <= now)) return;
-            scheduleAnnouncementExpiry(a);
-            if (closedAnnouncementIds.has(a.id)) return;
             if (document.getElementById('ann-' + a.id)) return;
-
+            const now = Date.now();
+            if (a.expiresAt && a.expiresAt < now) return;
             const el = document.createElement('div');
             el.id = 'ann-' + a.id;
-            const meta = getAnnouncementMeta(a.type);
             el.className = 'ann-' + (a.type === 'atencao' ? 'atencao' : (a.type || 'informacao'));
-            el.setAttribute('role', 'button');
-            el.setAttribute('tabindex', '0');
-            el.innerHTML = formatAnnouncementHtml(a);
-            el.addEventListener('click', () => openAnnouncementDetail(a));
-            el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAnnouncementDetail(a); } });
+            el.innerHTML = `<div class="flex items-start gap-2">
+                <div class="flex-1 min-w-0">${formatAnnouncementHtml(a)}</div>
+                <button type="button" class="text-white/80 hover:text-white text-sm shrink-0" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+            </div>`;
             host.appendChild(el);
-        }
-
-        function dismissAnnouncementBubble(id) {
-            closedAnnouncementIds.add(id);
-            document.getElementById('ann-' + id)?.remove();
-        }
-
-        function openAnnouncementDetail(a) {
-            if (!a?.id) return;
-            const modal = document.getElementById('announcementDetailModal');
-            if (!modal) return;
-            const meta = getAnnouncementMeta(a.type);
-            const expiresAt = Number(a.expiresAt) || (Date.now() + getAnnouncementDuration(a));
-            if (expiresAt <= Date.now()) return expireAnnouncement(a.id);
-            activeAnnouncementId = a.id;
-            modal.dataset.announcementId = a.id;
-            document.getElementById('announcementDetailTitle').textContent = a.title || meta.label;
-            document.getElementById('announcementDetailText').textContent = a.text || '';
-            document.getElementById('announcementDetailType').textContent = `${meta.label} · Aviso do administrador`;
-            document.getElementById('announcementDetailAuthor').textContent = a.createdByName ? `Publicado por ${a.createdByName}` : 'Publicado pelo administrador';
-            const icon = document.getElementById('announcementDetailIcon');
-            if (icon) icon.innerHTML = `<i class="fa-solid ${meta.icon}"></i>`;
-            openModal('announcementDetailModal');
-            updateAnnouncementRemaining(a);
-            clearInterval(announcementRemainingTimer);
-            announcementRemainingTimer = setInterval(() => updateAnnouncementRemaining(a), 1000);
-            scheduleAnnouncementExpiry(a);
-        }
-
-        function updateAnnouncementRemaining(a) {
-            const remaining = Math.max(0, (Number(a?.expiresAt) || 0) - Date.now());
-            const el = document.getElementById('announcementDetailRemaining');
-            if (!el) return;
-            if (!remaining) { expireAnnouncement(a?.id); return; }
-            const totalSec = Math.ceil(remaining / 1000);
-            const m = Math.floor(totalSec / 60);
-            const sec = totalSec % 60;
-            el.textContent = `Disponível por mais ${m}m ${String(sec).padStart(2,'0')}s`;
-        }
-
-        function closeAnnouncementDetail(expired = false) {
-            clearInterval(announcementRemainingTimer);
-            announcementRemainingTimer = null;
-            activeAnnouncementId = null;
-            const modal = document.getElementById('announcementDetailModal');
-            if (!modal) return;
-            const id = modal.dataset.announcementId;
-            delete modal.dataset.announcementId;
-            if (expired) {
-                closeModal('announcementDetailModal');
-                if (id) document.getElementById('ann-' + id)?.remove();
-                return;
-            }
-            closeModal('announcementDetailModal');
+            const left = Math.max(5000, (a.expiresAt || now + 60000) - now);
+            setTimeout(() => { try { el.remove(); } catch (_) {} }, left);
         }
 
         let announcementsUnsub = null;
         function listenAnnouncements() {
             if (announcementsUnsub) return;
             try {
-                const announcementsQuery = query(collection(db, 'announcements'), where('expiresAt', '>', Date.now()));
-                announcementsUnsub = onSnapshot(announcementsQuery, (snap) => {
+                announcementsUnsub = onSnapshot(collection(db, 'announcements'), (snap) => {
                     const now = Date.now();
-                    snap.docChanges().forEach(change => {
-                        const a = { id: change.doc.id, ...change.doc.data() };
-                        if (change.type === 'removed' || a.active === false || (a.expiresAt && Number(a.expiresAt) <= now)) {
-                            expireAnnouncement(a.id);
-                            return;
-                        }
+                    snap.docChanges().forEach(ch => {
+                        if (ch.type !== 'added' && ch.type !== 'modified') return;
+                        const a = { id: ch.doc.id, ...ch.doc.data() };
+                        if (a.active === false) return;
+                        if (a.expiresAt && a.expiresAt < now) return;
+                        // só recentes (últimas 2h) para não flood
+                        if (a.at && now - a.at > 2 * 3600000) return;
                         showAnnouncementBanner(a);
-                        scheduleAnnouncementExpiry(a);
                     });
-                    // Primeiro snapshot: garante que os avisos que ainda estão dentro da duração aparecem.
-                    snap.docs.forEach(d => {
-                        const a = { id: d.id, ...d.data() };
-                        if (a.active !== false && (!a.expiresAt || Number(a.expiresAt) > Date.now())) showAnnouncementBanner(a);
-                    });
-                }, (error) => {
-                    console.warn('Listener de avisos indisponível:', error);
-                });
-            } catch (error) {
-                console.warn('Não foi possível iniciar avisos:', error);
-            }
+                }, () => {});
+            } catch (_) {}
         }
 
-        // ===== Performance: Service Worker / cache da aplicação =====
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
-                    .then(() => console.info('[MD] Service Worker ativo.'))
-                    .catch(err => console.warn('[MD] Service Worker indisponível:', err));
-            });
-        }
+
 
         // Ajuste ao teclado mobile (evita cabeçalho a “saltar”)
         if (window.visualViewport) {
