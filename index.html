@@ -384,6 +384,147 @@
             z-index: 120;
             width: min(100% - 1.5rem, 22rem);
         }
+
+        #adminPanelModal > div {
+            border-radius: 1rem;
+            background: #fff;
+        }
+        .dark #adminPanelModal > div {
+            background: #17212b;
+            border-color: #0e1621;
+        }
+        #adminPanelModal .admin-tg-header {
+            background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+            color: #fff;
+            border-bottom: none !important;
+        }
+        #adminPanelModal .admin-tg-tabs button {
+            border-radius: 0;
+        }
+        #siteAnnouncementHost {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding: 0.5rem;
+            pointer-events: none;
+        }
+        #siteAnnouncementHost > div {
+            pointer-events: auto;
+            border-radius: 0.85rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            animation: annSlide 0.35s ease;
+        }
+        @keyframes annSlide {
+            from { transform: translateY(-120%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .ann-atualizacao {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .ann-informacao, .ann-atencao {
+            background: linear-gradient(135deg, #b45309, #d97706);
+            color: #fff;
+            border: 2px solid #fbbf24;
+        }
+        .ann-novidades {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        /* Chat modal adaptativo — evita layout quebrado ao deslizar / teclado */
+        #chatModal.modal-open-flex,
+        #chatModal:not(.pointer-events-none) {
+            align-items: stretch;
+        }
+        @media (max-width: 640px) {
+            #chatModal > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                max-height: 100dvh !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                transform: none !important;
+            }
+            #chatModalHeader {
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                z-index: 40;
+            }
+            #chatBody {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: hidden;
+                position: relative;
+            }
+            #chatSidebar {
+                position: absolute;
+                inset: 0;
+                width: 100% !important;
+                z-index: 10;
+                overflow: hidden;
+            }
+            #chatMainArea {
+                position: absolute !important;
+                inset: 0 !important;
+                z-index: 20;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            #chatMainArea.mobile-open {
+                display: flex !important;
+            }
+            #chatActiveHeader {
+                flex-shrink: 0 !important;
+                position: sticky;
+                top: 0;
+                z-index: 25;
+            }
+            #chatMessages {
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            #chatForm {
+                flex-shrink: 0 !important;
+                position: sticky;
+                bottom: 0;
+                z-index: 25;
+                padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+            }
+        }
+        @media (min-width: 641px) {
+            #chatMainArea {
+                position: relative !important;
+            }
+        }
+        body.app-mode #chatModal > div {
+            max-height: 100dvh !important;
+            height: 100dvh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
+        body.app-mode .fixed.inset-0.z-\[100\] {
+            /* full experience */
+        }
+
+
+        html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.05s !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -1038,22 +1179,22 @@
     <div id="chatModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] sm:h-[80vh] max-h-[92dvh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
             
-            <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400">
+            <div id="chatModalHeader" class="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="p-2 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 shrink-0">
                         <i class="fa-solid fa-comments text-lg"></i>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-base sm:text-lg">Mensagens e Conversas</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400" id="chatSubtitle">Procure utilizadores para iniciar uma conversa</p>
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-base sm:text-lg truncate">Mensagens e Conversas</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate" id="chatSubtitle">Procure utilizadores para iniciar uma conversa</p>
                     </div>
                 </div>
-                <button onclick="window.closeModal('chatModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl p-1">
+                <button onclick="window.closeModal('chatModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl p-1 shrink-0 btn-press">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div class="flex-1 flex overflow-hidden relative min-h-0">
+            <div id="chatBody" class="flex-1 flex overflow-hidden relative min-h-0">
                 <div id="chatSidebar" class="w-full sm:w-1/3 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0 shrink-0">
                     <div class="p-3 border-b border-slate-200 dark:border-slate-700 space-y-2">
                         <div class="relative">
@@ -1095,7 +1236,7 @@
                 </div>
 
                 <!-- ÁREA PRINCIPAL DO CHAT (fundo opaco – sem transparência) -->
-                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col absolute sm:relative inset-0 z-30 sm:z-auto bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                <div id="chatMainArea" class="hidden sm:flex flex-1 flex-col sm:relative inset-0 z-30 sm:z-auto bg-slate-100 dark:bg-slate-900 overflow-hidden min-h-0">
                     <!-- Camada de papel de parede FIXA (não rola com as mensagens) -->
                     <div id="chatWallpaperLayer" aria-hidden="true"></div>
                     <div id="chatActiveHeader" class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 hidden items-center justify-between shrink-0 relative z-10">
@@ -1332,27 +1473,33 @@
     <!-- MODAL PAINEL ADMIN -->
     <div id="adminPanelModal" class="fixed inset-0 z-[160] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-4xl h-[85vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col m-2 sm:m-4 transform scale-95 transition-transform duration-200">
-            <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-amber-500/10">
+            <div class="admin-tg-header px-5 py-3.5 flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-shield-halved text-amber-500 text-lg"></i>
-                    <h3 class="font-bold text-base">Painel de Administração</h3>
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-paper-plane text-white"></i></div>
+                    <div>
+                        <h3 class="font-bold text-base text-white leading-tight">Painel ADM</h3>
+                        <p class="text-[10px] text-white/80">Gestão · estilo Telegram</p>
+                    </div>
                 </div>
-                <button onclick="window.closeModal('adminPanelModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl p-1">
+                <button onclick="window.closeModal('adminPanelModal')" class="text-white/90 hover:text-white text-xl p-1 btn-press">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="flex border-b border-slate-200 dark:border-slate-700">
-                <button id="adminTabUsers" onclick="window.switchAdminTab('users')" class="flex-1 py-2.5 text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 transition">
-                    <i class="fa-solid fa-users mr-1.5"></i>Utilizadores
+            <div class="admin-tg-tabs flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0e1621] overflow-x-auto">
+                <button id="adminTabUsers" onclick="window.switchAdminTab('users')" class="flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold bg-[#2AABEE]/15 text-[#2AABEE] border-b-2 border-[#2AABEE] transition">
+                    <i class="fa-solid fa-users mr-1"></i>Users
                 </button>
-                <button id="adminTabContents" onclick="window.switchAdminTab('contents')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                    <i class="fa-solid fa-folder mr-1.5"></i>Publicações
+                <button id="adminTabContents" onclick="window.switchAdminTab('contents')" class="flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold text-slate-500 transition">
+                    <i class="fa-solid fa-folder mr-1"></i>Posts
                 </button>
-                <button id="adminTabFeedback" onclick="window.switchAdminTab('feedback')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                    <i class="fa-solid fa-comment-dots mr-1.5"></i>Feedback
+                <button id="adminTabBroadcast" onclick="window.switchAdminTab('broadcast')" class="flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold text-slate-500 transition">
+                    <i class="fa-solid fa-bullhorn mr-1"></i>Aviso
                 </button>
-                <button id="adminTabAlerts" onclick="window.switchAdminTab('alerts')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                    <i class="fa-solid fa-bell mr-1.5"></i>Alertas
+                <button id="adminTabFeedback" onclick="window.switchAdminTab('feedback')" class="flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold text-slate-500 transition">
+                    <i class="fa-solid fa-comment-dots mr-1"></i>Feedback
+                </button>
+                <button id="adminTabAlerts" onclick="window.switchAdminTab('alerts')" class="flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold text-slate-500 transition">
+                    <i class="fa-solid fa-bell mr-1"></i>Alertas
                 </button>
             </div>
             <div id="adminUsersPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4">
@@ -1368,8 +1515,37 @@
             <div id="adminAlertsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
                 <div id="adminAlertsList" class="space-y-2"></div>
             </div>
+            <div id="adminBroadcastPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
+                <div class="max-w-lg mx-auto space-y-3">
+                    <p class="text-xs text-slate-500">Enviar aviso a <strong>todos os utilizadores</strong>. ADMs com painel ativo não veem no ecrã — só aqui.</p>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500">Tipo</label>
+                        <select id="broadcastType" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm">
+                            <option value="atualizacao">Atualização (fixado · 30 min)</option>
+                            <option value="informacao">Informação / Atenção (Caro Utilizador · 20 min)</option>
+                            <option value="atencao">Atenção destacada (25 min)</option>
+                            <option value="novidades">Novidades (anúncio · 8 min)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500">Mensagem</label>
+                        <textarea id="broadcastText" rows="4" maxlength="800" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#242f3d] text-sm" placeholder="Escreva o aviso..."></textarea>
+                    </div>
+                    <button type="button" onclick="window.sendAdminBroadcast()" class="w-full py-2.5 rounded-xl bg-[#2AABEE] hover:bg-[#229ED9] text-white font-semibold text-sm btn-press">
+                        <i class="fa-solid fa-paper-plane mr-2"></i>Enviar a todos
+                    </button>
+                    <div id="adminBroadcastHistory" class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700"></div>
+                </div>
+            </div>
         </div>
     </div>
+
+    
+    <button type="button" id="admWritePostBtn" onclick="window.openModal('addContentModal')" class="hidden fixed bottom-24 right-4 z-[90] w-14 h-14 rounded-full bg-[#2AABEE] text-white shadow-lg shadow-sky-500/30 flex items-center justify-center btn-press" title="Escrever publicação">
+        <i class="fa-solid fa-pen text-lg"></i>
+    </button>
+
+    <div id="siteAnnouncementHost" aria-live="polite"></div>
 
     <!-- MODAL EDITAR CONTEÚDO (ADMIN) -->
     <div id="editContentModal" class="fixed inset-0 z-[170] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
@@ -1819,6 +1995,9 @@
         // Admin
         let isAdmin = false;
         const ADMIN_KEYS = ['@Salazar8555', '@Rosario8555'];
+        const WEAK_DEVICE = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+        if (WEAK_DEVICE) try { document.documentElement.classList.add('reduce-motion'); } catch(_){}
+
         let unsubscribeAdminUsers = null;
 
         // Entertainment viewers + chat
@@ -2176,28 +2355,25 @@
             } catch (_) { return null; }
         }
         function playNotificationSound() {
+            // Som estilo notificação iPhone (dois tons curtos e limpos)
             try {
                 const ctx = getAudioCtx();
                 if (!ctx) return;
                 const now = ctx.currentTime;
-                const osc1 = ctx.createOscillator();
-                const osc2 = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc1.type = 'triangle';
-                osc2.type = 'sine';
-                osc1.frequency.setValueAtTime(1046.50, now);
-                osc1.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12);
-                osc2.frequency.setValueAtTime(1318.51, now + 0.06);
-                osc2.frequency.exponentialRampToValueAtTime(1567.98, now + 0.22);
-                gain.gain.setValueAtTime(0.85, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc1.connect(gain);
-                osc2.connect(gain);
-                gain.connect(ctx.destination);
-                osc1.start(now);
-                osc2.start(now + 0.06);
-                osc1.stop(now + 0.4);
-                osc2.stop(now + 0.4);
+                [1300, 1600].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const t0 = now + i * 0.11;
+                    gain.gain.setValueAtTime(0.0001, t0);
+                    gain.gain.exponentialRampToValueAtTime(0.14, t0 + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.13);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(t0);
+                    osc.stop(t0 + 0.15);
+                });
             } catch (e) {
                 console.warn('Audio Context:', e);
             }
@@ -2277,6 +2453,7 @@
                 const chatSidebar = document.getElementById('chatSidebar');
                 const chatMain = document.getElementById('chatMainArea');
                 if (chatSidebar) chatSidebar.classList.remove('hidden');
+            document.getElementById('chatMainArea')?.classList.remove('mobile-open');
                 if (chatMain && window.innerWidth < 640) {
                     chatMain.classList.add('hidden');
                     chatMain.classList.remove('flex');
@@ -2819,8 +2996,9 @@
                 chatMain.classList.add('flex');
             }
             // No telemóvel: esconder a lista para não aparecer por trás da conversa
-            if (chatSidebar && window.innerWidth < 640) {
-                chatSidebar.classList.add('hidden');
+            if (window.innerWidth < 640) {
+                if (chatSidebar) chatSidebar.classList.add('hidden');
+                if (chatMain) chatMain.classList.add('mobile-open');
             }
 
             // Botão físico "voltar" do telemóvel → lista de utilizadores
@@ -3217,6 +3395,7 @@
                 chatMain.classList.remove('flex');
             }
             if (chatSidebar) chatSidebar.classList.remove('hidden');
+            document.getElementById('chatMainArea')?.classList.remove('mobile-open');
             if (activeHeader) {
                 activeHeader.classList.add('hidden');
                 activeHeader.classList.remove('flex');
@@ -3354,7 +3533,7 @@
             if (av) av.textContent = (g.name || 'G').charAt(0).toUpperCase();
             const chatMain = document.getElementById('chatMainArea');
             if (chatMain) { chatMain.classList.remove('hidden'); chatMain.classList.add('flex'); }
-            if (window.innerWidth < 640) document.getElementById('chatSidebar')?.classList.add('hidden');
+            if (window.innerWidth < 640) { document.getElementById('chatSidebar')?.classList.add('hidden'); document.getElementById('chatMainArea')?.classList.add('mobile-open'); }
             lastMessageCount = 0;
             clearUnread(groupId);
             applyChatWallpaper(localStorage.getItem('mundo_digital_wallpaper'));
@@ -3802,6 +3981,7 @@
         }
 
         async function cleanupCall() {
+            stopCallRingtone();
             if (callCleanupRunning) return;
             callCleanupRunning = true;
             clearCallAnswerTimeout();
@@ -4415,6 +4595,7 @@
         }
 
         async function acceptIncomingCall() {
+            stopCallRingtone();
             closeModal('incomingCallModal');
             if (!incomingCallData) return;
             if (activeCallId || peerConnection) {
@@ -4535,6 +4716,7 @@
         }
 
         async function rejectIncomingCall() {
+            stopCallRingtone();
             closeModal('incomingCallModal');
             if (incomingCallData) {
                 try {
@@ -5548,10 +5730,16 @@
                 localStorage.setItem('mundo_digital_admin', key);
                 localStorage.removeItem('mundo_digital_admin_fails');
                 if (currentUserId) {
-                    setDoc(doc(db, 'users', currentUserId), { isSiteAdmin: true, adminKey: true, adminBanned: false }, { merge: true }).catch(() => {});
+                    setDoc(doc(db, 'users', currentUserId), { isSiteAdmin: true, adminKey: true, adminBanned: false, mentorStatus: null }, { merge: true }).catch(() => {});
+                    // Atualizar lista local para marca 🧿 ADM aparecer já
+                    const me = allUsers.find(u => u.id === currentUserId);
+                    if (me) { me.isSiteAdmin = true; me.adminKey = true; me.adminBanned = false; }
+                    else allUsers.push({ id: currentUserId, name: currentUserName, isSiteAdmin: true, adminKey: true });
+                    try { if (typeof renderUsersList === 'function') renderUsersList(); } catch (_) {}
                 }
                 closeModal('adminAccessModal');
                 document.getElementById('adminBtn')?.classList.remove('hidden');
+                document.getElementById('admWritePostBtn')?.classList.remove('hidden');
                 openModal('adminPanelModal');
                 switchAdminTab('users');
                 renderAdminUsers();
@@ -5591,26 +5779,29 @@
                 users: 'adminUsersPanel',
                 contents: 'adminContentsPanel',
                 feedback: 'adminFeedbackPanel',
-                alerts: 'adminAlertsPanel'
+                alerts: 'adminAlertsPanel',
+                broadcast: 'adminBroadcastPanel'
             };
             const tabs = {
                 users: 'adminTabUsers',
                 contents: 'adminTabContents',
                 feedback: 'adminTabFeedback',
-                alerts: 'adminTabAlerts'
+                alerts: 'adminTabAlerts',
+                broadcast: 'adminTabBroadcast'
             };
             Object.values(panels).forEach(id => document.getElementById(id)?.classList.add('hidden'));
             Object.values(tabs).forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.className = 'flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition';
+                if (el) el.className = 'flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold text-slate-500 transition';
             });
             document.getElementById(panels[tab] || panels.users)?.classList.remove('hidden');
             const activeTab = document.getElementById(tabs[tab] || tabs.users);
-            if (activeTab) activeTab.className = 'flex-1 py-2.5 text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 transition';
+            if (activeTab) activeTab.className = 'flex-1 min-w-[5.5rem] py-2.5 text-[11px] font-bold bg-[#2AABEE]/15 text-[#2AABEE] border-b-2 border-[#2AABEE] transition';
             if (tab === 'users') renderAdminUsers();
             else if (tab === 'contents') renderAdminContents();
             else if (tab === 'feedback') renderAdminFeedback();
             else if (tab === 'alerts') renderAdminAlerts();
+            else if (tab === 'broadcast') renderAdminBroadcastHistory();
         }
 
         function openFeedbackModal() { openModal('feedbackModal'); }
@@ -6049,6 +6240,7 @@
                     isAdmin = true;
                     setTimeout(() => {
                         document.getElementById('adminBtn')?.classList.remove('hidden');
+                document.getElementById('admWritePostBtn')?.classList.remove('hidden');
                     }, 500);
                 }
             }
@@ -6716,16 +6908,12 @@
         }, 30000);
 
         setInterval(() => {
-            // Heartbeat leve a cada 5s só durante chamada
-            if (peerConnection && activeCallId) {
-                try {
-                    const st = peerConnection.iceConnectionState;
-                    if (st === 'failed' || st === 'disconnected') {
-                        /* ICE restart já tratado noutro sítio */
-                    }
-                } catch (_) {}
-            }
-        }, 5000);
+            if (!peerConnection || !activeCallId) return;
+            try {
+                const st = peerConnection.iceConnectionState;
+                if (st === 'failed' || st === 'disconnected') { /* ICE restart já tratado */ }
+            } catch (_) {}
+        }, WEAK_DEVICE ? 12000 : 5000);
 
 
         window.openModal = openModal;
@@ -6861,6 +7049,7 @@
 
         // Always show admin button so users can enter the key
         document.getElementById('adminBtn')?.classList.remove('hidden');
+                document.getElementById('admWritePostBtn')?.classList.remove('hidden');
 
         const savedTheme = localStorage.getItem('mundo_digital_theme');
         if (savedTheme === 'light') {
@@ -6937,6 +7126,166 @@
         window.addEventListener('unhandledrejection', () => {
             try { window.__mdAutoFix(); } catch (_) {}
         });
+
+
+        // ===== Toque de chamada (estilo telemóvel) =====
+        let _ringtoneTimer = null;
+        let _ringtoneNodes = [];
+
+        /** Toque de chamada (padrão tipo telemóvel / Samsung-like) */
+        function startCallRingtone() {
+            stopCallRingtone();
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const playBurst = () => {
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                // Duas notas alternadas
+                [0, 0.2, 0.4, 0.6].forEach((t, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = i % 2 === 0 ? 440 : 480;
+                    gain.gain.setValueAtTime(0.0001, now + t);
+                    gain.gain.exponentialRampToValueAtTime(0.12, now + t + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.18);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + t);
+                    osc.stop(now + t + 0.2);
+                    _ringtoneNodes.push(osc, gain);
+                });
+            };
+            playBurst();
+            _ringtoneTimer = setInterval(playBurst, 2000);
+        }
+        function stopCallRingtone() {
+            if (_ringtoneTimer) { clearInterval(_ringtoneTimer); _ringtoneTimer = null; }
+            _ringtoneNodes.forEach(n => { try { n.stop?.(); n.disconnect?.(); } catch (_) {} });
+            _ringtoneNodes = [];
+        }
+
+        function playMessageSound() { playNotificationSound(); }
+
+        // ===== Broadcast ADM =====
+        const BROADCAST_DURATIONS = {
+            atualizacao: 30 * 60 * 1000,
+            informacao: 20 * 60 * 1000,
+            atencao: 25 * 60 * 1000,
+            novidades: 8 * 60 * 1000
+        };
+
+        async function sendAdminBroadcast() {
+            if (!isAdmin) return;
+            const type = document.getElementById('broadcastType')?.value || 'informacao';
+            const text = (document.getElementById('broadcastText')?.value || '').trim();
+            if (!text) return showToast('Escreva a mensagem.', 'error');
+            const duration = BROADCAST_DURATIONS[type] || BROADCAST_DURATIONS.informacao;
+            const expiresAt = Date.now() + duration;
+            try {
+                await addDoc(collection(db, 'announcements'), {
+                    type, text,
+                    createdBy: currentUserId,
+                    createdByName: currentUserName,
+                    createdAt: serverTimestamp(),
+                    at: Date.now(),
+                    expiresAt,
+                    active: true
+                });
+                document.getElementById('broadcastText').value = '';
+                showToast('Aviso enviado a todos os utilizadores.', 'success');
+                renderAdminBroadcastHistory();
+            } catch (e) {
+                console.error(e);
+                showToast('Erro ao enviar aviso.', 'error');
+            }
+        }
+
+        async function renderAdminBroadcastHistory() {
+            const box = document.getElementById('adminBroadcastHistory');
+            if (!box) return;
+            try {
+                const snap = await getDocs(collection(db, 'announcements'));
+                const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 15);
+                box.innerHTML = items.length ? items.map(a => `
+                    <div class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-xs">
+                        <span class="font-bold uppercase text-[10px] text-[#2AABEE]">${escapeHTML(a.type || '')}</span>
+                        <p class="mt-1">${escapeHTML(a.text || '')}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">${a.at ? new Date(a.at).toLocaleString('pt-PT') : ''} · expira ${a.expiresAt ? new Date(a.expiresAt).toLocaleTimeString('pt-PT') : ''}</p>
+                    </div>`).join('') : '<p class="text-[11px] text-slate-400">Sem avisos enviados.</p>';
+            } catch (_) {
+                box.innerHTML = '<p class="text-[11px] text-slate-400">Histórico indisponível.</p>';
+            }
+        }
+
+        function formatAnnouncementHtml(a) {
+            const t = escapeHTML(a.text || '');
+            if (a.type === 'atualizacao') {
+                return `<div class="font-bold text-sm mb-0.5">🔄 Atualização</div><div class="text-xs leading-relaxed">${t}</div>`;
+            }
+            if (a.type === 'informacao' || a.type === 'atencao') {
+                return `<div class="font-bold text-sm mb-0.5">⚠️ Atenção</div><div class="text-xs leading-relaxed"><span class="font-semibold">Caro Utilizador:</span> ${t}</div>`;
+            }
+            if (a.type === 'novidades') {
+                return `<div class="font-bold text-sm mb-0.5">✨ Novidades</div><div class="text-xs leading-relaxed">${t}</div>`;
+            }
+            return `<div class="text-xs">${t}</div>`;
+        }
+
+        function showAnnouncementBanner(a) {
+            // ADMs com painel ativo não veem no ecrã
+            if (isAdmin) return;
+            const host = document.getElementById('siteAnnouncementHost');
+            if (!host || !a || !a.id) return;
+            if (document.getElementById('ann-' + a.id)) return;
+            const now = Date.now();
+            if (a.expiresAt && a.expiresAt < now) return;
+            const el = document.createElement('div');
+            el.id = 'ann-' + a.id;
+            el.className = 'ann-' + (a.type === 'atencao' ? 'atencao' : (a.type || 'informacao'));
+            el.innerHTML = `<div class="flex items-start gap-2">
+                <div class="flex-1 min-w-0">${formatAnnouncementHtml(a)}</div>
+                <button type="button" class="text-white/80 hover:text-white text-sm shrink-0" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+            </div>`;
+            host.appendChild(el);
+            const left = Math.max(5000, (a.expiresAt || now + 60000) - now);
+            setTimeout(() => { try { el.remove(); } catch (_) {} }, left);
+        }
+
+        let announcementsUnsub = null;
+        function listenAnnouncements() {
+            if (announcementsUnsub) return;
+            try {
+                announcementsUnsub = onSnapshot(collection(db, 'announcements'), (snap) => {
+                    const now = Date.now();
+                    snap.docChanges().forEach(ch => {
+                        if (ch.type !== 'added' && ch.type !== 'modified') return;
+                        const a = { id: ch.doc.id, ...ch.doc.data() };
+                        if (a.active === false) return;
+                        if (a.expiresAt && a.expiresAt < now) return;
+                        // só recentes (últimas 2h) para não flood
+                        if (a.at && now - a.at > 2 * 3600000) return;
+                        showAnnouncementBanner(a);
+                    });
+                }, () => {});
+            } catch (_) {}
+        }
+
+
+
+        // Ajuste ao teclado mobile (evita cabeçalho a “saltar”)
+        if (window.visualViewport) {
+            const adjustChatForKeyboard = () => {
+                const modal = document.getElementById('chatModal');
+                const form = document.getElementById('chatForm');
+                if (!modal || modal.classList.contains('pointer-events-none')) return;
+                const offset = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+                if (form) form.style.paddingBottom = offset > 0 ? `${Math.min(offset, 120)}px` : '';
+            };
+            window.visualViewport.addEventListener('resize', adjustChatForKeyboard);
+            window.visualViewport.addEventListener('scroll', adjustChatForKeyboard);
+        }
 
     </script>
 </body>
