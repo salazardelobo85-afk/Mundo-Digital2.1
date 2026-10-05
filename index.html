@@ -353,6 +353,37 @@
         }
         .mentor-diamond { filter: drop-shadow(0 0 6px rgba(56,189,248,0.6)); }
         .mentor-medal { filter: drop-shadow(0 0 6px rgba(251,191,36,0.55)); }
+
+        html, body {
+            overscroll-behavior: none;
+            touch-action: manipulation;
+        }
+        #appRoot, main, .custom-scrollbar {
+            overscroll-behavior-y: contain;
+        }
+        /* Evita “puxão” de layout ao deslizar em mobile */
+        body.modal-open {
+            overflow: hidden !important;
+            position: fixed;
+            width: 100%;
+        }
+        body.app-mode {
+            /* experiência tipo app */
+        }
+        body.app-mode #appRoot {
+            min-height: 100dvh;
+        }
+        #themeToggleBtn, #themeToggleBtn * {
+            transition: none !important;
+        }
+        .live-loc-panel {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 120;
+            width: min(100% - 1.5rem, 22rem);
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -541,8 +572,14 @@
                     <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
                 </button>
 
-                <button id="themeToggleBtn" onclick="window.toggleTheme()" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                <button id="themeToggleBtn" onclick="window.toggleTheme()" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
                     <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                <button type="button" onclick="window.toggleAppMode()" id="appModeBtn" title="Modo aplicação" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">
+                    <i class="fa-solid fa-expand text-lg"></i>
+                </button>
+                <button type="button" onclick="window.openFeedbackModal()" title="Enviar feedback" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">
+                    <i class="fa-solid fa-comment-dots text-lg"></i>
                 </button>
                 
                 <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all duration-200 transform active:scale-95 text-sm btn-press">
@@ -744,6 +781,19 @@
                 <button onclick="window.closeModal('callHistoryModal')" class="p-2 text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="callHistoryList" class="flex-1 overflow-y-auto custom-scrollbar p-2 min-h-0"></div>
+        </div>
+    </div>
+
+
+    <div id="feedbackModal" class="fixed inset-0 z-[155] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold">Enviar feedback</h3>
+                <button onclick="window.closeModal('feedbackModal')" class="text-slate-400 btn-press"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-500 mb-2">A sua mensagem vai apenas para os administradores.</p>
+            <textarea id="feedbackText" maxlength="1000" rows="4" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" placeholder="Escreva o seu feedback..."></textarea>
+            <button type="button" onclick="window.submitFeedback()" class="mt-3 w-full py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm btn-press">Enviar aos ADMs</button>
         </div>
     </div>
 
@@ -1298,12 +1348,25 @@
                 <button id="adminTabContents" onclick="window.switchAdminTab('contents')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
                     <i class="fa-solid fa-folder mr-1.5"></i>Publicações
                 </button>
+                <button id="adminTabFeedback" onclick="window.switchAdminTab('feedback')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                    <i class="fa-solid fa-comment-dots mr-1.5"></i>Feedback
+                </button>
+                <button id="adminTabAlerts" onclick="window.switchAdminTab('alerts')" class="flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                    <i class="fa-solid fa-bell mr-1.5"></i>Alertas
+                </button>
             </div>
             <div id="adminUsersPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4">
                 <div id="adminUsersList" class="space-y-2"></div>
             </div>
             <div id="adminContentsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
                 <div id="adminContentsList" class="space-y-2"></div>
+            </div>
+            <div id="adminFeedbackPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
+                <p id="adminAdmCount" class="text-xs text-slate-500 mb-2"></p>
+                <div id="adminFeedbackList" class="space-y-2"></div>
+            </div>
+            <div id="adminAlertsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-4 hidden">
+                <div id="adminAlertsList" class="space-y-2"></div>
             </div>
         </div>
     </div>
@@ -2177,6 +2240,8 @@
         }
 
         function openModal(id) {
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${window.scrollY}px`;
             const modal = document.getElementById(id);
             if (!modal) return;
             modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -2197,6 +2262,10 @@
         }
 
         function closeModal(id) {
+            const y = document.body.style.top;
+            document.body.classList.remove('modal-open');
+            document.body.style.top = '';
+            if (y) window.scrollTo(0, parseInt(y || '0') * -1);
             const modal = document.getElementById(id);
             if (!modal) return;
             modal.classList.add('opacity-0', 'pointer-events-none');
@@ -2216,17 +2285,19 @@
         }
 
         function toggleTheme() {
+            // Troca imediata (sem atraso de transição)
             const html = document.documentElement;
             const themeIcon = document.getElementById('themeIcon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                if (themeIcon) themeIcon.className = "fa-solid fa-sun text-lg";
-                localStorage.setItem('mundo_digital_theme', 'light');
-            } else {
-                html.classList.add('dark');
-                if (themeIcon) themeIcon.className = "fa-solid fa-moon text-lg";
-                localStorage.setItem('mundo_digital_theme', 'dark');
+            const btn = document.getElementById('themeToggleBtn');
+            const isDark = html.classList.contains('dark');
+            html.classList.toggle('dark', !isDark);
+            const nowDark = !isDark;
+            if (themeIcon) themeIcon.className = nowDark ? 'fa-solid fa-moon text-lg' : 'fa-solid fa-sun text-lg';
+            if (btn) {
+                const ic = btn.querySelector('i');
+                if (ic) ic.className = nowDark ? 'fa-solid fa-moon text-lg' : 'fa-solid fa-sun text-lg';
             }
+            try { localStorage.setItem('mundo_digital_theme', nowDark ? 'dark' : 'light'); } catch (_) {}
         }
 
         async function updateUserStatus(onlineStatus) {
@@ -2631,7 +2702,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
-                                <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate ${unread ? 'font-bold' : ''} flex items-center gap-1">${escapeHTML(displayName)}${isSiteAdminUser(u) ? ' <i class="fa-solid fa-crown text-amber-400 text-[10px]" title="Admin do site"></i>' : ''}</h4>
+                                <h4 class="text-xs text-slate-800 dark:text-slate-100 truncate ${unread ? 'font-bold' : ''} flex items-center gap-1">${escapeHTML(displayName)}${mentorBadgeHtml(u)}</h4>
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     ${last && last.at ? `<span class="text-[9px] text-slate-400">${new Date(last.at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
                                     ${unread ? `<span class="unread-badge pulse">${unread > 99 ? '99+' : unread}</span>` : ''}
@@ -2934,6 +3005,14 @@
                 }
                 if (msg.type === 'audio') {
                     contentHtml += `<audio src="${escapeHTML(msg.audioUrl || '')}" controls preload="metadata" class="max-w-[200px] sm:max-w-[240px] h-9 my-0.5"></audio>`;
+                } else if (msg.type === 'location' && msg.lat != null && msg.lng != null) {
+                    if (msg.liveSessionId) {
+                        setTimeout(() => { try { window.registerLiveLocView(msg.liveSessionId); } catch(_){} }, 300);
+                    }
+                    contentHtml += `<div class="rounded-xl overflow-hidden border border-white/20 my-1" style="max-width:240px">
+                        <iframe src="https://maps.google.com/maps?q=${Number(msg.lat)},${Number(msg.lng)}&z=16&output=embed" class="w-full h-36 border-0" loading="lazy"></iframe>
+                        <a href="https://maps.google.com/?q=${Number(msg.lat)},${Number(msg.lng)}" target="_blank" rel="noopener" class="block text-[10px] px-2 py-1 bg-black/20">Abrir no Maps</a>
+                    </div>`;
                 } else {
                     const heavy = isEmojiHeavy(msg.text || '');
                     contentHtml += `<p class="${heavy ? 'emoji-only-msg' : 'text-[13px]'} leading-snug break-words whitespace-pre-wrap">${formatMessageTextHtml(msg.text || '')}${msg.edited ? ' <span class="text-[9px] opacity-60">(editada)</span>' : ''}</p>`;
@@ -5457,12 +5536,19 @@
         }
 
         function validateAdminKey() {
+            if (localStorage.getItem('mundo_digital_admin_device_lock') === '1') {
+                showToast('Painel ADM oculto neste dispositivo (tentativas falhadas).', 'error');
+                document.getElementById('adminBtn')?.classList.add('hidden');
+                closeModal('adminAccessModal');
+                return;
+            }
             const key = (document.getElementById('adminKeyInput')?.value || '').trim();
             if (ADMIN_KEYS.includes(key)) {
                 isAdmin = true;
                 localStorage.setItem('mundo_digital_admin', key);
+                localStorage.removeItem('mundo_digital_admin_fails');
                 if (currentUserId) {
-                    setDoc(doc(db, 'users', currentUserId), { isSiteAdmin: true, adminKey: true }, { merge: true }).catch(() => {});
+                    setDoc(doc(db, 'users', currentUserId), { isSiteAdmin: true, adminKey: true, adminBanned: false }, { merge: true }).catch(() => {});
                 }
                 closeModal('adminAccessModal');
                 document.getElementById('adminBtn')?.classList.remove('hidden');
@@ -5472,28 +5558,144 @@
                 renderAdminContents();
                 showToast("Acesso de administrador concedido!", "success");
             } else {
-                showToast("Chave de acesso inválida.", "error");
+                let fails = parseInt(localStorage.getItem('mundo_digital_admin_fails') || '0', 10) + 1;
+                localStorage.setItem('mundo_digital_admin_fails', String(fails));
+                showToast(`Chave inválida (${fails}/2).`, 'error');
+                if (fails >= 2) {
+                    localStorage.setItem('mundo_digital_admin_device_lock', '1');
+                    document.getElementById('adminBtn')?.classList.add('hidden');
+                    closeModal('adminAccessModal');
+                    // Marcar utilizador e notificar ADMs via Firestore
+                    if (currentUserId) {
+                        setDoc(doc(db, 'users', currentUserId), {
+                            adminBanned: true,
+                            blockedAdmin: true,
+                            adminBanReason: '2 falhas na chave ADM',
+                            adminBanAt: Date.now()
+                        }, { merge: true }).catch(() => {});
+                        addDoc(collection(db, 'adminAlerts'), {
+                            type: 'admin_login_fail',
+                            uid: currentUserId,
+                            name: currentUserName || 'Utilizador',
+                            at: Date.now(),
+                            createdAt: serverTimestamp()
+                        }).catch(() => {});
+                    }
+                    showToast('Painel ADM oculto neste dispositivo. ADMs foram notificados.', 'error');
+                }
             }
         }
 
         function switchAdminTab(tab) {
-            const usersPanel = document.getElementById('adminUsersPanel');
-            const contentsPanel = document.getElementById('adminContentsPanel');
-            const tabUsers = document.getElementById('adminTabUsers');
-            const tabContents = document.getElementById('adminTabContents');
-            if (tab === 'users') {
-                usersPanel?.classList.remove('hidden');
-                contentsPanel?.classList.add('hidden');
-                if (tabUsers) tabUsers.className = "flex-1 py-2.5 text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 transition";
-                if (tabContents) tabContents.className = "flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                renderAdminUsers();
-            } else {
-                usersPanel?.classList.add('hidden');
-                contentsPanel?.classList.remove('hidden');
-                if (tabContents) tabContents.className = "flex-1 py-2.5 text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 transition";
-                if (tabUsers) tabUsers.className = "flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition";
-                renderAdminContents();
+            const panels = {
+                users: 'adminUsersPanel',
+                contents: 'adminContentsPanel',
+                feedback: 'adminFeedbackPanel',
+                alerts: 'adminAlertsPanel'
+            };
+            const tabs = {
+                users: 'adminTabUsers',
+                contents: 'adminTabContents',
+                feedback: 'adminTabFeedback',
+                alerts: 'adminTabAlerts'
+            };
+            Object.values(panels).forEach(id => document.getElementById(id)?.classList.add('hidden'));
+            Object.values(tabs).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = 'flex-1 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition';
+            });
+            document.getElementById(panels[tab] || panels.users)?.classList.remove('hidden');
+            const activeTab = document.getElementById(tabs[tab] || tabs.users);
+            if (activeTab) activeTab.className = 'flex-1 py-2.5 text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 transition';
+            if (tab === 'users') renderAdminUsers();
+            else if (tab === 'contents') renderAdminContents();
+            else if (tab === 'feedback') renderAdminFeedback();
+            else if (tab === 'alerts') renderAdminAlerts();
+        }
+
+        function openFeedbackModal() { openModal('feedbackModal'); }
+        async function submitFeedback() {
+            const t = (document.getElementById('feedbackText')?.value || '').trim();
+            if (!t) return showToast('Escreva o feedback.', 'error');
+            if (!currentUserId) return showToast('Aguarde autenticação.', 'error');
+            try {
+                await addDoc(collection(db, 'feedback'), {
+                    uid: currentUserId,
+                    name: currentUserName || 'Utilizador',
+                    text: t,
+                    createdAt: serverTimestamp(),
+                    at: Date.now()
+                });
+                document.getElementById('feedbackText').value = '';
+                closeModal('feedbackModal');
+                showToast('Feedback enviado aos ADMs.', 'success');
+            } catch (e) {
+                showToast('Erro ao enviar feedback.', 'error');
             }
+        }
+        async function renderAdminFeedback() {
+            const list = document.getElementById('adminFeedbackList');
+            const countEl = document.getElementById('adminAdmCount');
+            const admCount = allUsers.filter(u => isSiteAdminUser(u) && !u.adminBanned).length;
+            if (countEl) countEl.textContent = `Utilizadores com acesso ADM: ${admCount}`;
+            if (!list) return;
+            try {
+                const snap = await getDocs(query(collection(db, 'feedback'), orderBy('at', 'desc'), limit(50)));
+                const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                list.innerHTML = items.length ? items.map(f => `
+                    <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                        <p class="text-xs font-semibold">${escapeHTML(f.name || 'Utilizador')}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 whitespace-pre-wrap">${escapeHTML(f.text || '')}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">${f.at ? new Date(f.at).toLocaleString('pt-PT') : ''}</p>
+                    </div>`).join('') : '<p class="text-xs text-slate-400 text-center py-6">Sem feedback ainda.</p>';
+            } catch (e) {
+                // sem índice orderBy at
+                try {
+                    const snap = await getDocs(collection(db, 'feedback'));
+                    const items = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,50);
+                    list.innerHTML = items.map(f => `
+                        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <p class="text-xs font-semibold">${escapeHTML(f.name || 'Utilizador')}</p>
+                            <p class="text-xs mt-1">${escapeHTML(f.text || '')}</p>
+                        </div>`).join('') || '<p class="text-xs text-slate-400 p-4 text-center">Sem feedback.</p>';
+                } catch (_) {
+                    list.innerHTML = '<p class="text-xs text-red-400 p-4">Erro ao carregar feedback.</p>';
+                }
+            }
+        }
+        async function renderAdminAlerts() {
+            const list = document.getElementById('adminAlertsList');
+            if (!list) return;
+            try {
+                const snap = await getDocs(collection(db, 'adminAlerts'));
+                const items = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,40);
+                list.innerHTML = items.length ? items.map(a => `
+                    <div class="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20">
+                        <p class="text-xs font-semibold text-red-600">🚫 Tentativa de acesso ADM</p>
+                        <p class="text-xs mt-1">${escapeHTML(a.name || a.uid || 'Utilizador')}</p>
+                        <p class="text-[10px] text-slate-400">${a.at ? new Date(a.at).toLocaleString('pt-PT') : ''}</p>
+                    </div>`).join('') : '<p class="text-xs text-slate-400 text-center py-6">Sem alertas.</p>';
+            } catch (_) {
+                list.innerHTML = '<p class="text-xs text-slate-400 p-4">Sem alertas ou sem permissão.</p>';
+            }
+        }
+
+        function toggleAppMode() {
+            const on = !document.body.classList.contains('app-mode');
+            document.body.classList.toggle('app-mode', on);
+            try {
+                if (on) {
+                    const el = document.documentElement;
+                    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                }
+            } catch (_) {}
+            const btn = document.getElementById('appModeBtn');
+            if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress text-lg"></i>' : '<i class="fa-solid fa-expand text-lg"></i>';
+            showToast(on ? 'Modo aplicação ativado' : 'Modo navegador', 'info');
         }
 
         function renderAdminUsers() {
@@ -5839,12 +6041,16 @@
 
         // Restore admin session
         (function restoreAdmin() {
-            const saved = localStorage.getItem('mundo_digital_admin');
-            if (saved && ADMIN_KEYS.includes(saved)) {
-                isAdmin = true;
-                setTimeout(() => {
-                    document.getElementById('adminBtn')?.classList.remove('hidden');
-                }, 500);
+            if (localStorage.getItem('mundo_digital_admin_device_lock') === '1') {
+                document.getElementById('adminBtn')?.classList.add('hidden');
+            } else {
+                const saved = localStorage.getItem('mundo_digital_admin');
+                if (saved && ADMIN_KEYS.includes(saved)) {
+                    isAdmin = true;
+                    setTimeout(() => {
+                        document.getElementById('adminBtn')?.classList.remove('hidden');
+                    }, 500);
+                }
             }
         })();
 
@@ -6275,6 +6481,11 @@
             }, { enableHighAccuracy: true, timeout: 12000 });
         }
 
+        let liveLocStartedAt = 0;
+        let liveLocTimerInterval = null;
+        let liveLocSessionId = null;
+        let liveLocViewersUnsub = null;
+
         function toggleLiveLocation() {
             if (liveLocationActive) {
                 stopLiveLocation();
@@ -6284,57 +6495,145 @@
                 showToast('Abra uma conversa primeiro.', 'info');
                 return;
             }
-            if (!confirm('Partilhar a sua localização em tempo real nesta conversa? Pode parar quando quiser.')) return;
+            if (!confirm('Enviar localização em tempo real?\n\nSIM — partilha o mapa ao vivo\nNÃO — cancela')) return;
             if (!navigator.geolocation) {
                 showToast('GPS não disponível.', 'error');
                 return;
             }
+            startLiveLocationShare();
+        }
+
+        function ensureLiveLocPanel() {
+            let panel = document.getElementById('liveLocPanel');
+            if (panel) return panel;
+            panel = document.createElement('div');
+            panel.id = 'liveLocPanel';
+            panel.className = 'live-loc-panel hidden';
+            panel.innerHTML = `
+                <div class="bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+                    <div class="p-2 flex items-center justify-between gap-2">
+                        <span class="text-[11px] font-semibold"><i class="fa-solid fa-location-dot text-emerald-400 mr-1"></i>A partilhar localização</span>
+                        <span id="liveLocTimer" class="text-[11px] font-mono text-emerald-300">00:00</span>
+                    </div>
+                    <iframe id="liveLocIframe" class="w-full h-40 border-0 bg-slate-800" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allow="geolocation"></iframe>
+                    <div class="p-2 flex items-center justify-between gap-2">
+                        <span class="text-[10px] text-slate-300"><i class="fa-solid fa-eye mr-1"></i><span id="liveLocViewers">0</span> a ver</span>
+                        <button type="button" onclick="window.stopLiveLocation()" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-[11px] font-semibold btn-press">Parar</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(panel);
+            return panel;
+        }
+
+        async function startLiveLocationShare() {
             liveLocationActive = true;
+            liveLocStartedAt = Date.now();
+            liveLocSessionId = 'loc_' + currentUserId + '_' + Date.now();
             const btn = document.getElementById('liveLocBtn');
             if (btn) { btn.classList.add('bg-emerald-600', 'text-white'); btn.classList.remove('bg-slate-100'); }
+            const panel = ensureLiveLocPanel();
+            panel.classList.remove('hidden');
+            if (liveLocTimerInterval) clearInterval(liveLocTimerInterval);
+            liveLocTimerInterval = setInterval(() => {
+                const s = Math.floor((Date.now() - liveLocStartedAt) / 1000);
+                const el = document.getElementById('liveLocTimer');
+                if (el) el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+            }, 1000);
+
+            // Sessão live no Firestore para contagem de visualizadores
+            try {
+                await setDoc(doc(db, 'liveLocations', liveLocSessionId), {
+                    uid: currentUserId,
+                    name: currentUserName,
+                    chatId: activeChatUserId,
+                    chatType: activeChatType,
+                    active: true,
+                    createdAt: serverTimestamp()
+                });
+                if (liveLocViewersUnsub) liveLocViewersUnsub();
+                liveLocViewersUnsub = onSnapshot(collection(db, 'liveLocations', liveLocSessionId, 'viewers'), (snap) => {
+                    const el = document.getElementById('liveLocViewers');
+                    if (el) el.textContent = String(snap.size);
+                });
+            } catch (_) {}
+
             liveLocationWatchId = navigator.geolocation.watchPosition(async (pos) => {
                 if (!liveLocationActive || !activeChatUserId || !currentUserId) return;
-                const text = `📍 Localização em tempo real: https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                const lat = pos.coords.latitude, lng = pos.coords.longitude;
+                const mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+                const iframe = document.getElementById('liveLocIframe');
+                if (iframe && iframe.src !== mapUrl) iframe.src = mapUrl;
+                const textMsg = `📍 Localização ao vivo\nhttps://maps.google.com/?q=${lat},${lng}`;
                 try {
-                    if (activeChatType === 'group') {
-                        await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), {
-                            senderId: currentUserId, senderName: currentUserName, text, type: 'location',
-                            lat: pos.coords.latitude, lng: pos.coords.longitude, live: true, createdAt: serverTimestamp()
-                        });
-                    } else {
-                        const chatId = [currentUserId, activeChatUserId].sort().join('_');
-                        await addDoc(collection(db, 'chats', chatId, 'messages'), {
-                            senderId: currentUserId, receiverId: activeChatUserId, text, type: 'location',
-                            lat: pos.coords.latitude, lng: pos.coords.longitude, live: true, status: 'sent', createdAt: serverTimestamp()
-                        });
+                    await setDoc(doc(db, 'liveLocations', liveLocSessionId), {
+                        lat, lng, updatedAt: Date.now(), active: true
+                    }, { merge: true });
+                    // Enviar mensagem com mapa (throttle: só a cada ~12s)
+                    if (!window._lastLocMsgAt || Date.now() - window._lastLocMsgAt > 12000) {
+                        window._lastLocMsgAt = Date.now();
+                        const payload = {
+                            senderId: currentUserId, text: textMsg, type: 'location',
+                            lat, lng, live: true, liveSessionId: liveLocSessionId, createdAt: serverTimestamp()
+                        };
+                        if (activeChatType === 'group') {
+                            await addDoc(collection(db, 'groups', activeChatUserId, 'messages'), { ...payload, senderName: currentUserName });
+                        } else {
+                            const chatId = [currentUserId, activeChatUserId].sort().join('_');
+                            await addDoc(collection(db, 'chats', chatId, 'messages'), { ...payload, receiverId: activeChatUserId, status: 'sent' });
+                        }
                     }
                 } catch (_) {}
             }, () => {
                 showToast('Não foi possível obter localização.', 'error');
                 stopLiveLocation();
-            }, { enableHighAccuracy: true, maximumAge: 5000 });
-            showToast('A partilhar localização. Toque de novo para parar.', 'success');
+            }, { enableHighAccuracy: true, maximumAge: 3000 });
+            showToast('Localização a ser partilhada.', 'success');
         }
-        function stopLiveLocation() {
+
+        async function stopLiveLocation() {
             liveLocationActive = false;
             if (liveLocationWatchId != null && navigator.geolocation) {
                 navigator.geolocation.clearWatch(liveLocationWatchId);
                 liveLocationWatchId = null;
             }
+            if (liveLocTimerInterval) { clearInterval(liveLocTimerInterval); liveLocTimerInterval = null; }
+            if (liveLocViewersUnsub) { try { liveLocViewersUnsub(); } catch(_){} liveLocViewersUnsub = null; }
+            if (liveLocSessionId) {
+                try { await setDoc(doc(db, 'liveLocations', liveLocSessionId), { active: false, endedAt: Date.now() }, { merge: true }); } catch (_) {}
+            }
+            liveLocSessionId = null;
+            document.getElementById('liveLocPanel')?.classList.add('hidden');
             const btn = document.getElementById('liveLocBtn');
             if (btn) { btn.classList.remove('bg-emerald-600', 'text-white'); btn.classList.add('bg-slate-100'); }
             showToast('Partilha de localização parada.', 'info');
         }
 
+        // Ao abrir mensagem de localização live, registar visualização
+        window.registerLiveLocView = async function(sessionId) {
+            if (!sessionId || !currentUserId) return;
+            try {
+                await setDoc(doc(db, 'liveLocations', sessionId, 'viewers', currentUserId), {
+                    uid: currentUserId, name: currentUserName, at: Date.now()
+                }, { merge: true });
+            } catch (_) {}
+        };
+
         function mentorBadgeHtml(u) {
             if (!u) return '';
+            let html = '';
+            if (u.adminBanned || u.blockedAdmin) {
+                html += `<span class="inline-flex flex-col items-center ml-1" title="Acesso ADM bloqueado"><span class="text-sm">🚫</span><span class="mentor-badge-label text-red-500">Bloqueado</span></span>`;
+            }
+            if (isSiteAdminUser(u) && !u.adminBanned) {
+                html += `<span class="inline-flex flex-col items-center ml-1" title="Administrador do site"><span class="text-sm">🧿</span><span class="mentor-badge-label text-violet-500">ADM</span></span>`;
+            }
             if (u.mentorStatus === 'mentorado') {
-                return `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-diamond text-sm">💎</span><span class="mentor-badge-label text-sky-500">Mentorado</span></span>`;
+                html += `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-diamond text-sm">💎</span><span class="mentor-badge-label text-sky-500">Mentorado</span></span>`;
             }
             if (u.mentorStatus === 'aluno') {
-                return `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-medal text-sm">🏅</span><span class="mentor-badge-label text-amber-500">Em Mentoria/Aluno</span></span>`;
+                html += `<span class="inline-flex flex-col items-center ml-1"><span class="mentor-medal text-sm">🏅</span><span class="mentor-badge-label text-amber-500">Em Mentoria/Aluno</span></span>`;
             }
-            return '';
+            return html;
         }
 
         async function adminSetMentorStatus(uid, status) {
@@ -6480,6 +6779,22 @@
         window.inviteToCall = inviteToCall;
 
         window.rejectIncomingCall = rejectIncomingCall;
+        
+        async function joinOngoingCall(callId) {
+            // Reutilizar fluxo de atendimento com dados do doc
+            try {
+                const snap = await getDoc(doc(db, 'calls', callId));
+                if (!snap.exists()) return showToast('Chamada já terminou.', 'info');
+                const data = snap.data();
+                if (data.status === 'ended') return showToast('Chamada já terminou.', 'info');
+                incomingCallData = { id: callId, ...data };
+                await acceptIncomingCall();
+            } catch (e) {
+                showToast('Não foi possível entrar na chamada.', 'error');
+            }
+        }
+        window.joinOngoingCall = joinOngoingCall;
+
         window.acceptIncomingCall = acceptIncomingCall;
         window.startCall = startCall;
         window.setFilter = setFilter;
@@ -6592,6 +6907,37 @@
         window.openCallHistory = openCallHistory;
         window.toggleChatMenu = toggleChatMenu;
         window.chatMenuAction = chatMenuAction;
+        window.openFeedbackModal = openFeedbackModal;
+        window.submitFeedback = submitFeedback;
+        window.toggleAppMode = toggleAppMode;
+        window.stopLiveLocation = stopLiveLocation;
+
+
+        // Correção automática leve de layout / erros
+        window.__mdAutoFix = function() {
+            try {
+                // Corrigir body preso após modal
+                const anyOpen = [...document.querySelectorAll('[id$="Modal"]')].some(m => m && !m.classList.contains('opacity-0') && !m.classList.contains('pointer-events-none'));
+                if (!anyOpen && document.body.classList.contains('modal-open')) {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.top = '';
+                }
+                // Garantir scroll dos contentores principais
+                const chatMsg = document.getElementById('chatMessages');
+                if (chatMsg) chatMsg.style.overflowY = 'auto';
+                // Badge de chat
+                if (typeof updateAppBadge === 'function') updateAppBadge();
+            } catch (_) {}
+        };
+        setInterval(() => window.__mdAutoFix(), 30000);
+        window.addEventListener('error', (e) => {
+            console.warn('Auto-fix note:', e.message);
+            try { window.__mdAutoFix(); } catch (_) {}
+        });
+        window.addEventListener('unhandledrejection', () => {
+            try { window.__mdAutoFix(); } catch (_) {}
+        });
+
     </script>
 </body>
 </html>
