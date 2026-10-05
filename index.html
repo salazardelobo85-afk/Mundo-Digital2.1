@@ -385,14 +385,17 @@
                 </div>
             </div>
 
-            <div class="p-4 sm:p-6 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-4 z-20">
-                <button onclick="window.toggleMute()" id="muteBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg" title="Silenciar Microfone">
+            <div class="p-4 sm:p-6 bg-slate-900 border-t border-slate-800 flex items-center justify-center gap-3 sm:gap-4 z-20 flex-wrap">
+                <button onclick="window.toggleMute()" id="muteBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg btn-press" title="Silenciar Microfone">
                     <i class="fa-solid fa-microphone text-lg"></i>
                 </button>
-                <button onclick="window.toggleVideo()" id="videoToggleBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg" title="Ligar/Desligar Câmara">
+                <button onclick="window.toggleVideo()" id="videoToggleBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg btn-press" title="Ligar/Desligar Câmara">
                     <i class="fa-solid fa-video text-lg"></i>
                 </button>
-                <button onclick="window.endCall()" class="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-lg transform hover:scale-105" title="Terminar Chamada">
+                <button onclick="window.toggleScreenShare()" id="screenShareBtn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition shadow-lg btn-press" title="Partilhar ecrã">
+                    <i class="fa-solid fa-desktop text-lg"></i>
+                </button>
+                <button onclick="window.endCall()" class="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-lg transform hover:scale-105 btn-press" title="Terminar Chamada">
                     <i class="fa-solid fa-phone-slash text-xl"></i>
                 </button>
             </div>
@@ -1664,17 +1667,43 @@
         let unsubscribeEntertainmentChat = null;
         let entertainmentChatOpen = false;
 
-        // Mais STUN = melhor descoberta de rede (sem TURN público gratuito fiável)
+        // STUN (descoberta) + TURN (retransmissão quando P2P falha)
+        // TURN público Open Relay — bom para demonstração; em produção use o seu coturn/Metered pago
+        const TURN_USER = 'openrelayproject';
+        const TURN_PASS = 'openrelayproject';
         const rtcConfig = {
             iceServers: [
+                // STUN
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' },
-                { urls: 'stun:stun.cloudflare.com:3478' }
+                { urls: 'stun:stun.cloudflare.com:3478' },
+                { urls: 'stun:openrelay.metered.ca:80' },
+                // TURN UDP / TCP / TLS (atravessa NATs e firewalls difíceis)
+                {
+                    urls: [
+                        'turn:openrelay.metered.ca:80',
+                        'turn:openrelay.metered.ca:80?transport=tcp',
+                        'turn:openrelay.metered.ca:443',
+                        'turn:openrelay.metered.ca:443?transport=tcp',
+                        'turns:openrelay.metered.ca:443'
+                    ],
+                    username: TURN_USER,
+                    credential: TURN_PASS
+                },
+                {
+                    urls: [
+                        'turn:openrelay.metered.ca:443?transport=tcp',
+                        'turns:openrelay.metered.ca:443'
+                    ],
+                    username: TURN_USER,
+                    credential: TURN_PASS
+                }
             ],
-            iceCandidatePoolSize: 10
+            iceCandidatePoolSize: 16,
+            bundlePolicy: 'max-bundle',
+            rtcpMuxPolicy: 'require',
+            iceTransportPolicy: 'all' // tenta direto + relay (TURN)
         };
 
         function setCallStatus(text, colorClass) {
@@ -1710,7 +1739,7 @@
             pc.oniceconnectionstatechange = () => {
                 const state = pc.iceConnectionState;
                 if (state === 'checking') {
-                    setCallStatus('A estabelecer ligação...', 'text-amber-400');
+                    setCallStatus('A estabelecer ligação (STUN/TURN)...', 'text-amber-400');
                 } else if (state === 'connected' || state === 'completed') {
                     setCallStatus('Conectado', 'text-emerald-400');
                     if (!callConnectedOnce) {
@@ -1718,12 +1747,36 @@
                         clearCallAnswerTimeout();
                         startCallTimer();
                     }
+                    if (window._iceRestartTimer) {
+                        clearTimeout(window._iceRestartTimer);
+                        window._iceRestartTimer = null;
+                    }
                 } else if (state === 'disconnected') {
                     setCallStatus('Ligação instável… a recuperar', 'text-amber-400');
+                    // Tentar ICE restart uma vez
+                    if (!pc._iceRestartAttempted) {
+                        pc._iceRestartAttempted = true;
+                        window._iceRestartTimer = setTimeout(async () => {
+                            if (!peerConnection || peerConnection.iceConnectionState === 'connected') return;
+                            try {
+                                setCallStatus('A reconectar via TURN...', 'text-amber-400');
+                                const offer = await peerConnection.createOffer({ iceRestart: true });
+                                await peerConnection.setLocalDescription(offer);
+                                if (activeCallId) {
+                                    await updateDoc(doc(db, 'calls', activeCallId), {
+                                        offer: { type: offer.type, sdp: offer.sdp },
+                                        iceRestartAt: Date.now()
+                                    });
+                                }
+                            } catch (e) {
+                                console.warn('ICE restart:', e);
+                            }
+                        }, 2000);
+                    }
                 } else if (state === 'failed') {
-                    setCallStatus('Falha na ligação', 'text-red-400');
-                    showToast('A ligação de rede falhou. Tente novamente.', 'error');
-                    setTimeout(() => cleanupCall(), 2500);
+                    setCallStatus('Falha na ligação de rede', 'text-red-400');
+                    showToast('Rede bloqueou a chamada. Tente Wi‑Fi ou dados móveis.', 'error');
+                    setTimeout(() => cleanupCall(), 2800);
                 } else if (state === 'closed') {
                     setCallStatus('Chamada terminada', 'text-slate-400');
                 }
@@ -1755,11 +1808,13 @@
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    autoGainControl: true
+                    autoGainControl: true,
+                    channelCount: 1
                 },
                 video: type === 'video' ? {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 24, max: 30 },
                     facingMode: 'user'
                 } : false
             };
@@ -3433,6 +3488,13 @@
             callConnectedOnce = false;
             isMuted = false;
             isVideoOff = false;
+            isScreenSharing = false;
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => { try { track.stop(); } catch (_) {} });
+                screenStream = null;
+            }
+            cameraVideoTrack = null;
+            updateScreenShareBtn();
 
             if (unsubscribeCall) { try { unsubscribeCall(); } catch (_) {} unsubscribeCall = null; }
             if (unsubscribeCandidates) { try { unsubscribeCandidates(); } catch (_) {} unsubscribeCandidates = null; }
@@ -3502,7 +3564,7 @@
         }
 
         function toggleVideo() {
-            if (!localStream) return;
+            if (!localStream || isScreenSharing) return;
             const videoTrack = localStream.getVideoTracks()[0];
             if (videoTrack) {
                 videoTrack.enabled = !videoTrack.enabled;
@@ -3513,6 +3575,142 @@
                         ? '<i class="fa-solid fa-video-slash text-lg text-red-400"></i>' 
                         : '<i class="fa-solid fa-video text-lg"></i>';
                 }
+            }
+        }
+
+        let isScreenSharing = false;
+        let screenStream = null;
+        let cameraVideoTrack = null;
+
+        function updateScreenShareBtn() {
+            const btn = document.getElementById('screenShareBtn');
+            if (!btn) return;
+            if (isScreenSharing) {
+                btn.classList.add('bg-brand-600');
+                btn.classList.remove('bg-slate-800');
+                btn.innerHTML = '<i class="fa-solid fa-desktop text-lg text-white"></i>';
+                btn.title = 'Parar partilha de ecrã';
+            } else {
+                btn.classList.remove('bg-brand-600');
+                btn.classList.add('bg-slate-800');
+                btn.innerHTML = '<i class="fa-solid fa-desktop text-lg"></i>';
+                btn.title = 'Partilhar ecrã';
+            }
+        }
+
+        async function replaceVideoTrack(newTrack) {
+            if (!peerConnection || !newTrack) return;
+            const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                await sender.replaceTrack(newTrack);
+            } else {
+                peerConnection.addTrack(newTrack, localStream || new MediaStream([newTrack]));
+            }
+            const localVid = document.getElementById('localVideo');
+            if (localVid && localStream) {
+                localVid.srcObject = localStream;
+                localVid.play().catch(() => {});
+            }
+            // Mostrar vídeo remoto/local em modo ecrã
+            const audioPlaceholder = document.getElementById('audioCallPlaceholder');
+            const remoteVid = document.getElementById('remoteVideo');
+            if (audioPlaceholder) audioPlaceholder.classList.add('hidden');
+            if (remoteVid) remoteVid.classList.remove('hidden');
+        }
+
+        async function toggleScreenShare() {
+            if (!peerConnection) {
+                showToast('Inicie uma chamada primeiro.', 'info');
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                showToast('Este dispositivo/navegador não suporta partilha de ecrã.', 'error');
+                return;
+            }
+
+            // Parar partilha
+            if (isScreenSharing) {
+                try {
+                    if (screenStream) {
+                        screenStream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} });
+                        screenStream = null;
+                    }
+                    // Restaurar câmara se existir
+                    if (cameraVideoTrack && cameraVideoTrack.readyState === 'live') {
+                        if (localStream) {
+                            localStream.getVideoTracks().forEach(t => {
+                                if (t !== cameraVideoTrack) {
+                                    localStream.removeTrack(t);
+                                    try { t.stop(); } catch (_) {}
+                                }
+                            });
+                            if (!localStream.getVideoTracks().includes(cameraVideoTrack)) {
+                                localStream.addTrack(cameraVideoTrack);
+                            }
+                        }
+                        await replaceVideoTrack(cameraVideoTrack);
+                        cameraVideoTrack.enabled = true;
+                    } else {
+                        // Sem câmara: remover vídeo
+                        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                        if (sender) await sender.replaceTrack(null);
+                    }
+                    isScreenSharing = false;
+                    updateScreenShareBtn();
+                    showToast('Partilha de ecrã terminada.', 'info');
+                } catch (e) {
+                    console.warn(e);
+                    showToast('Erro ao parar partilha.', 'error');
+                }
+                return;
+            }
+
+            // Iniciar partilha
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        displaySurface: 'monitor',
+                        frameRate: { ideal: 15, max: 30 }
+                    },
+                    audio: false
+                });
+                const screenTrack = screenStream.getVideoTracks()[0];
+                if (!screenTrack) throw new Error('Sem faixa de vídeo do ecrã');
+
+                // Guardar câmara atual
+                if (localStream) {
+                    const cam = localStream.getVideoTracks()[0];
+                    if (cam && cam !== screenTrack) {
+                        cameraVideoTrack = cam;
+                        localStream.removeTrack(cam);
+                    }
+                    localStream.addTrack(screenTrack);
+                } else {
+                    localStream = new MediaStream([screenTrack]);
+                }
+
+                await replaceVideoTrack(screenTrack);
+                isScreenSharing = true;
+                updateScreenShareBtn();
+                setCallStatus('A partilhar ecrã', 'text-brand-400');
+                showToast('A partilhar ecrã.', 'success');
+
+                screenTrack.onended = () => {
+                    if (isScreenSharing) toggleScreenShare();
+                };
+            } catch (e) {
+                if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) {
+                    showToast('Partilha de ecrã cancelada.', 'info');
+                } else {
+                    console.warn(e);
+                    showToast('Não foi possível partilhar o ecrã.', 'error');
+                }
+                if (screenStream) {
+                    screenStream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} });
+                    screenStream = null;
+                }
+                isScreenSharing = false;
+                updateScreenShareBtn();
             }
         }
 
@@ -5615,6 +5813,7 @@
         window.setChatWallpaper = setChatWallpaper;
         window.retryPendingMessage = retryPendingMessage;
         window.toggleMute = toggleMute;
+        window.toggleScreenShare = toggleScreenShare;
         window.toggleVideo = toggleVideo;
         window.endCall = endCall;
         window.rejectIncomingCall = rejectIncomingCall;
