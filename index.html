@@ -525,6 +525,52 @@
             animation-duration: 0.01ms !important;
             transition-duration: 0.05s !important;
         }
+
+
+        /* ===== Atualização UI: perfil compacto + bolhas do cabeçalho ===== */
+        #profileModal > div {
+            width: min(100% - 1rem, 24rem) !important;
+            max-height: min(82dvh, 42rem);
+        }
+        #profileForm {
+            padding: 0.9rem !important;
+            gap: 0.65rem !important;
+            overflow-y: auto;
+            max-height: calc(min(82dvh, 42rem) - 4rem);
+        }
+        #profileForm .profile-avatar-wrap { transform: scale(.78); margin: -0.35rem 0; }
+        #profileForm input, #profileForm textarea { font-size: .82rem; }
+        #profileForm textarea { min-height: 4rem; }
+        #profileForm .profile-location-grid { gap: .5rem; }
+        #profileForm .profile-actions { position: sticky; bottom: 0; padding-top: .5rem; background: linear-gradient(to top, rgb(255 255 255), rgb(255 255 255 / .92), transparent); }
+        .dark #profileForm .profile-actions { background: linear-gradient(to top, rgb(30 41 59), rgb(30 41 59 / .92), transparent); }
+
+        .header-bubble { position: relative; }
+        .header-bubble-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + .55rem);
+            width: 12.5rem;
+            padding: .45rem;
+            border: 1px solid rgb(226 232 240 / .9);
+            background: rgb(255 255 255 / .98);
+            backdrop-filter: blur(14px);
+            border-radius: 1rem;
+            box-shadow: 0 16px 40px rgb(15 23 42 / .18);
+            z-index: 80;
+        }
+        .dark .header-bubble-panel { border-color: rgb(51 65 85 / .9); background: rgb(15 23 42 / .98); }
+        .header-bubble-panel button { width: 100%; display: flex; align-items: center; gap: .65rem; padding: .65rem .7rem; border-radius: .75rem; font-size: .75rem; font-weight: 600; text-align: left; }
+        .header-bubble-panel button:hover { background: rgb(241 245 249); }
+        .dark .header-bubble-panel button:hover { background: rgb(30 41 59); }
+        .header-bubble-panel .bubble-sep { height: 1px; margin: .3rem .4rem; background: rgb(226 232 240); }
+        .dark .header-bubble-panel .bubble-sep { background: rgb(51 65 85); }
+        @media (max-width: 640px) {
+            #profileModal { padding: .5rem; align-items: center; }
+            #profileModal > div { max-height: 84dvh; border-radius: 1rem; margin: 0; }
+            #profileModal .profile-modal-header { padding: .7rem .85rem; }
+            .header-bubble-panel { width: 11.5rem; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
@@ -701,31 +747,38 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <button onclick="window.openStatusHub()" title="Status e amigos" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press">
-                    <i class="fa-solid fa-circle-notch text-lg"></i>
-                </button>
-                <button onclick="window.openModal('chatModal')" title="Abrir Chat" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition relative">
-                    <i class="fa-solid fa-comments text-lg"></i>
-                    <span id="chatBadge" class="hidden absolute -top-0.5 -right-0.5 min-w-[1.15rem] h-[1.15rem] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800">0</span>
-                </button>
+                <!-- Chatts: reúne Status, Mensagens/Conversas e Feedback -->
+                <div class="header-bubble">
+                    <button type="button" onclick="window.toggleHeaderBubble('chattsBubble')" title="Chatts" class="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
+                        <i class="fa-solid fa-comments text-brand-500"></i><span>Chatts</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
+                        <span id="chatBadge" class="hidden min-w-[1.15rem] h-[1.15rem] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+                    </button>
+                    <div id="chattsBubble" class="header-bubble-panel hidden">
+                        <button type="button" onclick="window.openStatusHub(); window.closeHeaderBubbles();"><i class="fa-solid fa-circle-notch text-brand-500"></i><span>Status</span></button>
+                        <button type="button" onclick="window.openModal('chatModal'); window.closeHeaderBubbles();"><i class="fa-solid fa-comments text-indigo-500"></i><span>Mensagens e conversas</span></button>
+                        <button type="button" onclick="window.openFeedbackModal(); window.closeHeaderBubbles();"><i class="fa-solid fa-comment-dots text-emerald-500"></i><span>Enviar feedback</span></button>
+                    </div>
+                </div>
 
-                <button id="enableNotificationsBtn" onclick="window.requestNotificationPermission()" title="Ativar Notificações" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
-                    <i id="notificationIcon" class="fa-solid fa-bell text-lg"></i>
-                </button>
+                <!-- Funções: reúne Tema e Notificações -->
+                <div class="header-bubble">
+                    <button type="button" onclick="window.toggleHeaderBubble('funcoesBubble')" title="Funções" class="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition btn-press font-semibold text-xs">
+                        <i class="fa-solid fa-sliders text-indigo-500"></i><span>Funções</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
+                    </button>
+                    <div id="funcoesBubble" class="header-bubble-panel hidden">
+                        <button id="enableNotificationsBtn" type="button" onclick="window.requestNotificationPermission(); window.closeHeaderBubbles();"><i id="notificationIcon" class="fa-solid fa-bell text-amber-500"></i><span>Notificações</span></button>
+                        <button id="themeToggleBtn" type="button" onclick="window.toggleTheme(); window.closeHeaderBubbles();"><i id="themeIcon" class="fa-solid fa-moon text-sky-500"></i><span>Modo escuro / claro</span></button>
+                    </div>
+                </div>
 
-                <button id="themeToggleBtn" onclick="window.toggleTheme()" title="Alternar Tema" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
-                </button>
                 <button type="button" onclick="window.toggleAppMode()" id="appModeBtn" title="Modo aplicação" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">
                     <i class="fa-solid fa-expand text-lg"></i>
                 </button>
-                <button type="button" onclick="window.openFeedbackModal()" title="Enviar feedback" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 btn-press">
-                    <i class="fa-solid fa-comment-dots text-lg"></i>
-                </button>
                 
-                <button onclick="window.openModal('addContentModal')" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all duration-200 transform active:scale-95 text-sm btn-press">
-                    <i class="fa-solid fa-pen-nib"></i>
-                    <span class="hidden sm:inline">Publicar</span>
+                <button type="button" onclick="window.openModal('addContentModal')" title="Publicar" aria-label="Publicar" class="p-2.5 rounded-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all duration-200 transform active:scale-95 btn-press">
+                    <i class="fa-solid fa-pen-nib text-lg"></i>
                 </button>
 
                 <div class="pl-2 border-l border-slate-200 dark:border-slate-700 flex items-center gap-2">
@@ -880,36 +933,38 @@
         </div>
     </div>
 
-    <!-- PERFIL DO UTILIZADOR -->
-    <div id="profileModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4 overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <div><h3 class="font-bold text-lg" id="profileModalTitle">O meu perfil</h3><p class="text-xs text-slate-500">Personalize como aparece nas conversas.</p></div>
-                <button onclick="window.closeModal('profileModal')" class="text-slate-400 p-2"><i class="fa-solid fa-xmark"></i></button>
+    <!-- PERFIL DO UTILIZADOR — versão compacta -->
+    <div id="profileModal" class="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="profile-modal-header p-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div><h3 class="font-bold text-base" id="profileModalTitle">O meu perfil</h3><p class="text-[10px] text-slate-500">Edite apenas o que pretende alterar.</p></div>
+                <button type="button" onclick="window.discardMyProfile()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 btn-press" title="Descartar alterações"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="profileForm" onsubmit="window.saveMyProfile(event)" class="p-5 space-y-4">
-                <div class="flex justify-center">
+            <form id="profileForm" onsubmit="window.saveMyProfile(event)" class="p-3 space-y-2.5">
+                <div class="profile-avatar-wrap flex justify-center">
                     <label class="relative cursor-pointer group">
-                        <img id="profilePreview" class="w-24 h-24 rounded-full object-cover border-4 border-brand-500 bg-slate-100 dark:bg-slate-700 hidden" alt="Perfil">
-                        <div id="profileFallback" class="w-24 h-24 rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold">U</div>
-                        <span class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-camera text-xs"></i></span>
+                        <img id="profilePreview" class="w-20 h-20 rounded-full object-cover border-4 border-brand-500 bg-slate-100 dark:bg-slate-700 hidden" alt="Perfil">
+                        <div id="profileFallback" class="w-20 h-20 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold">U</div>
+                        <span class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-camera text-[10px]"></i></span>
                         <input id="profileImageInput" type="file" accept="image/*" class="hidden" onchange="window.previewProfileImage(event)">
                     </label>
                 </div>
-                <div><label class="text-xs font-semibold">Nome</label><input id="profileNameInput" required maxlength="60" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
-                <div><label class="text-xs font-semibold">Bio</label><textarea id="profileBioInput" maxlength="180" rows="3" placeholder="Fale um pouco sobre si..." class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none"></textarea></div>
-                <div><label class="text-xs font-semibold">Telefone</label><input id="profilePhoneInput" maxlength="30" placeholder="Opcional" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-xs font-semibold">País</label><input id="profileCountryInput" maxlength="60" placeholder="País" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
-                    <div><label class="text-xs font-semibold">Província</label><input id="profileProvinceInput" maxlength="60" placeholder="Província" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
-                    <div><label class="text-xs font-semibold">Cidade</label><input id="profileCityInput" maxlength="60" placeholder="Cidade" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
-                    <div><label class="text-xs font-semibold">Bairro</label><input id="profileNeighborhoodInput" maxlength="60" placeholder="Bairro" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <div><label class="text-[11px] font-semibold">Nome</label><input id="profileNameInput" required maxlength="60" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <div><label class="text-[11px] font-semibold">Bio</label><textarea id="profileBioInput" maxlength="180" rows="2" placeholder="Fale um pouco sobre si..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none"></textarea></div>
+                <div><label class="text-[11px] font-semibold">Telefone</label><input id="profilePhoneInput" maxlength="30" placeholder="Opcional" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                <div class="profile-location-grid grid grid-cols-2 gap-2">
+                    <div><label class="text-[11px] font-semibold">Província</label><input id="profileProvinceInput" maxlength="60" placeholder="Província" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                    <div><label class="text-[11px] font-semibold">Cidade</label><input id="profileCityInput" maxlength="60" placeholder="Cidade" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
+                    <div class="col-span-2"><label class="text-[11px] font-semibold">Bairro</label><input id="profileNeighborhoodInput" maxlength="60" placeholder="Bairro" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="window.captureProfileGps()" class="flex-1 py-2.5 rounded-xl border border-brand-500/40 text-brand-600 text-xs font-semibold btn-press"><i class="fa-solid fa-location-crosshairs mr-1"></i>GPS atual</button>
-                    <p id="profileGpsHint" class="flex-1 text-[10px] text-slate-400 self-center">Localização atualiza a cada 7 dias</p>
+                <div class="flex gap-2 items-center">
+                    <button type="button" onclick="window.captureProfileGps()" class="flex-1 py-2 rounded-xl border border-brand-500/40 text-brand-600 text-[11px] font-semibold btn-press"><i class="fa-solid fa-location-crosshairs mr-1"></i>GPS atual</button>
+                    <p id="profileGpsHint" class="flex-1 text-[9px] text-slate-400">Localização atualiza a cada 7 dias</p>
                 </div>
-                <button class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Guardar perfil</button>
+                <div class="profile-actions flex gap-2">
+                    <button type="button" onclick="window.discardMyProfile()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 btn-press"><i class="fa-solid fa-rotate-left mr-1"></i>Descartar</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs btn-press"><i class="fa-solid fa-floppy-disk mr-1"></i>Guardar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -3432,15 +3487,34 @@
         let selectedProfileImageFile = null;
         let selectedGroupImageFile = null;
 
+        let profileEditSnapshot = null;
+
+        function discardMyProfile() {
+            selectedProfileImageFile = null;
+            const input = document.getElementById('profileImageInput');
+            if (input) input.value = '';
+            if (profileEditSnapshot) {
+                const setv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+                setv('profileNameInput', profileEditSnapshot.name);
+                setv('profileBioInput', profileEditSnapshot.bio);
+                setv('profilePhoneInput', profileEditSnapshot.phone);
+                setv('profileProvinceInput', profileEditSnapshot.province);
+                setv('profileCityInput', profileEditSnapshot.city);
+                setv('profileNeighborhoodInput', profileEditSnapshot.neighborhood);
+                setProfilePreview(profileEditSnapshot.photoURL || '', profileEditSnapshot.name || currentUserName);
+            }
+            closeModal('profileModal');
+        }
+
         async function openMyProfile() {
             if (!currentUserId) return;
             const snap = await getDoc(doc(db, 'users', currentUserId));
             const d = snap.exists() ? snap.data() : {};
+            profileEditSnapshot = { name:d.name||currentUserName||'', bio:d.bio||'', phone:d.phone||'', province:d.province||'', city:d.city||'', neighborhood:d.neighborhood||'', photoURL:d.photoURL||'' };
             document.getElementById('profileNameInput').value = d.name || currentUserName || '';
             document.getElementById('profileBioInput').value = d.bio || '';
             document.getElementById('profilePhoneInput').value = d.phone || '';
             const setv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
-            setv('profileCountryInput', d.country);
             setv('profileProvinceInput', d.province);
             setv('profileCityInput', d.city);
             setv('profileNeighborhoodInput', d.neighborhood);
@@ -3467,14 +3541,13 @@
         async function saveMyProfile(e) {
             e.preventDefault(); if(!currentUserId) return;
             const name=document.getElementById('profileNameInput').value.trim(); const bio=document.getElementById('profileBioInput').value.trim(); const phone=document.getElementById('profilePhoneInput').value.trim();
-            const country=(document.getElementById('profileCountryInput')?.value||'').trim();
             const province=(document.getElementById('profileProvinceInput')?.value||'').trim();
             const city=(document.getElementById('profileCityInput')?.value||'').trim();
             const neighborhood=(document.getElementById('profileNeighborhoodInput')?.value||'').trim();
             let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
             try {
                 if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
-                const payload={uid:currentUserId,name,bio,phone,country,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
+                const payload={uid:currentUserId,name,bio,phone,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
                 if (window._pendingGps) { payload.lat=window._pendingGps.lat; payload.lng=window._pendingGps.lng; payload.gpsUpdatedAt=Date.now(); window._pendingGps=null; }
                 await setDoc(doc(db,'users',currentUserId),payload,{merge:true});
                 currentUserName=name; localStorage.setItem('mundo_digital_username',name); updateAuthUI(auth.currentUser); setProfilePreview(photoURL,name); showToast('Perfil atualizado com sucesso!','success'); closeModal('profileModal');
@@ -6275,6 +6348,20 @@
             return seededShuffle(pool, seed).slice(0, 10);
         }
 
+        function closeHeaderBubbles() {
+            document.querySelectorAll('.header-bubble-panel').forEach(el => el.classList.add('hidden'));
+        }
+        function toggleHeaderBubble(id) {
+            const target = document.getElementById(id);
+            if (!target) return;
+            const wasHidden = target.classList.contains('hidden');
+            closeHeaderBubbles();
+            if (wasHidden) target.classList.remove('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.header-bubble')) closeHeaderBubbles();
+        });
+
         function openStatusHub() {
             openModal('statusModal');
             listenStatuses();
@@ -6928,6 +7015,7 @@
         window.switchAuthTab = switchAuthTab;
         window.updateMyName = updateMyName;
         window.openMyProfile = openMyProfile;
+        window.discardMyProfile = discardMyProfile;
         window.saveMyProfile = saveMyProfile;
         window.previewProfileImage = previewProfileImage;
         window.openCreateGroup = openCreateGroup;
@@ -7009,6 +7097,8 @@
         window.sendMixedEmoji = sendMixedEmoji;
         window.selectPostBgCategory = selectPostBgCategory;
         window.openStatusHub = openStatusHub;
+        window.toggleHeaderBubble = toggleHeaderBubble;
+        window.closeHeaderBubbles = closeHeaderBubbles;
         window.setStatusTab = setStatusTab;
         window.openCreateStatus = openCreateStatus;
         window.setStatusBgCat = setStatusBgCat;
