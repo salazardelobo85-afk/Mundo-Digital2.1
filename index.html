@@ -340,6 +340,20 @@
             25% { transform: translateY(-4px) rotate(-6deg); }
             75% { transform: translateY(-2px) rotate(6deg); }
         }
+        @keyframes emojiBlink { 0%,38%,44%,100% { transform:scaleY(1); } 40%,42% { transform:scaleY(.12); } }
+        @keyframes emojiCar { 0%,100% { transform:translateX(0); } 35% { transform:translateX(7px) translateY(-1px); } 70% { transform:translateX(-4px); } }
+        @keyframes emojiRain { 0%,100% { transform:translateY(-2px); } 50% { transform:translateY(6px); } }
+        @keyframes emojiHeart { 0%,100% { transform:scale(1); } 35% { transform:scale(1.22); } 65% { transform:scale(.94); } }
+        @keyframes emojiSpark { 0%,100% { transform:rotate(0) scale(1); filter:brightness(1); } 50% { transform:rotate(8deg) scale(1.12); filter:brightness(1.3); } }
+        @keyframes emojiAnimal { 0%,100% { transform:translateY(0) rotate(0); } 35% { transform:translateY(-3px) rotate(-5deg); } 70% { transform:translateY(0) rotate(5deg); } }
+        @keyframes emojiTick { 0%,100% { transform:rotate(0); } 50% { transform:rotate(10deg); } }
+        .emoji-face { animation:emojiBlink 3.8s ease-in-out infinite; transform-origin:center 55%; }
+        .emoji-car { animation:emojiCar 1.8s ease-in-out infinite; }
+        .emoji-rain { animation:emojiRain 1.15s ease-in-out infinite; }
+        .emoji-heart { animation:emojiHeart 1.25s ease-in-out infinite; }
+        .emoji-spark { animation:emojiSpark 1.5s ease-in-out infinite; }
+        .emoji-animal { animation:emojiAnimal 1.8s ease-in-out infinite; }
+        .emoji-tick { animation:emojiTick 1s steps(2,end) infinite; }
 
         @keyframes mentorGlow {
             0%, 100% { opacity: 0.7; transform: scale(1); }
@@ -545,7 +559,9 @@
         #profileForm .profile-actions { position: sticky; bottom: 0; padding-top: .5rem; background: linear-gradient(to top, rgb(255 255 255), rgb(255 255 255 / .92), transparent); }
         .dark #profileForm .profile-actions { background: linear-gradient(to top, rgb(30 41 59), rgb(30 41 59 / .92), transparent); }
 
-        .header-bubble { position: relative; }
+        .header-bubble { position: relative; z-index: 60; }
+        .header-bubble > button { min-height: 2.5rem; border: 1px solid rgba(100,116,139,.28); box-shadow: 0 6px 18px rgba(15,23,42,.10); }
+        .dark .header-bubble > button { border-color: rgba(148,163,184,.24); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
         .header-bubble-panel {
             position: absolute;
             right: 0;
@@ -777,10 +793,6 @@
                     <i class="fa-solid fa-expand text-lg"></i>
                 </button>
                 
-                <button type="button" onclick="window.openModal('addContentModal')" title="Publicar" aria-label="Publicar" class="p-2.5 rounded-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all duration-200 transform active:scale-95 btn-press">
-                    <i class="fa-solid fa-pen-nib text-lg"></i>
-                </button>
-
                 <div class="pl-2 border-l border-slate-200 dark:border-slate-700 flex items-center gap-2">
                     <button id="adminBtn" onclick="window.openAdminAccess()" title="Painel Admin" class="hidden p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-amber-500 transition">
                         <i class="fa-solid fa-shield-halved text-lg"></i>
@@ -969,6 +981,16 @@
         </div>
     </div>
 
+
+    <div id="stableFullscreenModal" class="fixed inset-0 z-[210] bg-slate-950/95 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="absolute inset-2 sm:inset-4 md:inset-6 rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-2xl flex flex-col">
+            <div class="h-11 shrink-0 px-3 flex items-center justify-between bg-slate-900 border-b border-slate-700 text-white">
+                <span class="text-xs font-semibold truncate" id="stableFullscreenTitle">Mundo Digital</span>
+                <button type="button" onclick="window.closeStableFullscreen()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center btn-press" title="Fechar ecrã completo"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <iframe id="stableFullscreenFrame" class="w-full flex-1 border-0 bg-white" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share" allowfullscreen referrerpolicy="origin"></iframe>
+        </div>
+    </div>
 
     <div id="callHistoryModal" class="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-slate-700 m-0 sm:m-4 max-h-[85vh] flex flex-col overflow-hidden">
@@ -1222,7 +1244,14 @@
                     <span class="text-slate-400 text-lg">=</span>
                     <div id="mixEmojiResult" class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center">🎉</div>
                 </div>
-                <div id="emojiPickGrid" class="grid grid-cols-8 gap-1 max-h-36 overflow-y-auto custom-scrollbar text-xl p-1"></div>
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">10 fusões sugeridas</p>
+                        <span class="text-[10px] text-brand-500" id="emojiFusionCount">100000+ combinações</span>
+                    </div>
+                    <div id="emojiFusionSuggestions" class="grid grid-cols-5 gap-1.5"></div>
+                </div>
+                <div id="emojiPickGrid" class="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto custom-scrollbar text-xl p-1"></div>
                 <button type="button" onclick="window.sendMixedEmoji()" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm btn-press">
                     <i class="fa-solid fa-paper-plane mr-2"></i>Enviar emoji criado
                 </button>
@@ -1322,10 +1351,10 @@
                             <button type="button" onclick="window.openWallpaperModal()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Papel de parede">
                                 <i class="fa-solid fa-image text-sm"></i>
                             </button>
-                            <button id="chatAudioCallBtn" onclick="window.startCall('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Chamada de Áudio">
+                            <button id="chatAudioCallBtn" onclick="window.handleChatCallAction('audio')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Chamada de Áudio">
                                 <i class="fa-solid fa-phone text-sm"></i>
                             </button>
-                            <button id="chatVideoCallBtn" onclick="window.startCall('video')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Chamada de Vídeo">
+                            <button id="chatVideoCallBtn" onclick="window.handleChatCallAction('video')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition btn-press" title="Chamada de Vídeo">
                                 <i class="fa-solid fa-video text-sm"></i>
                             </button>
                         </div>
@@ -1816,7 +1845,26 @@
         let mixPickSlot = 1;
         let mixE1 = '😀';
         let mixE2 = '✨';
-        const EMOJI_BASE = '😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕😟🙁☹️😮😯😲😳🥺😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾👋🤚🖐️✋🖖👌🤌🤏✌️🤞🤟🤘🤙👈👉👆🖕👇☝️👍👎✊👊🤛🤜👏🙌👐🤲🤝🙏✍️💅🤳💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁️👅👄💋🩸'.match(/./gu) || ['😀','🔥','❤️','✨','🎉','👍'];
+        const EMOJI_BASE = Array.from(new Set(('😀 😃 😄 😁 😆 😅 🤣 😂 🙂 🙃 😉 😊 😇 🥰 😍 🤩 😘 😋 😛 😜 🤪 😝 🤑 🤗 🤭 🤫 🤔 😐 😑 😶 😏 😒 🙄 😬 😌 😔 😪 🤤 😴 😷 🤒 🤕 🤢 🤮 🤧 🥵 🥶 🥴 😵 🤯 🤠 🥳 😎 🤓 🧐 😕 😟 🙁 ☹️ 😮 😯 😲 😳 🥺 😦 😧 😨 😰 😥 😢 😭 😱 😖 😣 😞 😓 😩 😫 🥱 😤 😡 😠 🤬 😈 👿 💀 ☠️ 💩 🤡 👻 👽 🤖 😺 😸 😹 😻 😼 😽 🙀 😿 😾 👋 ✋ 👌 🤌 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ 👍 👎 ✊ 👊 👏 🙌 🤲 🤝 🙏 💪 🦵 🦶 👀 👁️ 👅 👄 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 💖 💗 💓 💕 💞 💘 💝 💟 🔥 ✨ ⭐ 🌟 💫 ⚡ 🎉 🎊 🎈 🎁 🎵 🎶 🌈 ☀️ 🌤️ ⛅ 🌧️ ⛈️ 🌩️ ❄️ ☃️ ☔ 🌊 🌪️ 🌙 🌞 🌍 🚗 🚕 🚙 🚌 🚎 🏎️ 🚓 🚑 🚒 🚐 🛻 🚚 🚛 🚲 🛵 🏍️ ✈️ 🚀 🚁 🚢 🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🐤 🦄 🐝 🦋 🐢 🐍 🐙 🦀 🐟 🐬 🐳 🌸 🌹 🌺 🌻 🌼 🌷 🌱 🌲 🌳 🍀 🍎 🍉 🍓 🍇 🍌 🍕 🍔 🍟 🌭 🍿 🍩 🍪 🍫 🍰 ☕ 🧋 ⚽ 🏀 🏈 ⚾ 🎾 🏆 🥇 🎮 🎸 🎹 📱 💻 📷 🎧 💡 🔑 🔒 🔓 💎 🎯 🚨 ⏰ ⌚').split(/\s+/u))));
+        // As combinações são geradas sob demanda. 3 posições com ~200 emojis dão muito mais de 100000 combinações.
+        const EMOJI_FUSION_LIMIT = 100000;
+        const SIMPLE_EMOJI_FUSIONS = ['😀✨','😂🔥','😍❤️','😎⚡','🥰🌸','🤖💻','🚗💨','🌧️☔','🐶❤️','🎉🎊'];
+        const EMOJI_FUSION_INDEX = {
+            size: EMOJI_FUSION_LIMIT,
+            getAt(index) {
+                const n = EMOJI_BASE.length;
+                const total = n * n * n;
+                const x = Math.abs(index) % total;
+                const i = Math.floor(x / (n * n));
+                const j = Math.floor((x % (n * n)) / n);
+                const k = x % n;
+                return EMOJI_BASE[i] + EMOJI_BASE[j] + EMOJI_BASE[k];
+            }
+        };
+        function getEmojiFusionSuggestions() {
+            const seed = Date.now() % EMOJI_FUSION_LIMIT;
+            return SIMPLE_EMOJI_FUSIONS.slice(0, 10).map((simple, idx) => idx < 8 ? simple : EMOJI_FUSION_INDEX.getAt(seed + idx * 9973));
+        }
 
         function isEmojiHeavy(str) {
             if (!str) return false;
@@ -1828,11 +1876,20 @@
             return e > 0 && e >= chars.filter(c => c.trim()).length * 0.6;
         }
 
+        function getEmojiAnimationClass(emoji) {
+            if (/🚗|🚕|🚙|🚌|🚎|🏎️|🚓|🚑|🚒|🚐|🛻|🚚|🚛|🚲|🛵|🏍️|✈️|🚀|🚁|🚢/.test(emoji)) return 'emoji-car';
+            if (/🌧️|⛈️|🌩️|☔|🌊|❄️/.test(emoji)) return 'emoji-rain';
+            if (/😀|😃|😄|😁|😆|😅|🤣|😂|🙂|🙃|😉|😊|😇|🥰|😍|🤩|😘|😋|😛|😜|🤪|😝|🤑|🤗|🤭|🤫|🤔|😐|😑|😶|😏|😒|🙄|😬|😌|😔|😪|🤤|😴|😷|🤒|🤕|🤢|🤮|🤧|🥵|🥶|🥴|😵|🤯|🤠|🥳|😎|🤓|🧐|😕|😟|🙁|☹️|😮|😯|😲|😳|🥺|😦|😧|😨|😰|😥|😢|😭|😱|😖|😣|😞|😓|😩|😫|🥱|😤|😡|😠|🤬/.test(emoji)) return 'emoji-face';
+            if (/❤️|🧡|💛|💚|💙|💜|🖤|🤍|🤎|💔|💖|💗|💓|💕|💞|💘|💝|💟/.test(emoji)) return 'emoji-heart';
+            if (/🔥|☀️|🌞|⭐|🌟|💫|⚡|✨/.test(emoji)) return 'emoji-spark';
+            if (/🐶|🐱|🐭|🐹|🐰|🦊|🐻|🐼|🐨|🐯|🦁|🐮|🐷|🐸|🐵|🐔|🐧|🐦|🐤|🦄|🐝|🦋|🐢|🐍|🐙|🦀|🐟|🐬|🐳/.test(emoji)) return 'emoji-animal';
+            if (/⏰|⌚/.test(emoji)) return 'emoji-tick';
+            return 'emoji-anim';
+        }
         function formatMessageTextHtml(text) {
             if (!text) return '';
             const esc = escapeHTML(text);
-            // Envolver cada emoji em span animado
-            return esc.replace(/\p{Extended_Pictographic}/gu, (m) => `<span class="emoji-anim">${m}</span>`);
+            return esc.replace(/\p{Extended_Pictographic}/gu, (m) => `<span class="emoji-anim ${getEmojiAnimationClass(m)}">${m}</span>`);
         }
 
         function setReplyTarget(msg) {
@@ -1986,11 +2043,16 @@
             });
         }
 
+        let selectedEmojiFusion = '😀✨';
         function openEmojiMixer() {
-            mixE1 = '😀'; mixE2 = '✨';
+            mixE1 = '😀'; mixE2 = '✨'; selectedEmojiFusion = mixE1 + mixE2;
             document.getElementById('mixEmoji1').textContent = mixE1;
             document.getElementById('mixEmoji2').textContent = mixE2;
-            document.getElementById('mixEmojiResult').textContent = mixE1 + mixE2;
+            document.getElementById('mixEmojiResult').textContent = selectedEmojiFusion;
+            const suggestions = document.getElementById('emojiFusionSuggestions');
+            if (suggestions) suggestions.innerHTML = getEmojiFusionSuggestions().map(em =>
+                `<button type="button" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xl hover:border-brand-500 btn-press" onclick="window.useEmojiFusion('${em}')">${em}</button>`
+            ).join('');
             const grid = document.getElementById('emojiPickGrid');
             if (grid) grid.innerHTML = EMOJI_BASE.map(em =>
                 `<button type="button" class="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 btn-press" onclick="window.setMixEmoji('${em}')">${em}</button>`
@@ -2001,11 +2063,19 @@
         function setMixEmoji(em) {
             if (mixPickSlot === 1) { mixE1 = em; document.getElementById('mixEmoji1').textContent = em; }
             else { mixE2 = em; document.getElementById('mixEmoji2').textContent = em; }
-            document.getElementById('mixEmojiResult').textContent = mixE1 + mixE2;
+            selectedEmojiFusion = (mixE1 || '') + (mixE2 || '');
+            document.getElementById('mixEmojiResult').textContent = selectedEmojiFusion;
+        }
+        function useEmojiFusion(em) {
+            selectedEmojiFusion = em;
+            document.getElementById('mixEmojiResult').textContent = em;
+            const chars = Array.from(em);
+            if (chars[0]) { mixE1 = chars[0]; document.getElementById('mixEmoji1').textContent = chars[0]; }
+            if (chars[1]) { mixE2 = chars.slice(1).join(''); document.getElementById('mixEmoji2').textContent = mixE2; }
         }
         function sendMixedEmoji() {
             const input = document.getElementById('chatInput');
-            if (input) input.value = (mixE1 || '') + (mixE2 || '');
+            if (input) input.value = selectedEmojiFusion || ((mixE1 || '') + (mixE2 || ''));
             closeModal('emojiMixerModal');
             sendChatMessage({ preventDefault() {} });
         }
@@ -2471,10 +2541,10 @@
         }
 
         function openModal(id) {
-            document.body.classList.add('modal-open');
-            document.body.style.top = `-${window.scrollY}px`;
             const modal = document.getElementById(id);
             if (!modal) return;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${window.scrollY}px`;
             modal.classList.remove('opacity-0', 'pointer-events-none');
             const inner = modal.firstElementChild;
             if (inner) inner.classList.remove('scale-95');
@@ -3488,9 +3558,12 @@
         let selectedGroupImageFile = null;
 
         let profileEditSnapshot = null;
+        let profileGpsTimer = null;
 
         function discardMyProfile() {
             selectedProfileImageFile = null;
+            window._pendingGps = null;
+            if (profileGpsTimer) { clearTimeout(profileGpsTimer); profileGpsTimer = null; }
             const input = document.getElementById('profileImageInput');
             if (input) input.value = '';
             if (profileEditSnapshot) {
@@ -3508,9 +3581,10 @@
 
         async function openMyProfile() {
             if (!currentUserId) return;
+            try {
             const snap = await getDoc(doc(db, 'users', currentUserId));
             const d = snap.exists() ? snap.data() : {};
-            profileEditSnapshot = { name:d.name||currentUserName||'', bio:d.bio||'', phone:d.phone||'', province:d.province||'', city:d.city||'', neighborhood:d.neighborhood||'', photoURL:d.photoURL||'' };
+            profileEditSnapshot = { name:d.name||currentUserName||'', bio:d.bio||'', phone:d.phone||'', province:d.province||'', city:d.city||'', neighborhood:d.neighborhood||'', photoURL:d.photoURL||'', lat:d.lat ?? null, lng:d.lng ?? null, gpsUpdatedAt:d.gpsUpdatedAt || null };
             document.getElementById('profileNameInput').value = d.name || currentUserName || '';
             document.getElementById('profileBioInput').value = d.bio || '';
             document.getElementById('profilePhoneInput').value = d.phone || '';
@@ -3525,11 +3599,14 @@
             }
             selectedProfileImageFile = null;
             setProfilePreview(d.photoURL || '', d.name || currentUserName);
-            // Auto GPS se > 7 dias
+            // Auto GPS se > 7 dias; fica pendente até Guardar.
+            window._pendingGps = null;
+            if (profileGpsTimer) { clearTimeout(profileGpsTimer); profileGpsTimer = null; }
             if (!d.gpsUpdatedAt || (Date.now() - d.gpsUpdatedAt) > 7 * 86400000) {
-                setTimeout(() => captureProfileGps(true), 400);
+                profileGpsTimer = setTimeout(() => { profileGpsTimer = null; captureProfileGps(true); }, 400);
             }
             openModal('profileModal');
+            } catch (err) { console.error(err); showToast('Não foi possível abrir o perfil. Verifique a ligação.', 'error'); }
         }
 
         function setProfilePreview(url, name) {
@@ -3544,8 +3621,8 @@
             const province=(document.getElementById('profileProvinceInput')?.value||'').trim();
             const city=(document.getElementById('profileCityInput')?.value||'').trim();
             const neighborhood=(document.getElementById('profileNeighborhoodInput')?.value||'').trim();
-            let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
-            try {
+            let photoURL='';
+            try { const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
                 if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
                 const payload={uid:currentUserId,name,bio,phone,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
                 if (window._pendingGps) { payload.lat=window._pendingGps.lat; payload.lng=window._pendingGps.lng; payload.gpsUpdatedAt=Date.now(); window._pendingGps=null; }
@@ -3599,8 +3676,8 @@
             if (form) form.classList.remove('hidden');
             document.getElementById('chatActiveName').textContent = g.name || g.groupName || 'Grupo';
             document.getElementById('chatActiveStatus').textContent = `${(g.members || []).length} participantes`;
-            document.getElementById('chatAudioCallBtn')?.classList.add('hidden');
-            document.getElementById('chatVideoCallBtn')?.classList.add('hidden');
+            document.getElementById('chatAudioCallBtn')?.classList.remove('hidden');
+            document.getElementById('chatVideoCallBtn')?.classList.remove('hidden');
             document.getElementById('chatGroupSettingsBtn')?.classList.remove('hidden');
             const av = document.getElementById('chatActiveAvatar');
             if (av) av.textContent = (g.name || 'G').charAt(0).toUpperCase();
@@ -4218,7 +4295,7 @@
             openModal('addCallMemberModal');
         }
 
-        async function inviteToCall(userId) {
+        async function inviteToCall(userId, type = 'video') {
             if (!userId || !currentUserId) return;
             if (!localStream) {
                 showToast('Aguarde a chamada estar ligada.', 'info');
@@ -4256,7 +4333,7 @@
                     callerId: currentUserId,
                     callerName: currentUserName,
                     receiverId: userId,
-                    type: 'video',
+                    type: type,
                     status: 'offered',
                     conferenceId: activeCallId || null,
                     parentCallId: activeCallId || null,
@@ -4503,6 +4580,35 @@
                 }
                 isScreenSharing = false;
                 updateScreenShareBtn();
+            }
+        }
+
+        async function handleChatCallAction(type) {
+            if (activeChatType === 'group') return startGroupCall(type);
+            return startCall(type);
+        }
+
+        async function startGroupCall(type) {
+            if (!activeGroup || !currentUserId) return showToast('Abra um grupo para iniciar a chamada.', 'info');
+            const members = Array.isArray(activeGroup.members) ? activeGroup.members.filter(id => id && id !== currentUserId) : [];
+            if (!members.length) return showToast('O grupo ainda não tem outros participantes.', 'info');
+            if (peerConnection || activeCallId) return showToast('Já existe uma chamada em curso.', 'info');
+            const groupId = activeChatUserId;
+            activeChatUserId = members[0];
+            try {
+                await startCall(type);
+                activeChatUserId = groupId;
+                for (const uid of members.slice(1)) await inviteToCall(uid, type);
+                activeChatType = 'group';
+                activeGroup = groups.find(g => g.id === groupId) || activeGroup;
+                const nameEl = document.getElementById('callPeerName');
+                if (nameEl) nameEl.textContent = `${activeGroup?.name || 'Grupo'} · chamada em grupo`;
+                showToast(`Chamada de grupo iniciada com ${members.length} participantes.`, 'success');
+            } catch (e) {
+                activeChatUserId = groupId;
+                activeChatType = 'group';
+                console.error(e);
+                showToast('Não foi possível iniciar a chamada do grupo.', 'error');
             }
         }
 
@@ -5695,13 +5801,7 @@
                 downloadBtn.href = url || '#';
                 downloadBtn.innerHTML = `<i class="fa-solid fa-expand"></i> Ecrã Completo`;
                 downloadBtn.classList.remove('hidden');
-                downloadBtn.onclick = (ev) => {
-                    ev.preventDefault();
-                    const frame = document.getElementById('entertainmentFrame');
-                    if (frame && frame.requestFullscreen) frame.requestFullscreen().catch(() => window.open(url, '_blank'));
-                    else if (frame && frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
-                    else window.open(url, '_blank');
-                };
+                downloadBtn.onclick = (ev) => { ev.preventDefault(); openStableFullscreen(url, item.title || 'Entretenimento'); };
                 actionContainer.style.display = 'flex';
                 const safeUrl = escapeHTML(url);
                 container.innerHTML = `
@@ -5738,6 +5838,28 @@
             enableCommentsPanel(item.id);
 
             openModal('viewContentModal');
+        }
+
+        function openStableFullscreen(url, title) {
+            const modal = document.getElementById('stableFullscreenModal');
+            const frame = document.getElementById('stableFullscreenFrame');
+            const titleEl = document.getElementById('stableFullscreenTitle');
+            if (!modal || !frame || !url) return;
+            if (titleEl) titleEl.textContent = title || 'Mundo Digital';
+            frame.src = url;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-open');
+        }
+        function closeStableFullscreen() {
+            const modal = document.getElementById('stableFullscreenModal');
+            const frame = document.getElementById('stableFullscreenFrame');
+            if (frame) frame.src = 'about:blank';
+            if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
+            const anotherModalOpen = Array.from(document.querySelectorAll('[id$="Modal"]')).some(el => {
+                if (el.id === 'stableFullscreenModal') return false;
+                return !el.classList.contains('pointer-events-none') && !el.classList.contains('opacity-0');
+            });
+            if (!anotherModalOpen) document.body.classList.remove('modal-open');
         }
 
         async function deleteContent(id, storagePath) {
@@ -5947,21 +6069,11 @@
         function toggleAppMode() {
             const on = !document.body.classList.contains('app-mode');
             document.body.classList.toggle('app-mode', on);
-            try {
-                if (on) {
-                    const el = document.documentElement;
-                    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                } else {
-                    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                }
-            } catch (_) {}
+            try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (_) {}
             const btn = document.getElementById('appModeBtn');
             if (btn) btn.innerHTML = on ? '<i class="fa-solid fa-compress text-lg"></i>' : '<i class="fa-solid fa-expand text-lg"></i>';
             showToast(on ? 'Modo aplicação ativado' : 'Modo navegador', 'info');
         }
-
         function renderAdminUsers() {
             const list = document.getElementById('adminUsersList');
             if (!list) return;
@@ -6745,16 +6857,7 @@
                 window._pendingGps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 const hint = document.getElementById('profileGpsHint');
                 if (hint) hint.textContent = `GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
-                if (currentUserId) {
-                    try {
-                        await setDoc(doc(db, 'users', currentUserId), {
-                            lat: pos.coords.latitude,
-                            lng: pos.coords.longitude,
-                            gpsUpdatedAt: Date.now()
-                        }, { merge: true });
-                    } catch (_) {}
-                }
-                if (!silent) showToast('Localização atualizada.', 'success');
+                if (!silent) showToast('Localização preparada. Toque em Guardar para aplicar.', 'success');
             }, () => {
                 if (!silent) showToast('Permita a localização nas definições do navegador.', 'error');
             }, { enableHighAccuracy: true, timeout: 12000 });
@@ -7053,6 +7156,10 @@
         window.expandCall = expandCall;
         window.openAddCallMember = openAddCallMember;
         window.inviteToCall = inviteToCall;
+        window.handleChatCallAction = handleChatCallAction;
+        window.startGroupCall = startGroupCall;
+        window.openStableFullscreen = openStableFullscreen;
+        window.closeStableFullscreen = closeStableFullscreen;
 
         window.rejectIncomingCall = rejectIncomingCall;
         
@@ -7095,6 +7202,7 @@
         window.pickMixEmoji = pickMixEmoji;
         window.setMixEmoji = setMixEmoji;
         window.sendMixedEmoji = sendMixedEmoji;
+        window.useEmojiFusion = useEmojiFusion;
         window.selectPostBgCategory = selectPostBgCategory;
         window.openStatusHub = openStatusHub;
         window.toggleHeaderBubble = toggleHeaderBubble;
