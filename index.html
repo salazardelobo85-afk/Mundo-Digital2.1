@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Digital - Publicações, Chat & Chamadas</title>
+    <title>Mundo Digital · Ultimate</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,15 +14,19 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            400: '#38bdf8',
-                            500: '#0284c7',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            400: '#22d3ee',
+                            500: '#00d4ff',
+                            600: '#1a6dff',
+                            700: '#155eef',
+                            800: '#0b3d91',
+                            900: '#071230',
                         }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Montserrat', 'system-ui', 'sans-serif'],
                     }
                 }
             }
@@ -31,6 +35,9 @@
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -641,14 +648,18 @@
                 overflow: visible !important;
             }
 
-            /* botões do topo ficam compactos */
-            header .header-bubble button {
+            /* Só o botão gatilho do topo fica compacto; o painel mantém nomes */
+            header .header-bubble > button {
                 padding-left: .65rem !important;
                 padding-right: .65rem !important;
             }
 
-            header .header-bubble button span:not(.unread-badge) {
+            header .header-bubble > button > span:not(.unread-badge) {
                 display: none;
+            }
+
+            header .header-bubble-panel button span {
+                display: inline !important;
             }
 
             #authBtnText {
@@ -656,77 +667,425 @@
             }
         }
 
-    
-/* ===== FIX MENU MOBILE CHATTS/FUNCOES ===== */
-.header-bubble{position:relative;}
+        /* ===== Mundo Quiz embed + chat estável ===== */
+        #mundoQuizRoot {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            max-height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #mundoQuizRoot .mq-card {
+            background: rgba(12, 28, 66, 0.72);
+            border: 1px solid rgba(80, 170, 255, 0.22);
+            border-radius: 1.25rem;
+            padding: 1rem 1.1rem 1.25rem;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+        }
+        #mundoQuizRoot .mq-btn {
+            width: 100%;
+            text-align: left;
+            padding: 0.85rem 1rem;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(80, 170, 255, 0.2);
+            background: rgba(3, 10, 28, 0.55);
+            color: #eaf3ff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: border-color 0.15s, background 0.15s, transform 0.15s;
+        }
+        #mundoQuizRoot .mq-btn:hover:not([disabled]) {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.08);
+            transform: translateX(3px);
+        }
+        #mundoQuizRoot .mq-btn.correct {
+            background: rgba(16, 185, 129, 0.22) !important;
+            border-color: #10b981 !important;
+        }
+        #mundoQuizRoot .mq-btn.incorrect {
+            background: rgba(244, 63, 94, 0.22) !important;
+            border-color: #f43f5e !important;
+        }
+        #mundoQuizRoot .mq-key {
+            width: 1.75rem; height: 1.75rem;
+            border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800;
+            background: rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+        #viewContentBody.quiz-mode {
+            display: flex !important;
+            flex-direction: row;
+            min-height: 0;
+        }
+        #viewContentBody.quiz-mode #viewContainer {
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        #viewContentBody.quiz-mode #entertainmentChatPanel {
+            display: flex !important;
+            flex-direction: column;
+            width: min(20rem, 38%);
+            max-width: 20rem;
+            min-width: 15rem;
+            min-height: 0;
+            border-left: 1px solid rgba(80, 170, 255, 0.2);
+            background: rgba(7, 18, 48, 0.96);
+        }
+        @media (max-width: 639px) {
+            #viewContentBody.quiz-mode {
+                flex-direction: column;
+            }
+            #viewContentBody.quiz-mode #entertainmentChatPanel {
+                position: absolute;
+                inset: 0;
+                z-index: 30;
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                border-left: none;
+            }
+            #viewContentBody.quiz-mode #entertainmentChatPanel:not(.comments-open-mobile) {
+                display: none !important;
+            }
+        }
+        #entertainmentChatMessages .chat-bubble-me,
+        #entertainmentChatMessages .chat-bubble-them {
+            max-width: 92%;
+            word-break: break-word;
+        }
 
-.header-bubble-panel{
- position:absolute;
- top:calc(100% + 10px);
- right:0;
- width:min(260px,calc(100vw - 24px));
- max-width:calc(100vw - 24px);
- padding:8px;
- border-radius:18px;
- background:rgba(255,255,255,.98);
- border:1px solid rgba(226,232,240,.9);
- box-shadow:0 20px 40px rgba(0,0,0,.18);
- backdrop-filter:blur(15px);
- z-index:9999;
- overflow:hidden;
-}
+        /* ═══════════════════════════════════════════════
+           MUNDO DIGITAL · ULTIMATE X UI LAYER
+           Visual upgrade — zero alteração de funcionalidade
+           ═══════════════════════════════════════════════ */
+        :root {
+            --md-bg: #030a1c;
+            --md-bg2: #071230;
+            --md-card: rgba(12, 28, 66, 0.55);
+            --md-card-solid: #0c1c42;
+            --md-line: rgba(80, 170, 255, 0.22);
+            --md-tx: #eaf3ff;
+            --md-mut: #8fa8cf;
+            --md-c1: #00d4ff;
+            --md-c2: #1a6dff;
+            --md-glow: 0 0 24px rgba(0, 180, 255, 0.35);
+            --md-glow-soft: 0 8px 32px rgba(0, 120, 255, 0.18);
+            --md-r: 20px;
+            --md-hd: "Montserrat", system-ui, sans-serif;
+        }
 
-.dark .header-bubble-panel{
- background:rgba(15,23,42,.98);
- border-color:#334155;
-}
+        html.dark body,
+        body.dark,
+        html.dark {
+            --tw-bg-opacity: 1;
+        }
 
-.header-bubble-panel button{
- width:100%;
- display:flex;
- align-items:center;
- gap:12px;
- padding:12px;
- border-radius:12px;
- font-size:13px;
- font-weight:600;
- text-align:left;
- transition:.2s;
-}
+        /* Fundo espacial global (só dark — light mantém Tailwind) */
+        html.dark body {
+            background:
+                radial-gradient(1200px 600px at 10% -10%, rgba(26, 109, 255, 0.22), transparent 55%),
+                radial-gradient(900px 500px at 90% 0%, rgba(0, 212, 255, 0.12), transparent 50%),
+                radial-gradient(800px 400px at 50% 100%, rgba(26, 109, 255, 0.1), transparent 45%),
+                var(--md-bg) !important;
+            color: var(--md-tx);
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
 
-.header-bubble-panel button:hover{
- background:#f1f5f9;
-}
+        html.dark h1, html.dark h2, html.dark h3,
+        html.dark .font-extrabold, html.dark .font-bold {
+            font-family: var(--md-hd);
+            letter-spacing: -0.02em;
+        }
 
-.dark .header-bubble-panel button:hover{
- background:#1e293b;
-}
+        /* Header glass premium */
+        html.dark header {
+            background: rgba(3, 10, 28, 0.82) !important;
+            border-bottom-color: var(--md-line) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(80, 170, 255, 0.08);
+            backdrop-filter: blur(18px) saturate(1.2);
+            -webkit-backdrop-filter: blur(18px) saturate(1.2);
+        }
 
-@media(max-width:640px){
- .header-bubble-panel{
-  position:fixed;
-  top:75px;
-  right:12px;
-  left:auto;
-  width:260px;
-  max-width:calc(100vw - 24px);
-  max-height:calc(100dvh - 100px);
-  overflow-y:auto;
-  animation:menuMobile .2s ease;
- }
+        html.dark header .bg-gradient-to-tr {
+            background-image: linear-gradient(135deg, var(--md-c1), var(--md-c2)) !important;
+            box-shadow: var(--md-glow);
+        }
 
- .header-bubble-panel button{
-  min-height:46px;
-  font-size:14px;
- }
-}
+        html.dark header input#searchInput {
+            background: rgba(7, 18, 48, 0.7) !important;
+            border-color: var(--md-line) !important;
+            color: var(--md-tx) !important;
+        }
+        html.dark header input#searchInput::placeholder { color: var(--md-mut); }
+        html.dark header input#searchInput:focus {
+            border-color: var(--md-c1) !important;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15), var(--md-glow-soft);
+        }
 
-@keyframes menuMobile{
- from{opacity:0;transform:translateY(-10px) scale(.96);}
- to{opacity:1;transform:translateY(0) scale(1);}
-}
+        /* Header bubbles */
+        html.dark .header-bubble > button {
+            background: rgba(12, 28, 66, 0.65) !important;
+            border: 1px solid var(--md-line);
+            color: var(--md-tx) !important;
+        }
+        html.dark .header-bubble > button:hover {
+            background: rgba(26, 109, 255, 0.18) !important;
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: var(--md-glow-soft);
+        }
+        html.dark .header-bubble-panel {
+            background: rgba(7, 18, 48, 0.96) !important;
+            border-color: var(--md-line) !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 212, 255, 0.08);
+        }
+        html.dark .header-bubble-panel button:hover {
+            background: rgba(26, 109, 255, 0.2) !important;
+        }
 
-</style>
+        /* Hero banner */
+        html.dark main > div.mb-8.p-6,
+        html.dark main > div.mb-8 {
+            background:
+                linear-gradient(135deg, rgba(7, 18, 48, 0.95) 0%, rgba(12, 28, 66, 0.9) 40%, rgba(26, 109, 255, 0.25) 100%) !important;
+            border: 1px solid var(--md-line);
+            box-shadow: var(--md-glow-soft), inset 0 1px 0 rgba(255,255,255,0.06);
+            border-radius: var(--md-r) !important;
+        }
+        html.dark main > div.mb-8 h1 {
+            font-family: var(--md-hd);
+            background: linear-gradient(90deg, #eaf3ff, var(--md-c1));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Filter tabs */
+        html.dark .filter-btn {
+            border: 1px solid transparent;
+        }
+        html.dark .filter-btn.active {
+            background: linear-gradient(135deg, var(--md-c1), var(--md-c2)) !important;
+            color: #030a1c !important;
+            font-weight: 700;
+            box-shadow: var(--md-glow);
+            border-color: transparent !important;
+        }
+        html.dark .filter-btn:not(.active) {
+            background: rgba(12, 28, 66, 0.5) !important;
+            border-color: var(--md-line);
+            color: var(--md-mut) !important;
+        }
+        html.dark .filter-btn:not(.active):hover {
+            border-color: rgba(0, 212, 255, 0.4);
+            color: var(--md-tx) !important;
+            background: rgba(26, 109, 255, 0.15) !important;
+        }
+
+        /* Post cards */
+        html.dark .post-card {
+            background: var(--md-card) !important;
+            border: 1px solid var(--md-line) !important;
+            border-radius: var(--md-r) !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px);
+        }
+        html.dark .post-card:hover {
+            border-color: rgba(0, 212, 255, 0.35) !important;
+            box-shadow: var(--md-glow-soft), 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+            transform: translateY(-3px);
+        }
+
+        /* Primary buttons */
+        html.dark button.bg-brand-600,
+        html.dark .bg-brand-600 {
+            background: linear-gradient(135deg, var(--md-c1) 0%, var(--md-c2) 100%) !important;
+            color: #030a1c !important;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(0, 180, 255, 0.3);
+            border: none;
+        }
+        html.dark button.bg-brand-600:hover,
+        html.dark .hover\:bg-brand-700:hover {
+            filter: brightness(1.08);
+            box-shadow: var(--md-glow);
+        }
+
+        /* Modals */
+        html.dark [id$="Modal"] > div,
+        html.dark #chatModal > div,
+        html.dark #profileModal > div,
+        html.dark #addContentModal > div,
+        html.dark #viewContentModal > div {
+            background: rgba(7, 18, 48, 0.97) !important;
+            border-color: var(--md-line) !important;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 212, 255, 0.1);
+        }
+        html.dark [id$="Modal"] .border-b,
+        html.dark #chatModalHeader {
+            border-color: var(--md-line) !important;
+            background: rgba(3, 10, 28, 0.6) !important;
+        }
+
+        /* Chat sidebar + main */
+        html.dark #chatSidebar {
+            background: rgba(3, 10, 28, 0.85) !important;
+            border-color: var(--md-line) !important;
+        }
+        html.dark #chatMainArea {
+            background: var(--md-bg2) !important;
+        }
+        html.dark #chatActiveHeader,
+        html.dark #chatForm {
+            background: rgba(7, 18, 48, 0.92) !important;
+            border-color: var(--md-line) !important;
+        }
+        html.dark .msg-bubble-me {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.9), rgba(26, 109, 255, 0.95)) !important;
+            color: #030a1c !important;
+            box-shadow: 0 2px 12px rgba(0, 180, 255, 0.25);
+        }
+        html.dark .msg-bubble-them {
+            background: rgba(12, 28, 66, 0.85) !important;
+            border-color: var(--md-line) !important;
+            color: var(--md-tx) !important;
+        }
+
+        /* Inputs */
+        html.dark input:not([type="color"]):not([type="file"]),
+        html.dark textarea,
+        html.dark select {
+            background: rgba(3, 10, 28, 0.7) !important;
+            border-color: var(--md-line) !important;
+            color: var(--md-tx) !important;
+        }
+        html.dark input:focus, html.dark textarea:focus, html.dark select:focus {
+            border-color: var(--md-c1) !important;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.12);
+            outline: none;
+        }
+
+        /* Unread badge + accents */
+        html.dark .unread-badge {
+            background: linear-gradient(135deg, var(--md-c1), var(--md-c2)) !important;
+            color: #030a1c !important;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+        }
+
+        /* FAB / publish affordance if present */
+        html.dark #admWritePostBtn,
+        html.dark button[onclick*="addContentModal"] {
+            box-shadow: var(--md-glow);
+        }
+
+        /* Scrollbar match theme */
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(80, 170, 255, 0.35) !important;
+            border-radius: 8px;
+        }
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.5) !important;
+        }
+
+        /* Auth tabs */
+        html.dark #authTabGroup {
+            background: rgba(3, 10, 28, 0.8) !important;
+        }
+        html.dark #tabLoginBtn.bg-white,
+        html.dark #tabLoginBtn {
+            /* active state handled by JS classes */
+        }
+
+        /* Soft reduce motion respect already exists */
+        /* Light mode: keep original Tailwind look (no forced dark tokens) */
+
+        /* Logo wordmark */
+        html.dark header span.bg-gradient-to-r {
+            background-image: linear-gradient(90deg, var(--md-c1), #7dd3fc, var(--md-c2)) !important;
+        }
+
+        /* Status / call accents */
+        html.dark #miniCallBar > div {
+            background: rgba(7, 18, 48, 0.95) !important;
+            border-color: var(--md-line) !important;
+            box-shadow: var(--md-glow-soft);
+        }
+
+        /* Content counter */
+        html.dark #contentCounter {
+            color: var(--md-mut) !important;
+        }
+
+        /* Empty state */
+        html.dark #emptyState .w-20 {
+            background: rgba(12, 28, 66, 0.6) !important;
+            border: 1px solid var(--md-line);
+            color: var(--md-c1) !important;
+        }
+
+        /* ===== Painel ADM · Ultimate X (funções intactas) ===== */
+        html.dark #adminPanelModal > div {
+            background: rgba(7, 18, 48, 0.98) !important;
+            border: 1px solid var(--md-line) !important;
+            border-radius: 22px !important;
+            box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(0,212,255,.1), var(--md-glow-soft) !important;
+        }
+        html.dark #adminPanelModal .admin-tg-header {
+            background: linear-gradient(135deg, #071230 0%, #0b3d91 55%, #00d4ff 160%) !important;
+            border-bottom: 1px solid var(--md-line) !important;
+        }
+        html.dark #adminPanelModal .admin-tg-header h3 {
+            font-family: var(--md-hd);
+            letter-spacing: -0.02em;
+        }
+        html.dark #adminPanelModal .admin-tg-tabs {
+            background: rgba(3, 10, 28, 0.85) !important;
+            border-color: var(--md-line) !important;
+        }
+        html.dark #adminPanelModal .admin-tg-tabs button {
+            color: var(--md-mut) !important;
+            background: transparent !important;
+            border-bottom: 2px solid transparent !important;
+        }
+        html.dark #adminPanelModal .admin-tg-tabs button.border-b-2,
+        html.dark #adminPanelModal .admin-tg-tabs button[class*="2AABEE"] {
+            color: var(--md-c1) !important;
+            background: rgba(0, 212, 255, 0.1) !important;
+            border-bottom-color: var(--md-c1) !important;
+        }
+        html.dark #adminUsersList > div,
+        html.dark #adminContentsList > div,
+        html.dark #adminFeedbackList > div,
+        html.dark #adminAlertsList > div,
+        html.dark #adminBroadcastHistory > div {
+            background: rgba(12, 28, 66, 0.45) !important;
+            border-color: var(--md-line) !important;
+            border-radius: 16px !important;
+        }
+        html.dark #adminPanelModal .bg-slate-50,
+        html.dark #adminPanelModal .dark\:bg-slate-900\/40 {
+            background: rgba(12, 28, 66, 0.4) !important;
+        }
+        html.dark #adminAccessModal > div,
+        html.dark #editContentModal > div {
+            background: rgba(7, 18, 48, 0.98) !important;
+            border-color: var(--md-line) !important;
+            box-shadow: var(--md-glow-soft);
+        }
+
+    </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
 
@@ -973,7 +1332,7 @@
         
         <div class="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-brand-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Mundo Digital</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 font-display">Mundo Digital</h1>
                 <p class="text-slate-300 text-sm sm:text-base">Publicações, entretenimento, chat e chamadas em tempo real.</p>
             </div>
             <div class="absolute -right-10 -bottom-10 opacity-10 text-[180px] pointer-events-none">
@@ -1706,7 +2065,7 @@
                     <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-paper-plane text-white"></i></div>
                     <div>
                         <h3 class="font-bold text-base text-white leading-tight">Painel ADM</h3>
-                        <p class="text-[10px] text-white/80">Gestão · estilo Telegram</p>
+                        <p class="text-[10px] text-white/80">Gestão · Ultimate X</p>
                     </div>
                 </div>
                 <button onclick="window.closeModal('adminPanelModal')" class="text-white/90 hover:text-white text-xl p-1 btn-press">
@@ -4990,7 +5349,7 @@
                     const tb = b.createdAt?.seconds || 0;
                     return tb - ta;
                 });
-                const hasEntertainment = contents.some(c => c.category === 'entertainment');
+                const hasEntertainment = contents.some(c => c.category === 'entertainment' && c.id !== 'mundo-quiz');
                 if (!hasEntertainment) {
                     contents.unshift({
                         id: 'default-entertainment-channel',
@@ -4999,6 +5358,17 @@
                         description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
                         url: 'https://vialacteafilmes.com',
                         isVirtualChannel: true
+                    });
+                }
+                // Mundo Quiz — sempre disponível no entretenimento
+                if (!contents.some(c => c.id === 'mundo-quiz')) {
+                    contents.unshift({
+                        id: 'mundo-quiz',
+                        title: 'Mundo Quiz · Forex Pro',
+                        category: 'entertainment',
+                        description: 'Quiz de Forex em tempo real: jogue, veja quantos estão online e converse enquanto joga.',
+                        isVirtualChannel: true,
+                        isQuiz: true
                     });
                 }
                 renderContents();
@@ -5074,8 +5444,31 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                // Cartão de entretenimento
+                // Cartão de entretenimento / Quiz
                 if (item.category === 'entertainment') {
+                    if (item.isQuiz || item.id === 'mundo-quiz') {
+                        return `
+                    <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
+                        <div class="w-full h-40 bg-gradient-to-tr from-cyan-900 via-blue-900 to-slate-950 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-25 bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                            <i class="fa-solid fa-chart-line text-4xl text-cyan-300 mb-2 relative z-[1]"></i>
+                            <span class="font-extrabold text-base tracking-wider relative z-[1]">Mundo Quiz</span>
+                            <span class="text-[10px] text-cyan-200/90 mt-1 relative z-[1] font-semibold">Forex Pro · Ao vivo</span>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40">
+                                    <i class="fa-solid fa-gamepad mr-1"></i>Quiz & Chat
+                                </span>
+                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mt-2 mb-1">${escapeHTML(item.title || 'Mundo Quiz')}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHTML(item.description || 'Jogue e converse em tempo real')}</p>
+                            </div>
+                            <button onclick="window.viewContent('mundo-quiz')" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
+                                <i class="fa-solid fa-play"></i> Jogar agora
+                            </button>
+                        </div>
+                    </div>`;
+                    }
                     return `
                     <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
                         <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
@@ -5759,12 +6152,191 @@
             }
         }
 
+        // ========== MUNDO QUIZ (Forex Pro) ==========
+        const MQ_MAX_ROUNDS = 100;
+        const MQ_TIME_LIMIT = 30;
+        const MQ_ROUNDS_PER_LEVEL = 100;
+        const MQ_DB = [
+            { category: "Análise Técnica", question: "Ao identificar um 'Engolfo de Alta' (Bullish Engulfing) em uma zona de suporte, qual é a indicação do mercado?", options: ["Sinal de reversão para tendência de alta (Compra)", "Sinal de continuação de queda forte no par", "Consolidação sem tendência definida", "Fechamento automático da ordem no Stop Loss"], answer: 0 },
+            { category: "Gestão de Risco", question: "Dica de Ouro: Qual é a porcentagem máxima recomendada de risco do capital por operação?", options: ["Entre 1% e 2% da banca", "50% do saldo total da conta", "10% a 15% em cada ordem", "Alavancagem máxima em todas as posições"], answer: 0 },
+            { category: "Indicadores", question: "Quando o indicador RSI cruza acima do nível 70, qual é a indicação do mercado?", options: ["Mercado Sobrecomprado (Alerta de possível correção/Venda)", "Mercado Sobrevendido (Alerta forte de Compra)", "Perda total de volatilidade no ativo", "Sinal para abrir ordem sem Stop Loss"], answer: 0 },
+            { category: "Sinais & Estratégia", question: "O que significa definir um 'Take Profit' (TP) ao entrar em uma operação?", options: ["Programar o fechamento automático da ordem com o lucro atingido", "Aumentar o lote da operação automaticamente", "Limitar as perdas caso o gráfico vá contra a posição", "Pagar a taxa de spread cobrada pela corretora"], answer: 0 },
+            { category: "Price Action", question: "O que representa o padrão 'Estrela da Manhã' (Morning Star) no gráfico?", options: ["Sinal de reversão de alta após uma tendência de baixa", "Sinal de continuação de queda acentuada", "Indicação de fechamento das bolsas de Londres e NY", "Um indicador de atraso de ordens (Slippage)"], answer: 0 },
+            { category: "Gestão de Risco", question: "O que é o 'Stop Loss' numa operação de Forex?", options: ["Ordem que limita a perda máxima da posição", "Meta de lucro automático", "Taxa da corretora", "Tipo de alavancagem"], answer: 0 },
+            { category: "Análise Técnica", question: "Uma linha de tendência de alta liga preferencialmente:", options: ["Mínimos crescentes", "Máximos decrescentes", "Apenas o preço de abertura", "Volumes de tick"], answer: 0 },
+            { category: "Psicologia", question: "Qual atitude mais protege a banca a longo prazo?", options: ["Respeitar o plano e o risco por operação", "Dobrar o lote após cada perda", "Operar sem Stop Loss", "Seguir só dicas de redes sociais"], answer: 0 }
+        ];
+
+        function mountMundoQuiz(host) {
+            if (!host) return;
+            const hist = new Set();
+            let score = 0, qNum = 1, lastCorrectIdx = -1, timer = null, timeLeft = MQ_TIME_LIMIT;
+            let curQ = '', curA = '';
+            let totalPlayed = parseInt(localStorage.getItem('mq_total_rounds') || '0', 10);
+
+            host.innerHTML = `
+            <div id="mundoQuizRoot">
+              <div class="mq-card">
+                <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                  <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 align-middle"></span>Quiz Forex
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span id="mqLevel" class="text-[11px] font-extrabold text-sky-300">⭐ Nível 1</span>
+                    <div class="w-20 h-1.5 rounded-full bg-white/10 overflow-hidden"><div id="mqLevelBar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" style="width:0%"></div></div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
+                  <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-lg shadow-lg">📈</div>
+                    <span class="font-extrabold text-base text-white">Mundo Quiz</span>
+                  </div>
+                  <div class="text-xs font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-full">🏆 <span id="mqScore">0</span></div>
+                </div>
+                <div id="mqGame">
+                  <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                    <span id="mqCat" class="text-[10px] font-bold uppercase text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-1 rounded-lg">Forex</span>
+                    <span id="mqTimer" class="text-xs font-extrabold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full">⏱️ 30s</span>
+                    <span id="mqRound" class="text-[11px] text-slate-400 font-semibold">Rodada 1 / ${MQ_MAX_ROUNDS}</span>
+                  </div>
+                  <div id="mqQuestion" class="text-[1.05rem] font-bold text-white leading-snug mb-4 min-h-[3.5rem]">A carregar…</div>
+                  <div id="mqOptions" class="flex flex-col gap-2.5"></div>
+                </div>
+                <div id="mqFeedback" class="hidden mt-3 p-3 rounded-xl border">
+                  <div id="mqFbBadge" class="text-[11px] font-extrabold uppercase mb-1"></div>
+                  <div id="mqFbAnswer" class="text-sm font-semibold text-white"></div>
+                  <div class="h-1 mt-3 rounded bg-white/10 overflow-hidden"><div id="mqFbBar" class="h-full bg-emerald-400 transition-all duration-[6000ms] ease-linear" style="width:100%"></div></div>
+                </div>
+                <div id="mqSummary" class="hidden text-center py-4">
+                  <div class="text-4xl mb-2">🏆</div>
+                  <h3 class="text-lg font-extrabold text-white mb-1">${MQ_MAX_ROUNDS} rodadas concluídas</h3>
+                  <p class="text-xs text-slate-400 mb-4">Ciclo completo do Mundo Quiz.</p>
+                  <div class="flex justify-center gap-3 mb-4">
+                    <div class="px-4 py-3 rounded-xl bg-white/5 border border-white/10 min-w-[6rem]"><span id="mqFinalScore" class="block text-2xl font-extrabold text-cyan-300">0</span><span class="text-[10px] uppercase text-slate-400">Acertos</span></div>
+                    <div class="px-4 py-3 rounded-xl bg-white/5 border border-white/10 min-w-[6rem]"><span id="mqFinalAcc" class="block text-2xl font-extrabold text-cyan-300">0%</span><span class="text-[10px] uppercase text-slate-400">Precisão</span></div>
+                  </div>
+                  <button type="button" id="mqResetBtn" class="px-5 py-3 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg">🔄 Reiniciar</button>
+                </div>
+              </div>
+            </div>`;
+
+            const el = (id) => document.getElementById(id);
+            function updateLevel() {
+                const nivel = Math.floor(totalPlayed / MQ_ROUNDS_PER_LEVEL) + 1;
+                const pct = totalPlayed % MQ_ROUNDS_PER_LEVEL;
+                if (el('mqLevel')) el('mqLevel').textContent = `⭐ Nível ${nivel}`;
+                if (el('mqLevelBar')) el('mqLevelBar').style.width = pct + '%';
+            }
+            function stopTimer() {
+                if (timer) { clearInterval(timer); timer = null; }
+            }
+            window._mqStopTimer = stopTimer;
+            function startTimer(correctIdx) {
+                stopTimer();
+                timeLeft = MQ_TIME_LIMIT;
+                const t = el('mqTimer');
+                if (t) { t.textContent = `⏱️ ${timeLeft}s`; t.className = 'text-xs font-extrabold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full'; }
+                timer = setInterval(() => {
+                    timeLeft--;
+                    if (t) t.textContent = `⏱️ ${timeLeft}s`;
+                    if (timeLeft <= 10 && t) t.className = 'text-xs font-extrabold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2.5 py-1 rounded-full animate-pulse';
+                    if (timeLeft <= 0) {
+                        stopTimer();
+                        handleAns(false, null, correctIdx, true);
+                    }
+                }, 1000);
+            }
+            function nextQ() {
+                stopTimer();
+                el('mqFeedback')?.classList.add('hidden');
+                el('mqGame')?.classList.remove('hidden');
+                el('mqSummary')?.classList.add('hidden');
+                el('mqOptions').innerHTML = `<div class="text-center text-slate-400 text-xs py-6"><i class="fa-solid fa-spinner fa-spin mr-1"></i>A carregar pergunta…</div>`;
+                let pool = MQ_DB.filter(q => !hist.has(q.question));
+                if (!pool.length) { hist.clear(); pool = [...MQ_DB]; }
+                const quiz = pool[Math.floor(Math.random() * pool.length)];
+                hist.add(quiz.question);
+                curQ = quiz.question;
+                curA = quiz.options[quiz.answer];
+                let opts = [], correctIdx = -1, tries = 0;
+                do {
+                    opts = [...quiz.options].sort(() => Math.random() - 0.5);
+                    correctIdx = opts.indexOf(curA);
+                    tries++;
+                } while (correctIdx === lastCorrectIdx && tries < 12);
+                lastCorrectIdx = correctIdx;
+                el('mqCat').textContent = quiz.category || 'Forex';
+                el('mqRound').textContent = `Rodada ${qNum} / ${MQ_MAX_ROUNDS}`;
+                el('mqQuestion').textContent = quiz.question;
+                el('mqOptions').innerHTML = '';
+                const keys = ['A', 'B', 'C', 'D'];
+                opts.forEach((txt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'mq-btn';
+                    btn.innerHTML = `<span class="mq-key">${keys[idx]}</span><span>${escapeHTML(txt)}</span>`;
+                    btn.onclick = () => handleAns(idx === correctIdx, btn, correctIdx, false);
+                    el('mqOptions').appendChild(btn);
+                });
+                startTimer(correctIdx);
+            }
+            function handleAns(ok, selectedBtn, correctIdx, timeout) {
+                stopTimer();
+                el('mqOptions').querySelectorAll('.mq-btn').forEach(b => b.disabled = true);
+                totalPlayed++;
+                localStorage.setItem('mq_total_rounds', String(totalPlayed));
+                updateLevel();
+                const btns = el('mqOptions').querySelectorAll('.mq-btn');
+                if (ok && selectedBtn) {
+                    selectedBtn.classList.add('correct');
+                    score++;
+                    el('mqScore').textContent = score;
+                } else {
+                    if (selectedBtn) selectedBtn.classList.add('incorrect');
+                    if (btns[correctIdx]) btns[correctIdx].classList.add('correct');
+                }
+                const fb = el('mqFeedback');
+                fb.classList.remove('hidden');
+                fb.className = 'mt-3 p-3 rounded-xl border ' + (ok ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-rose-500/40 bg-rose-500/10');
+                el('mqFbBadge').textContent = ok ? '✨ Resposta correta!' : (timeout ? '⏰ Tempo esgotado!' : '❌ Resposta incorreta!');
+                el('mqFbBadge').className = 'text-[11px] font-extrabold uppercase mb-1 ' + (ok ? 'text-emerald-400' : 'text-rose-400');
+                el('mqFbAnswer').textContent = 'Resposta: ' + curA;
+                const bar = el('mqFbBar');
+                bar.style.transition = 'none';
+                bar.style.width = '100%';
+                void bar.offsetWidth;
+                bar.style.transition = 'width 6s linear';
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    if (qNum >= MQ_MAX_ROUNDS) {
+                        el('mqGame')?.classList.add('hidden');
+                        el('mqFeedback')?.classList.add('hidden');
+                        el('mqSummary')?.classList.remove('hidden');
+                        el('mqFinalScore').textContent = score;
+                        el('mqFinalAcc').textContent = Math.round((score / MQ_MAX_ROUNDS) * 100) + '%';
+                    } else {
+                        qNum++;
+                        nextQ();
+                    }
+                }, 6000);
+            }
+            el('mqResetBtn')?.addEventListener('click', () => {
+                score = 0; qNum = 1; lastCorrectIdx = -1; hist.clear();
+                el('mqScore').textContent = '0';
+                nextQ();
+            });
+            updateLevel();
+            nextQ();
+        }
+
         function viewContent(id) {
             const item = contents.find(c => c.id === id);
             if (!item) return;
 
             leaveEntertainmentViewers();
             leaveContentComments();
+            document.getElementById('viewContentBody')?.classList.remove('quiz-mode');
+            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
 
             const bodyText = item.text || item.description || '';
             document.getElementById('viewTitle').innerText = item.category === 'text'
@@ -5791,6 +6363,40 @@
             if (toggleChatBtn) toggleChatBtn.classList.add('hidden');
             const badge = document.getElementById('viewersBadge');
             if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
+
+            // ===== Mundo Quiz (embed nativo + presença + chat) =====
+            if (item.isQuiz || item.id === 'mundo-quiz') {
+                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-chart-line text-lg"></i>`;
+                if (categoryDate) categoryDate.innerText = 'Quiz Forex · Ao vivo';
+                document.getElementById('viewDescription').innerText = 'Jogue, veja quantos estão online e converse em tempo real.';
+                downloadBtn.classList.add('hidden');
+                actionContainer.style.display = 'flex';
+                if (toggleChatBtn) {
+                    toggleChatBtn.classList.remove('hidden');
+                    toggleChatBtn.classList.add('inline-flex');
+                    toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Chat ao vivo`;
+                }
+                const chatHeader = chatPanel?.querySelector('span.text-xs.font-bold');
+                if (chatHeader) chatHeader.innerHTML = `<i class="fa-solid fa-comments mr-1.5 text-brand-500"></i>Chat do Quiz`;
+                const chatInput = document.getElementById('entertainmentChatInput');
+                if (chatInput) chatInput.placeholder = 'Mensagem para quem está a jogar…';
+                if (badge) {
+                    badge.innerHTML = `<i class="fa-solid fa-gamepad"></i> <span id="viewersCount">0</span> a jogar`;
+                }
+                document.getElementById('viewContentBody')?.classList.add('quiz-mode');
+                container.innerHTML = '';
+                mountMundoQuiz(container);
+                joinEntertainmentViewers('mundo-quiz');
+                enableCommentsPanel('mundo-quiz');
+                // Desktop: chat sempre visível no modo quiz
+                if (window.innerWidth >= 640 && chatPanel) {
+                    entertainmentChatOpen = true;
+                    chatPanel.classList.remove('hidden');
+                    chatPanel.classList.add('flex');
+                }
+                openModal('viewContentModal');
+                return;
+            }
 
             downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar`;
             downloadBtn.onclick = null;
@@ -6453,6 +7059,16 @@
         function closeViewContent() {
             leaveEntertainmentViewers();
             leaveContentComments();
+            document.getElementById('viewContentBody')?.classList.remove('quiz-mode');
+            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
+            const badge = document.getElementById('viewersBadge');
+            if (badge) badge.innerHTML = `<i class="fa-solid fa-eye"></i> <span id="viewersCount">0</span> a assistir`;
+            const chatHeader = document.querySelector('#entertainmentChatPanel span.text-xs.font-bold');
+            if (chatHeader) chatHeader.innerHTML = `<i class="fa-solid fa-comments mr-1.5 text-brand-500"></i>Comentários`;
+            const chatInput = document.getElementById('entertainmentChatInput');
+            if (chatInput) chatInput.placeholder = 'Escreva um comentário...';
+            const toggleChatBtn = document.getElementById('toggleChatBtn');
+            if (toggleChatBtn) toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Comentários`;
             const vid = document.getElementById('mdInternalVideo');
             if (vid) { try { vid.pause(); } catch (_) {} }
             closeModal('viewContentModal');
@@ -7567,48 +8183,5 @@
         }
 
     </script>
-
-<style id="md-professional-upgrade">
-/* Feed profissional */
-.post-card{overflow:hidden;border-radius:1.25rem!important}
-.post-card .post-actions{display:flex;gap:.5rem;align-items:center}
-.md-interaction-btn{border-radius:999px;padding:.45rem .75rem;font-size:.8rem;font-weight:600;background:rgba(148,163,184,.12)}
-/* Notificações */
-#mdNotificationPanel{position:fixed;right:1rem;top:5rem;width:min(22rem,calc(100vw - 2rem));z-index:300;border-radius:1.2rem;box-shadow:0 20px 50px rgba(0,0,0,.25)}
-/* Pesquisa global */
-#globalSearchResults{position:absolute;top:100%;left:0;right:0;z-index:200;border-radius:1rem;max-height:60vh;overflow:auto}
-/* Chat profissional */
-.chat-status-online{font-size:11px;color:#22c55e;font-weight:700}
-.typing-indicator{font-size:11px;color:#94a3b8}
-/* Grupos */
-.group-card{border-radius:1.25rem;transition:.2s}
-.group-card:hover{transform:translateY(-2px)}
-@media(max-width:640px){
- header{position:sticky;top:0;z-index:100}
- .header-bubble-panel{right:-20px!important;width:14rem!important}
-}
-</style>
-<script>
-// Mundo Digital Professional Upgrade
-window.MDUpgrade={
- notifications:[],
- addNotification(title,text){
-  this.notifications.unshift({title,text,time:new Date().toLocaleTimeString()});
-  const badge=document.getElementById('chatBadge');
-  if(badge){badge.classList.remove('hidden');badge.textContent=this.notifications.length}
- },
- globalSearch(term){
-  term=(term||'').toLowerCase();
-  document.querySelectorAll('.post-card').forEach(el=>{
-   el.style.display=!term||el.innerText.toLowerCase().includes(term)?'':'none';
-  });
- }
-};
-const oldSearch=window.handleSearchInput;
-window.handleSearchInput=function(e){
- if(oldSearch) oldSearch(e);
- MDUpgrade.globalSearch(e.target.value);
-};
-</script>
 </body>
 </html>
