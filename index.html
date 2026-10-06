@@ -648,123 +648,19 @@
                 overflow: visible !important;
             }
 
-            /* Só o botão gatilho do topo fica compacto; o painel mantém nomes */
-            header .header-bubble > button {
+            /* botões do topo ficam compactos */
+            header .header-bubble button {
                 padding-left: .65rem !important;
                 padding-right: .65rem !important;
             }
 
-            header .header-bubble > button > span:not(.unread-badge) {
+            header .header-bubble button span:not(.unread-badge) {
                 display: none;
-            }
-
-            header .header-bubble-panel button span {
-                display: inline !important;
             }
 
             #authBtnText {
                 display: none !important;
             }
-        }
-
-        /* ===== Mundo Quiz embed + chat estável ===== */
-        #mundoQuizRoot {
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-            max-height: 100%;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        #mundoQuizRoot .mq-card {
-            background: rgba(12, 28, 66, 0.72);
-            border: 1px solid rgba(80, 170, 255, 0.22);
-            border-radius: 1.25rem;
-            padding: 1rem 1.1rem 1.25rem;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-        }
-        #mundoQuizRoot .mq-btn {
-            width: 100%;
-            text-align: left;
-            padding: 0.85rem 1rem;
-            border-radius: 0.85rem;
-            border: 1px solid rgba(80, 170, 255, 0.2);
-            background: rgba(3, 10, 28, 0.55);
-            color: #eaf3ff;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: border-color 0.15s, background 0.15s, transform 0.15s;
-        }
-        #mundoQuizRoot .mq-btn:hover:not([disabled]) {
-            border-color: #00d4ff;
-            background: rgba(0, 212, 255, 0.08);
-            transform: translateX(3px);
-        }
-        #mundoQuizRoot .mq-btn.correct {
-            background: rgba(16, 185, 129, 0.22) !important;
-            border-color: #10b981 !important;
-        }
-        #mundoQuizRoot .mq-btn.incorrect {
-            background: rgba(244, 63, 94, 0.22) !important;
-            border-color: #f43f5e !important;
-        }
-        #mundoQuizRoot .mq-key {
-            width: 1.75rem; height: 1.75rem;
-            border-radius: 0.5rem;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: 800;
-            background: rgba(255,255,255,0.08);
-            flex-shrink: 0;
-        }
-        #viewContentBody.quiz-mode {
-            display: flex !important;
-            flex-direction: row;
-            min-height: 0;
-        }
-        #viewContentBody.quiz-mode #viewContainer {
-            flex: 1 1 auto;
-            min-width: 0;
-            min-height: 0;
-            overflow-y: auto;
-            padding: 0.75rem;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-        }
-        #viewContentBody.quiz-mode #entertainmentChatPanel {
-            display: flex !important;
-            flex-direction: column;
-            width: min(20rem, 38%);
-            max-width: 20rem;
-            min-width: 15rem;
-            min-height: 0;
-            border-left: 1px solid rgba(80, 170, 255, 0.2);
-            background: rgba(7, 18, 48, 0.96);
-        }
-        @media (max-width: 639px) {
-            #viewContentBody.quiz-mode {
-                flex-direction: column;
-            }
-            #viewContentBody.quiz-mode #entertainmentChatPanel {
-                position: absolute;
-                inset: 0;
-                z-index: 30;
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                border-left: none;
-            }
-            #viewContentBody.quiz-mode #entertainmentChatPanel:not(.comments-open-mobile) {
-                display: none !important;
-            }
-        }
-        #entertainmentChatMessages .chat-bubble-me,
-        #entertainmentChatMessages .chat-bubble-them {
-            max-width: 92%;
-            word-break: break-word;
         }
 
         /* ═══════════════════════════════════════════════
@@ -1474,13 +1370,14 @@
                 <button type="button" onclick="window.discardMyProfile()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 btn-press" title="Descartar alterações"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="profileForm" onsubmit="window.saveMyProfile(event)" class="p-3 space-y-2.5">
-                <div class="profile-avatar-wrap flex justify-center">
+                <div class="profile-avatar-wrap flex flex-col items-center gap-1">
                     <label class="relative cursor-pointer group">
                         <img id="profilePreview" class="w-20 h-20 rounded-full object-cover border-4 border-brand-500 bg-slate-100 dark:bg-slate-700 hidden" alt="Perfil">
                         <div id="profileFallback" class="w-20 h-20 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold">U</div>
                         <span class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-camera text-[10px]"></i></span>
-                        <input id="profileImageInput" type="file" accept="image/*" class="hidden" onchange="window.previewProfileImage(event)">
+                        <input id="profileImageInput" type="file" accept="image/*" capture="environment" class="hidden" onchange="window.previewProfileImage(event)">
                     </label>
+                    <p class="text-[10px] text-slate-400 text-center px-2">Toque na câmara para adicionar foto. Fica visível para todos (comprimida e enviada para a nuvem).</p>
                 </div>
                 <div><label class="text-[11px] font-semibold">Nome</label><input id="profileNameInput" required maxlength="60" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"></div>
                 <div><label class="text-[11px] font-semibold">Bio</label><textarea id="profileBioInput" maxlength="180" rows="2" placeholder="Fale um pouco sobre si..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm resize-none"></textarea></div>
@@ -3459,9 +3356,7 @@
                 return `
                     <div onclick="window.startChatWith('${u.id}')" class="p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 transition btn-press ${isActive ? 'bg-slate-100 dark:bg-slate-800 font-semibold' : ''} ${unread ? 'bg-brand-50/50 dark:bg-brand-950/20' : ''}">
                         <div class="relative shrink-0">
-                            <div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
-                                ${displayName.charAt(0).toUpperCase()}
-                            </div>
+                            ${typeof avatarMarkup === 'function' ? avatarMarkup(u.photoURL || u.avatar || '', displayName, 'w-9 h-9', 'text-xs') : `<div class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">${displayName.charAt(0).toUpperCase()}</div>`}
                             <span class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -3572,7 +3467,17 @@
             clearUnread(userId);
             const name = getDisplayName(user);
             if (chatActiveName) chatActiveName.innerText = name;
-            if (chatActiveAvatar) chatActiveAvatar.innerText = name.charAt(0).toUpperCase();
+            if (chatActiveAvatar) {
+                const p = user.photoURL || user.avatar || '';
+                if (p) {
+                    chatActiveAvatar.innerHTML = `<img src="${escapeHTML(p)}" alt="" class="w-full h-full rounded-full object-cover" loading="lazy">`;
+                    chatActiveAvatar.classList.add('overflow-hidden', 'p-0');
+                } else {
+                    chatActiveAvatar.innerHTML = '';
+                    chatActiveAvatar.innerText = name.charAt(0).toUpperCase();
+                    chatActiveAvatar.classList.remove('overflow-hidden', 'p-0');
+                }
+            }
 
             updateActiveHeaderStatus();
 
@@ -4065,25 +3970,170 @@
         }
 
         function setProfilePreview(url, name) {
-            const img=document.getElementById('profilePreview'), fb=document.getElementById('profileFallback');
-            if (url) { img.src=url; img.classList.remove('hidden'); fb.classList.add('hidden'); }
-            else { img.classList.add('hidden'); fb.classList.remove('hidden'); fb.textContent=(name||'U').charAt(0).toUpperCase(); }
+            const img = document.getElementById('profilePreview');
+            const fb = document.getElementById('profileFallback');
+            if (!img || !fb) return;
+            if (url) { img.src = url; img.classList.remove('hidden'); fb.classList.add('hidden'); }
+            else { img.classList.add('hidden'); fb.classList.remove('hidden'); fb.textContent = (name || 'U').charAt(0).toUpperCase(); }
         }
-        function previewProfileImage(e) { selectedProfileImageFile=e.target.files?.[0]||null; if(selectedProfileImageFile) setProfilePreview(URL.createObjectURL(selectedProfileImageFile), 'U'); }
+
+        /** Avatar HTML (foto pública ou inicial) — visível para todos via photoURL */
+        function avatarMarkup(photoURL, name, sizeClass = 'w-9 h-9', textClass = 'text-xs') {
+            const letter = escapeHTML((name || 'U').charAt(0).toUpperCase());
+            if (photoURL) {
+                return `<img src="${escapeHTML(photoURL)}" alt="" class="${sizeClass} rounded-full object-cover bg-slate-700 shrink-0" loading="lazy" decoding="async" onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}"><div class="${sizeClass} rounded-full bg-brand-600 text-white ${textClass} font-bold items-center justify-center shrink-0" style="display:none">${letter}</div>`;
+            }
+            return `<div class="${sizeClass} rounded-full bg-brand-600 text-white flex items-center justify-center font-bold ${textClass} shrink-0">${letter}</div>`;
+        }
+
+        /** Comprime a imagem no browser (menos dados, melhor desempenho) */
+        function compressImageFile(file, maxSide = 512, quality = 0.82) {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) return reject(new Error('Ficheiro inválido'));
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    let w = img.width || maxSide;
+                    let h = img.height || maxSide;
+                    if (w > maxSide || h > maxSide) {
+                        if (w >= h) { h = Math.round(h * maxSide / w); w = maxSide; }
+                        else { w = Math.round(w * maxSide / h); h = maxSide; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return reject(new Error('Canvas indisponível'));
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(
+                        (blob) => blob ? resolve(blob) : reject(new Error('Falha ao comprimir')),
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Não foi possível ler a imagem')); };
+                img.src = url;
+            });
+        }
+
+        /** Upload público: Supabase Storage se ativo, senão Firebase Storage */
+        async function uploadUserAvatar(file) {
+            if (!currentUserId) throw new Error('Sem utilizador');
+            const blob = await compressImageFile(file, 512, 0.82);
+            const path = `profiles/${currentUserId}/avatar_${Date.now()}.jpg`;
+
+            if (supabase) {
+                try {
+                    const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(path, blob, {
+                        contentType: 'image/jpeg',
+                        upsert: true,
+                        cacheControl: '3600'
+                    });
+                    if (!error) {
+                        const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+                        if (data && data.publicUrl) return data.publicUrl;
+                    } else {
+                        console.warn('[MD] Supabase avatar:', error.message || error);
+                    }
+                } catch (e) {
+                    console.warn('[MD] Supabase avatar falhou, a usar Firebase…', e);
+                }
+            }
+
+            const r = ref(storage, path);
+            const task = await uploadBytesResumable(r, blob, { contentType: 'image/jpeg' });
+            return await getDownloadURL(task.ref);
+        }
+
+        function previewProfileImage(e) {
+            const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+            selectedProfileImageFile = file;
+            if (!file) return;
+            if (file.size > 12 * 1024 * 1024) {
+                selectedProfileImageFile = null;
+                e.target.value = '';
+                return showToast('Imagem demasiado grande (máx. 12 MB).', 'error');
+            }
+            setProfilePreview(URL.createObjectURL(file), currentUserName || 'U');
+        }
+
         async function saveMyProfile(e) {
-            e.preventDefault(); if(!currentUserId) return;
-            const name=document.getElementById('profileNameInput').value.trim(); const bio=document.getElementById('profileBioInput').value.trim(); const phone=document.getElementById('profilePhoneInput').value.trim();
-            const province=(document.getElementById('profileProvinceInput')?.value||'').trim();
-            const city=(document.getElementById('profileCityInput')?.value||'').trim();
-            const neighborhood=(document.getElementById('profileNeighborhoodInput')?.value||'').trim();
-            let photoURL=''; const old=await getDoc(doc(db,'users',currentUserId)); if(old.exists()) photoURL=old.data().photoURL||'';
+            e.preventDefault();
+            if (!currentUserId) return;
+            const name = document.getElementById('profileNameInput').value.trim();
+            const bio = document.getElementById('profileBioInput').value.trim();
+            const phone = document.getElementById('profilePhoneInput').value.trim();
+            const province = (document.getElementById('profileProvinceInput')?.value || '').trim();
+            const city = (document.getElementById('profileCityInput')?.value || '').trim();
+            const neighborhood = (document.getElementById('profileNeighborhoodInput')?.value || '').trim();
+            if (!name) return showToast('Indique o seu nome.', 'error');
+
+            let photoURL = '';
             try {
-                if(selectedProfileImageFile){ const r=ref(storage,`profiles/${currentUserId}/avatar_${Date.now()}`); const task=await uploadBytesResumable(r,selectedProfileImageFile); photoURL=await getDownloadURL(task.ref); }
-                const payload={uid:currentUserId,name,bio,phone,province,city,neighborhood,photoURL,email:auth.currentUser?.email||null,isAnonymous:auth.currentUser?.isAnonymous||false,updatedAt:serverTimestamp()};
-                if (window._pendingGps) { payload.lat=window._pendingGps.lat; payload.lng=window._pendingGps.lng; payload.gpsUpdatedAt=Date.now(); window._pendingGps=null; }
-                await setDoc(doc(db,'users',currentUserId),payload,{merge:true});
-                currentUserName=name; localStorage.setItem('mundo_digital_username',name); updateAuthUI(auth.currentUser); setProfilePreview(photoURL,name); showToast('Perfil atualizado com sucesso!','success'); closeModal('profileModal');
-            } catch(err){ console.error(err); showToast('Não foi possível guardar o perfil.','error'); }
+                const old = await getDoc(doc(db, 'users', currentUserId));
+                if (old.exists()) photoURL = old.data().photoURL || '';
+            } catch (_) {}
+
+            const saveBtn = document.querySelector('#profileForm button[type="submit"]');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.dataset._old = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A guardar…';
+            }
+
+            try {
+                if (selectedProfileImageFile) {
+                    showToast('A enviar foto de perfil…', 'info');
+                    photoURL = await uploadUserAvatar(selectedProfileImageFile);
+                    selectedProfileImageFile = null;
+                    const input = document.getElementById('profileImageInput');
+                    if (input) input.value = '';
+                }
+
+                const payload = {
+                    uid: currentUserId,
+                    name,
+                    bio,
+                    phone,
+                    province,
+                    city,
+                    neighborhood,
+                    photoURL: photoURL || null,
+                    email: auth.currentUser?.email || null,
+                    isAnonymous: auth.currentUser?.isAnonymous || false,
+                    updatedAt: serverTimestamp()
+                };
+                if (window._pendingGps) {
+                    payload.lat = window._pendingGps.lat;
+                    payload.lng = window._pendingGps.lng;
+                    payload.gpsUpdatedAt = Date.now();
+                    window._pendingGps = null;
+                }
+                await setDoc(doc(db, 'users', currentUserId), payload, { merge: true });
+
+                currentUserName = name;
+                window.currentUserPhotoURL = photoURL || '';
+                try { localStorage.setItem('mundo_digital_username', name); } catch (_) {}
+                if (photoURL) { try { localStorage.setItem('mundo_digital_photo', photoURL); } catch (_) {} }
+
+                updateAuthUI(auth.currentUser);
+                setProfilePreview(photoURL, name);
+                try { renderUsersList(); } catch (_) {}
+                showToast('Perfil atualizado! A foto fica visível para todos.', 'success');
+                closeModal('profileModal');
+            } catch (err) {
+                console.error(err);
+                const msg = (err && err.code === 'storage/unauthorized')
+                    ? 'Sem permissão no Storage. Verifique as regras do Firebase Storage.'
+                    : 'Não foi possível guardar o perfil.';
+                showToast(msg, 'error');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    if (saveBtn.dataset._old) saveBtn.innerHTML = saveBtn.dataset._old;
+                }
+            }
         }
         async function openContactProfile(){
             if(!activeChatUserId) return;
@@ -5349,7 +5399,7 @@
                     const tb = b.createdAt?.seconds || 0;
                     return tb - ta;
                 });
-                const hasEntertainment = contents.some(c => c.category === 'entertainment' && c.id !== 'mundo-quiz');
+                const hasEntertainment = contents.some(c => c.category === 'entertainment');
                 if (!hasEntertainment) {
                     contents.unshift({
                         id: 'default-entertainment-channel',
@@ -5358,17 +5408,6 @@
                         description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
                         url: 'https://vialacteafilmes.com',
                         isVirtualChannel: true
-                    });
-                }
-                // Mundo Quiz — sempre disponível no entretenimento
-                if (!contents.some(c => c.id === 'mundo-quiz')) {
-                    contents.unshift({
-                        id: 'mundo-quiz',
-                        title: 'Mundo Quiz · Forex Pro',
-                        category: 'entertainment',
-                        description: 'Quiz de Forex em tempo real: jogue, veja quantos estão online e converse enquanto joga.',
-                        isVirtualChannel: true,
-                        isQuiz: true
                     });
                 }
                 renderContents();
@@ -5444,31 +5483,8 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                // Cartão de entretenimento / Quiz
+                // Cartão de entretenimento
                 if (item.category === 'entertainment') {
-                    if (item.isQuiz || item.id === 'mundo-quiz') {
-                        return `
-                    <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
-                        <div class="w-full h-40 bg-gradient-to-tr from-cyan-900 via-blue-900 to-slate-950 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
-                            <div class="absolute inset-0 opacity-25 bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:14px_14px]"></div>
-                            <i class="fa-solid fa-chart-line text-4xl text-cyan-300 mb-2 relative z-[1]"></i>
-                            <span class="font-extrabold text-base tracking-wider relative z-[1]">Mundo Quiz</span>
-                            <span class="text-[10px] text-cyan-200/90 mt-1 relative z-[1] font-semibold">Forex Pro · Ao vivo</span>
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40">
-                                    <i class="fa-solid fa-gamepad mr-1"></i>Quiz & Chat
-                                </span>
-                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mt-2 mb-1">${escapeHTML(item.title || 'Mundo Quiz')}</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHTML(item.description || 'Jogue e converse em tempo real')}</p>
-                            </div>
-                            <button onclick="window.viewContent('mundo-quiz')" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
-                                <i class="fa-solid fa-play"></i> Jogar agora
-                            </button>
-                        </div>
-                    </div>`;
-                    }
                     return `
                     <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
                         <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
@@ -6152,191 +6168,12 @@
             }
         }
 
-        // ========== MUNDO QUIZ (Forex Pro) ==========
-        const MQ_MAX_ROUNDS = 100;
-        const MQ_TIME_LIMIT = 30;
-        const MQ_ROUNDS_PER_LEVEL = 100;
-        const MQ_DB = [
-            { category: "Análise Técnica", question: "Ao identificar um 'Engolfo de Alta' (Bullish Engulfing) em uma zona de suporte, qual é a indicação do mercado?", options: ["Sinal de reversão para tendência de alta (Compra)", "Sinal de continuação de queda forte no par", "Consolidação sem tendência definida", "Fechamento automático da ordem no Stop Loss"], answer: 0 },
-            { category: "Gestão de Risco", question: "Dica de Ouro: Qual é a porcentagem máxima recomendada de risco do capital por operação?", options: ["Entre 1% e 2% da banca", "50% do saldo total da conta", "10% a 15% em cada ordem", "Alavancagem máxima em todas as posições"], answer: 0 },
-            { category: "Indicadores", question: "Quando o indicador RSI cruza acima do nível 70, qual é a indicação do mercado?", options: ["Mercado Sobrecomprado (Alerta de possível correção/Venda)", "Mercado Sobrevendido (Alerta forte de Compra)", "Perda total de volatilidade no ativo", "Sinal para abrir ordem sem Stop Loss"], answer: 0 },
-            { category: "Sinais & Estratégia", question: "O que significa definir um 'Take Profit' (TP) ao entrar em uma operação?", options: ["Programar o fechamento automático da ordem com o lucro atingido", "Aumentar o lote da operação automaticamente", "Limitar as perdas caso o gráfico vá contra a posição", "Pagar a taxa de spread cobrada pela corretora"], answer: 0 },
-            { category: "Price Action", question: "O que representa o padrão 'Estrela da Manhã' (Morning Star) no gráfico?", options: ["Sinal de reversão de alta após uma tendência de baixa", "Sinal de continuação de queda acentuada", "Indicação de fechamento das bolsas de Londres e NY", "Um indicador de atraso de ordens (Slippage)"], answer: 0 },
-            { category: "Gestão de Risco", question: "O que é o 'Stop Loss' numa operação de Forex?", options: ["Ordem que limita a perda máxima da posição", "Meta de lucro automático", "Taxa da corretora", "Tipo de alavancagem"], answer: 0 },
-            { category: "Análise Técnica", question: "Uma linha de tendência de alta liga preferencialmente:", options: ["Mínimos crescentes", "Máximos decrescentes", "Apenas o preço de abertura", "Volumes de tick"], answer: 0 },
-            { category: "Psicologia", question: "Qual atitude mais protege a banca a longo prazo?", options: ["Respeitar o plano e o risco por operação", "Dobrar o lote após cada perda", "Operar sem Stop Loss", "Seguir só dicas de redes sociais"], answer: 0 }
-        ];
-
-        function mountMundoQuiz(host) {
-            if (!host) return;
-            const hist = new Set();
-            let score = 0, qNum = 1, lastCorrectIdx = -1, timer = null, timeLeft = MQ_TIME_LIMIT;
-            let curQ = '', curA = '';
-            let totalPlayed = parseInt(localStorage.getItem('mq_total_rounds') || '0', 10);
-
-            host.innerHTML = `
-            <div id="mundoQuizRoot">
-              <div class="mq-card">
-                <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                  <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 align-middle"></span>Quiz Forex
-                  </span>
-                  <div class="flex items-center gap-2">
-                    <span id="mqLevel" class="text-[11px] font-extrabold text-sky-300">⭐ Nível 1</span>
-                    <div class="w-20 h-1.5 rounded-full bg-white/10 overflow-hidden"><div id="mqLevelBar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" style="width:0%"></div></div>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
-                  <div class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-lg shadow-lg">📈</div>
-                    <span class="font-extrabold text-base text-white">Mundo Quiz</span>
-                  </div>
-                  <div class="text-xs font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-full">🏆 <span id="mqScore">0</span></div>
-                </div>
-                <div id="mqGame">
-                  <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                    <span id="mqCat" class="text-[10px] font-bold uppercase text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-1 rounded-lg">Forex</span>
-                    <span id="mqTimer" class="text-xs font-extrabold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full">⏱️ 30s</span>
-                    <span id="mqRound" class="text-[11px] text-slate-400 font-semibold">Rodada 1 / ${MQ_MAX_ROUNDS}</span>
-                  </div>
-                  <div id="mqQuestion" class="text-[1.05rem] font-bold text-white leading-snug mb-4 min-h-[3.5rem]">A carregar…</div>
-                  <div id="mqOptions" class="flex flex-col gap-2.5"></div>
-                </div>
-                <div id="mqFeedback" class="hidden mt-3 p-3 rounded-xl border">
-                  <div id="mqFbBadge" class="text-[11px] font-extrabold uppercase mb-1"></div>
-                  <div id="mqFbAnswer" class="text-sm font-semibold text-white"></div>
-                  <div class="h-1 mt-3 rounded bg-white/10 overflow-hidden"><div id="mqFbBar" class="h-full bg-emerald-400 transition-all duration-[6000ms] ease-linear" style="width:100%"></div></div>
-                </div>
-                <div id="mqSummary" class="hidden text-center py-4">
-                  <div class="text-4xl mb-2">🏆</div>
-                  <h3 class="text-lg font-extrabold text-white mb-1">${MQ_MAX_ROUNDS} rodadas concluídas</h3>
-                  <p class="text-xs text-slate-400 mb-4">Ciclo completo do Mundo Quiz.</p>
-                  <div class="flex justify-center gap-3 mb-4">
-                    <div class="px-4 py-3 rounded-xl bg-white/5 border border-white/10 min-w-[6rem]"><span id="mqFinalScore" class="block text-2xl font-extrabold text-cyan-300">0</span><span class="text-[10px] uppercase text-slate-400">Acertos</span></div>
-                    <div class="px-4 py-3 rounded-xl bg-white/5 border border-white/10 min-w-[6rem]"><span id="mqFinalAcc" class="block text-2xl font-extrabold text-cyan-300">0%</span><span class="text-[10px] uppercase text-slate-400">Precisão</span></div>
-                  </div>
-                  <button type="button" id="mqResetBtn" class="px-5 py-3 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg">🔄 Reiniciar</button>
-                </div>
-              </div>
-            </div>`;
-
-            const el = (id) => document.getElementById(id);
-            function updateLevel() {
-                const nivel = Math.floor(totalPlayed / MQ_ROUNDS_PER_LEVEL) + 1;
-                const pct = totalPlayed % MQ_ROUNDS_PER_LEVEL;
-                if (el('mqLevel')) el('mqLevel').textContent = `⭐ Nível ${nivel}`;
-                if (el('mqLevelBar')) el('mqLevelBar').style.width = pct + '%';
-            }
-            function stopTimer() {
-                if (timer) { clearInterval(timer); timer = null; }
-            }
-            window._mqStopTimer = stopTimer;
-            function startTimer(correctIdx) {
-                stopTimer();
-                timeLeft = MQ_TIME_LIMIT;
-                const t = el('mqTimer');
-                if (t) { t.textContent = `⏱️ ${timeLeft}s`; t.className = 'text-xs font-extrabold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full'; }
-                timer = setInterval(() => {
-                    timeLeft--;
-                    if (t) t.textContent = `⏱️ ${timeLeft}s`;
-                    if (timeLeft <= 10 && t) t.className = 'text-xs font-extrabold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2.5 py-1 rounded-full animate-pulse';
-                    if (timeLeft <= 0) {
-                        stopTimer();
-                        handleAns(false, null, correctIdx, true);
-                    }
-                }, 1000);
-            }
-            function nextQ() {
-                stopTimer();
-                el('mqFeedback')?.classList.add('hidden');
-                el('mqGame')?.classList.remove('hidden');
-                el('mqSummary')?.classList.add('hidden');
-                el('mqOptions').innerHTML = `<div class="text-center text-slate-400 text-xs py-6"><i class="fa-solid fa-spinner fa-spin mr-1"></i>A carregar pergunta…</div>`;
-                let pool = MQ_DB.filter(q => !hist.has(q.question));
-                if (!pool.length) { hist.clear(); pool = [...MQ_DB]; }
-                const quiz = pool[Math.floor(Math.random() * pool.length)];
-                hist.add(quiz.question);
-                curQ = quiz.question;
-                curA = quiz.options[quiz.answer];
-                let opts = [], correctIdx = -1, tries = 0;
-                do {
-                    opts = [...quiz.options].sort(() => Math.random() - 0.5);
-                    correctIdx = opts.indexOf(curA);
-                    tries++;
-                } while (correctIdx === lastCorrectIdx && tries < 12);
-                lastCorrectIdx = correctIdx;
-                el('mqCat').textContent = quiz.category || 'Forex';
-                el('mqRound').textContent = `Rodada ${qNum} / ${MQ_MAX_ROUNDS}`;
-                el('mqQuestion').textContent = quiz.question;
-                el('mqOptions').innerHTML = '';
-                const keys = ['A', 'B', 'C', 'D'];
-                opts.forEach((txt, idx) => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'mq-btn';
-                    btn.innerHTML = `<span class="mq-key">${keys[idx]}</span><span>${escapeHTML(txt)}</span>`;
-                    btn.onclick = () => handleAns(idx === correctIdx, btn, correctIdx, false);
-                    el('mqOptions').appendChild(btn);
-                });
-                startTimer(correctIdx);
-            }
-            function handleAns(ok, selectedBtn, correctIdx, timeout) {
-                stopTimer();
-                el('mqOptions').querySelectorAll('.mq-btn').forEach(b => b.disabled = true);
-                totalPlayed++;
-                localStorage.setItem('mq_total_rounds', String(totalPlayed));
-                updateLevel();
-                const btns = el('mqOptions').querySelectorAll('.mq-btn');
-                if (ok && selectedBtn) {
-                    selectedBtn.classList.add('correct');
-                    score++;
-                    el('mqScore').textContent = score;
-                } else {
-                    if (selectedBtn) selectedBtn.classList.add('incorrect');
-                    if (btns[correctIdx]) btns[correctIdx].classList.add('correct');
-                }
-                const fb = el('mqFeedback');
-                fb.classList.remove('hidden');
-                fb.className = 'mt-3 p-3 rounded-xl border ' + (ok ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-rose-500/40 bg-rose-500/10');
-                el('mqFbBadge').textContent = ok ? '✨ Resposta correta!' : (timeout ? '⏰ Tempo esgotado!' : '❌ Resposta incorreta!');
-                el('mqFbBadge').className = 'text-[11px] font-extrabold uppercase mb-1 ' + (ok ? 'text-emerald-400' : 'text-rose-400');
-                el('mqFbAnswer').textContent = 'Resposta: ' + curA;
-                const bar = el('mqFbBar');
-                bar.style.transition = 'none';
-                bar.style.width = '100%';
-                void bar.offsetWidth;
-                bar.style.transition = 'width 6s linear';
-                bar.style.width = '0%';
-                setTimeout(() => {
-                    if (qNum >= MQ_MAX_ROUNDS) {
-                        el('mqGame')?.classList.add('hidden');
-                        el('mqFeedback')?.classList.add('hidden');
-                        el('mqSummary')?.classList.remove('hidden');
-                        el('mqFinalScore').textContent = score;
-                        el('mqFinalAcc').textContent = Math.round((score / MQ_MAX_ROUNDS) * 100) + '%';
-                    } else {
-                        qNum++;
-                        nextQ();
-                    }
-                }, 6000);
-            }
-            el('mqResetBtn')?.addEventListener('click', () => {
-                score = 0; qNum = 1; lastCorrectIdx = -1; hist.clear();
-                el('mqScore').textContent = '0';
-                nextQ();
-            });
-            updateLevel();
-            nextQ();
-        }
-
         function viewContent(id) {
             const item = contents.find(c => c.id === id);
             if (!item) return;
 
             leaveEntertainmentViewers();
             leaveContentComments();
-            document.getElementById('viewContentBody')?.classList.remove('quiz-mode');
-            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
 
             const bodyText = item.text || item.description || '';
             document.getElementById('viewTitle').innerText = item.category === 'text'
@@ -6363,40 +6200,6 @@
             if (toggleChatBtn) toggleChatBtn.classList.add('hidden');
             const badge = document.getElementById('viewersBadge');
             if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
-
-            // ===== Mundo Quiz (embed nativo + presença + chat) =====
-            if (item.isQuiz || item.id === 'mundo-quiz') {
-                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-chart-line text-lg"></i>`;
-                if (categoryDate) categoryDate.innerText = 'Quiz Forex · Ao vivo';
-                document.getElementById('viewDescription').innerText = 'Jogue, veja quantos estão online e converse em tempo real.';
-                downloadBtn.classList.add('hidden');
-                actionContainer.style.display = 'flex';
-                if (toggleChatBtn) {
-                    toggleChatBtn.classList.remove('hidden');
-                    toggleChatBtn.classList.add('inline-flex');
-                    toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Chat ao vivo`;
-                }
-                const chatHeader = chatPanel?.querySelector('span.text-xs.font-bold');
-                if (chatHeader) chatHeader.innerHTML = `<i class="fa-solid fa-comments mr-1.5 text-brand-500"></i>Chat do Quiz`;
-                const chatInput = document.getElementById('entertainmentChatInput');
-                if (chatInput) chatInput.placeholder = 'Mensagem para quem está a jogar…';
-                if (badge) {
-                    badge.innerHTML = `<i class="fa-solid fa-gamepad"></i> <span id="viewersCount">0</span> a jogar`;
-                }
-                document.getElementById('viewContentBody')?.classList.add('quiz-mode');
-                container.innerHTML = '';
-                mountMundoQuiz(container);
-                joinEntertainmentViewers('mundo-quiz');
-                enableCommentsPanel('mundo-quiz');
-                // Desktop: chat sempre visível no modo quiz
-                if (window.innerWidth >= 640 && chatPanel) {
-                    entertainmentChatOpen = true;
-                    chatPanel.classList.remove('hidden');
-                    chatPanel.classList.add('flex');
-                }
-                openModal('viewContentModal');
-                return;
-            }
 
             downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar`;
             downloadBtn.onclick = null;
@@ -7059,16 +6862,6 @@
         function closeViewContent() {
             leaveEntertainmentViewers();
             leaveContentComments();
-            document.getElementById('viewContentBody')?.classList.remove('quiz-mode');
-            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
-            const badge = document.getElementById('viewersBadge');
-            if (badge) badge.innerHTML = `<i class="fa-solid fa-eye"></i> <span id="viewersCount">0</span> a assistir`;
-            const chatHeader = document.querySelector('#entertainmentChatPanel span.text-xs.font-bold');
-            if (chatHeader) chatHeader.innerHTML = `<i class="fa-solid fa-comments mr-1.5 text-brand-500"></i>Comentários`;
-            const chatInput = document.getElementById('entertainmentChatInput');
-            if (chatInput) chatInput.placeholder = 'Escreva um comentário...';
-            const toggleChatBtn = document.getElementById('toggleChatBtn');
-            if (toggleChatBtn) toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Comentários`;
             const vid = document.getElementById('mdInternalVideo');
             if (vid) { try { vid.pause(); } catch (_) {} }
             closeModal('viewContentModal');
@@ -7086,13 +6879,9 @@
             try {
                 const saved = localStorage.getItem(PERFORMANCE_KEY);
                 if (saved && PERFORMANCE_MODES[saved]) return saved;
-                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                const mem = navigator.deviceMemory || 4;
-                const cores = navigator.hardwareConcurrency || 4;
-                if (reduced || mem <= 2 || cores <= 2) return 'best';
-                if (mem <= 4 || cores <= 4) return 'memory';
             } catch (_) {}
-            return 'max';
+            // Padrão do site: melhor desempenho (leve, estável em telemóveis)
+            return 'best';
         }
         function applyPerformanceMode(mode, persist = true) {
             if (!PERFORMANCE_MODES[mode]) mode = 'memory';
@@ -7270,7 +7059,7 @@
             const n = getDisplayName(u);
             const friend = isFriend(u.id);
             return `<div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-                <button type="button" onclick="window.openUserProfileById('${u.id}')" class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm btn-press">${escapeHTML(n.charAt(0).toUpperCase())}</button>
+                <button type="button" onclick="window.openUserProfileById('${u.id}')" class="w-10 h-10 rounded-full overflow-hidden bg-brand-600 text-white flex items-center justify-center font-bold text-sm btn-press p-0">${u.photoURL || u.avatar ? `<img src="${escapeHTML(u.photoURL || u.avatar)}" class="w-full h-full object-cover" alt="" loading="lazy">` : escapeHTML(n.charAt(0).toUpperCase())}</button>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-semibold truncate cursor-pointer" onclick="window.openUserProfileById('${u.id}')">${escapeHTML(n)}</p>
                     <p class="text-[10px] ${u.online?'text-emerald-500':'text-slate-400'}">${u.online?'Online':'Offline'}</p>
