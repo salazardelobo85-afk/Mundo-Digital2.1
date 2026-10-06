@@ -656,7 +656,77 @@
             }
         }
 
-    </style>
+    
+/* ===== FIX MENU MOBILE CHATTS/FUNCOES ===== */
+.header-bubble{position:relative;}
+
+.header-bubble-panel{
+ position:absolute;
+ top:calc(100% + 10px);
+ right:0;
+ width:min(260px,calc(100vw - 24px));
+ max-width:calc(100vw - 24px);
+ padding:8px;
+ border-radius:18px;
+ background:rgba(255,255,255,.98);
+ border:1px solid rgba(226,232,240,.9);
+ box-shadow:0 20px 40px rgba(0,0,0,.18);
+ backdrop-filter:blur(15px);
+ z-index:9999;
+ overflow:hidden;
+}
+
+.dark .header-bubble-panel{
+ background:rgba(15,23,42,.98);
+ border-color:#334155;
+}
+
+.header-bubble-panel button{
+ width:100%;
+ display:flex;
+ align-items:center;
+ gap:12px;
+ padding:12px;
+ border-radius:12px;
+ font-size:13px;
+ font-weight:600;
+ text-align:left;
+ transition:.2s;
+}
+
+.header-bubble-panel button:hover{
+ background:#f1f5f9;
+}
+
+.dark .header-bubble-panel button:hover{
+ background:#1e293b;
+}
+
+@media(max-width:640px){
+ .header-bubble-panel{
+  position:fixed;
+  top:75px;
+  right:12px;
+  left:auto;
+  width:260px;
+  max-width:calc(100vw - 24px);
+  max-height:calc(100dvh - 100px);
+  overflow-y:auto;
+  animation:menuMobile .2s ease;
+ }
+
+ .header-bubble-panel button{
+  min-height:46px;
+  font-size:14px;
+ }
+}
+
+@keyframes menuMobile{
+ from{opacity:0;transform:translateY(-10px) scale(.96);}
+ to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+</style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col font-sans select-none sm:select-auto relative overflow-x-hidden">
 
@@ -7497,5 +7567,48 @@
         }
 
     </script>
+
+<style id="md-professional-upgrade">
+/* Feed profissional */
+.post-card{overflow:hidden;border-radius:1.25rem!important}
+.post-card .post-actions{display:flex;gap:.5rem;align-items:center}
+.md-interaction-btn{border-radius:999px;padding:.45rem .75rem;font-size:.8rem;font-weight:600;background:rgba(148,163,184,.12)}
+/* Notificações */
+#mdNotificationPanel{position:fixed;right:1rem;top:5rem;width:min(22rem,calc(100vw - 2rem));z-index:300;border-radius:1.2rem;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+/* Pesquisa global */
+#globalSearchResults{position:absolute;top:100%;left:0;right:0;z-index:200;border-radius:1rem;max-height:60vh;overflow:auto}
+/* Chat profissional */
+.chat-status-online{font-size:11px;color:#22c55e;font-weight:700}
+.typing-indicator{font-size:11px;color:#94a3b8}
+/* Grupos */
+.group-card{border-radius:1.25rem;transition:.2s}
+.group-card:hover{transform:translateY(-2px)}
+@media(max-width:640px){
+ header{position:sticky;top:0;z-index:100}
+ .header-bubble-panel{right:-20px!important;width:14rem!important}
+}
+</style>
+<script>
+// Mundo Digital Professional Upgrade
+window.MDUpgrade={
+ notifications:[],
+ addNotification(title,text){
+  this.notifications.unshift({title,text,time:new Date().toLocaleTimeString()});
+  const badge=document.getElementById('chatBadge');
+  if(badge){badge.classList.remove('hidden');badge.textContent=this.notifications.length}
+ },
+ globalSearch(term){
+  term=(term||'').toLowerCase();
+  document.querySelectorAll('.post-card').forEach(el=>{
+   el.style.display=!term||el.innerText.toLowerCase().includes(term)?'':'none';
+  });
+ }
+};
+const oldSearch=window.handleSearchInput;
+window.handleSearchInput=function(e){
+ if(oldSearch) oldSearch(e);
+ MDUpgrade.globalSearch(e.target.value);
+};
+</script>
 </body>
 </html>
