@@ -1245,7 +1245,7 @@
                     <i class="fa-solid fa-align-left mr-1.5"></i>Publicações
                 </button>
                 <button onclick="window.setFilter('entertainment')" data-filter="entertainment" class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 btn-press">
-                    <i class="fa-solid fa-gamepad mr-1.5"></i>Entretenimento
+                    <i class="fa-solid fa-film mr-1.5"></i>Filmes e Séries
                 </button>
             </div>
             
@@ -1808,7 +1808,7 @@
                     <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
                         <i class="fa-solid fa-pen-to-square text-brand-500"></i> Nova publicação
                     </h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Partilhe um texto com a comunidade</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Texto e/ou ficheiro · visível para todos</p>
                 </div>
                 <button type="button" onclick="window.closeModal('addContentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 btn-press">
                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -1816,14 +1816,38 @@
             </div>
 
             <form id="addContentForm" onsubmit="window.handleFormSubmit(event)" class="flex flex-col">
-                <div class="p-4 sm:p-5 space-y-3">
-                    <textarea id="inputPostText" required maxlength="2000" rows="7" placeholder="O que está a pensar? Escreva a sua publicação..."
+                <div class="p-4 sm:p-5 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <textarea id="inputPostText" maxlength="2000" rows="5" placeholder="O que está a pensar? Texto opcional se anexar ficheiro..."
                         class="post-writing w-full px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar resize-none leading-relaxed"
                         oninput="window.updatePostCharCount()"></textarea>
+
+                    <!-- Anexar ficheiro (imagem, vídeo, PDF, etc.) → vira URL pública -->
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-paperclip text-brand-500"></i> Ficheiro (opcional)
+                        </p>
+                        <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-2xl p-4 text-center cursor-pointer hover:border-brand-500 transition">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-brand-500 mb-1"></i>
+                            <p id="fileNameDisplay" class="text-xs text-slate-500">Toque para escolher imagem, vídeo, PDF ou outro ficheiro</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Máx. 100 MB · fica visível para todos</p>
+                            <input id="fileInput" type="file" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" onchange="window.handleFileSelect(event)">
+                        </div>
+                        <div id="filePreviewBox" class="hidden mt-2 flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                            <img id="filePreviewImg" class="hidden w-14 h-14 rounded-lg object-cover" alt="">
+                            <video id="filePreviewVideo" class="hidden w-14 h-14 rounded-lg object-cover" muted></video>
+                            <i id="filePreviewIcon" class="fa-solid fa-file text-slate-400 text-lg w-14 text-center"></i>
+                            <div class="flex-1 min-w-0">
+                                <p id="filePreviewName" class="text-xs font-semibold truncate"></p>
+                                <p id="filePreviewSize" class="text-[10px] text-slate-400"></p>
+                            </div>
+                            <button type="button" onclick="window.clearSelectedFile()" class="p-2 text-slate-400 hover:text-red-500 btn-press" title="Remover"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-palette text-brand-500"></i> Fundo
+                                <i class="fa-solid fa-palette text-brand-500"></i> Fundo (só texto)
                             </p>
                             <span id="postBgRotateHint" class="text-[10px] text-slate-400">10 por categoria · roda a cada 30 min</span>
                         </div>
@@ -2054,7 +2078,7 @@
                         <option value="image">Imagem</option>
                         <option value="video">Vídeo</option>
                         <option value="document">Documento</option>
-                        <option value="entertainment">Entretenimento</option>
+                        <option value="entertainment">Filmes e Séries</option>
                         <option value="text">Texto</option>
                         <option value="link">Link</option>
                     </select>
@@ -5234,19 +5258,23 @@
             }
             const applyContents = (snapshot) => {
                 contents = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-                // Manter textos e entretenimento
+                // Publicações (texto + ficheiros) e entretenimento
                 contents = contents.filter(c =>
                     c.category === 'text' ||
+                    c.category === 'image' ||
+                    c.category === 'video' ||
+                    c.category === 'document' ||
+                    c.category === 'link' ||
                     c.category === 'entertainment' ||
-                    (!c.category && (c.text || c.description))
+                    (!c.category && (c.text || c.description || c.url))
                 );
                 contents.sort((a, b) => {
                     const ta = a.createdAt?.seconds || 0;
                     const tb = b.createdAt?.seconds || 0;
                     return tb - ta;
                 });
-                // Secção Entretenimento: sempre Filmes e Séries + Mundo Quiz
-                if (!contents.some(c => c.id === 'default-entertainment-channel')) {
+                const hasEntertainment = contents.some(c => c.category === 'entertainment');
+                if (!hasEntertainment) {
                     contents.unshift({
                         id: 'default-entertainment-channel',
                         title: 'Filmes e Séries',
@@ -5254,16 +5282,6 @@
                         description: 'Canal oficial de entretenimento, estreias e catálogos de filmes e séries em streaming.',
                         url: 'https://vialacteafilmes.com',
                         isVirtualChannel: true
-                    });
-                }
-                if (!contents.some(c => c.id === 'mundo-quiz')) {
-                    contents.unshift({
-                        id: 'mundo-quiz',
-                        title: 'Mundo Quiz · Forex Pro',
-                        category: 'entertainment',
-                        description: 'Quiz de Forex em tempo real: jogue e converse enquanto joga.',
-                        isVirtualChannel: true,
-                        isQuiz: true
                     });
                 }
                 renderContents();
@@ -5319,9 +5337,11 @@
             if (!grid) return;
 
             const filtered = contents.filter(item => {
-                const matchesFilter = currentFilter === 'all' || item.category === currentFilter ||
-                    (currentFilter === 'text' && !item.category && (item.text || item.description));
-                const body = (item.text || item.description || item.title || '').toLowerCase();
+                const isMedia = ['image', 'video', 'document', 'link'].includes(item.category);
+                const matchesFilter = currentFilter === 'all'
+                    || item.category === currentFilter
+                    || (currentFilter === 'text' && (item.category === 'text' || isMedia || (!item.category && (item.text || item.description || item.url))));
+                const body = (item.text || item.description || item.title || item.fileName || '').toLowerCase();
                 const matchesSearch = !searchQuery || body.includes(searchQuery);
                 return matchesFilter && matchesSearch;
             });
@@ -5339,31 +5359,37 @@
             if (emptyState) emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map(item => {
-                // Cartões de entretenimento (Quiz + Filmes e Séries)
-                if (item.category === 'entertainment') {
-                    if (item.isQuiz || item.id === 'mundo-quiz') {
-                        return `
+                // Cartão de ficheiro / média (imagem, vídeo, documento, link)
+                if (['image', 'video', 'document', 'link'].includes(item.category) && item.url) {
+                    const isImg = item.category === 'image';
+                    const isVid = item.category === 'video';
+                    const authorM = escapeHTML(item.createdByName || 'Utilizador');
+                    const caption = escapeHTML(item.text || item.description || item.fileName || item.title || 'Ficheiro');
+                    return `
                     <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
-                        <div class="w-full h-40 bg-gradient-to-tr from-cyan-900 via-blue-900 to-slate-950 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
-                            <div class="absolute inset-0 opacity-25 bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:14px_14px]"></div>
-                            <i class="fa-solid fa-chart-line text-4xl text-cyan-300 mb-2 relative z-[1]"></i>
-                            <span class="font-extrabold text-base tracking-wider relative z-[1]">Mundo Quiz</span>
-                            <span class="text-[10px] text-cyan-200/90 mt-1 relative z-[1] font-semibold">Forex Pro · Ao vivo</span>
+                        <div class="w-full h-44 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                            ${isImg ? `<img src="${escapeHTML(item.url)}" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">` : ''}
+                            ${isVid ? `<video src="${escapeHTML(item.url)}" class="w-full h-full object-cover" muted preload="metadata"></video><span class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-play text-white text-3xl drop-shadow-lg"></i></span>` : ''}
+                            ${!isImg && !isVid ? `<div class="flex flex-col items-center text-slate-300"><i class="fa-solid fa-file text-4xl mb-2 text-brand-400"></i><span class="text-xs px-3 text-center truncate max-w-full">${escapeHTML(item.fileName || 'Documento')}</span></div>` : ''}
                         </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40">
-                                    <i class="fa-solid fa-gamepad mr-1"></i>Quiz
-                                </span>
-                                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mt-2 mb-1">${escapeHTML(item.title || 'Mundo Quiz')}</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHTML(item.description || 'Jogue e converse em tempo real')}</p>
+                        <div class="p-4 flex-1 flex flex-col">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">${authorM.charAt(0)}</div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold truncate">${authorM}</p>
+                                    <span class="text-[10px] text-slate-400 uppercase">${item.category}</span>
+                                </div>
                             </div>
-                            <button onclick="window.viewContent('mundo-quiz')" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
-                                <i class="fa-solid fa-play"></i> Jogar agora
+                            <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mb-3">${caption}</p>
+                            <button onclick="window.viewContent('${item.id}')" class="w-full py-2 bg-slate-100 hover:bg-brand-600 hover:text-white dark:bg-slate-700 dark:hover:bg-brand-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 btn-press">
+                                <i class="fa-solid fa-${isImg ? 'image' : isVid ? 'play' : 'download'}"></i> ${isImg || isVid ? 'Ver' : 'Abrir ficheiro'}
                             </button>
                         </div>
                     </div>`;
-                    }
+                }
+
+                // Cartão de entretenimento
+                if (item.category === 'entertainment') {
                     return `
                     <div class="post-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col overflow-hidden">
                         <div class="w-full h-40 bg-gradient-to-tr from-purple-900 via-indigo-900 to-slate-900 flex flex-col items-center justify-center text-white p-4 relative overflow-hidden">
@@ -5902,14 +5928,56 @@
             if (btn) btn.disabled = len === 0;
         }
 
+        /** Envia ficheiro para Storage e devolve URL pública + caminho */
+        async function uploadPublicContentFile(file) {
+            if (!file || !currentUserId) throw new Error('Sem ficheiro ou utilizador');
+            const safeName = String(file.name || 'ficheiro').replace(/[^\w.\-]+/g, '_').slice(0, 80);
+            const path = `contents/${currentUserId}/${Date.now()}_${safeName}`;
+            const contentType = file.type || 'application/octet-stream';
+
+            // Preferir Supabase se configurado
+            if (supabase) {
+                try {
+                    const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(path, file, {
+                        contentType,
+                        upsert: false,
+                        cacheControl: '3600'
+                    });
+                    if (!error) {
+                        const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+                        if (data && data.publicUrl) {
+                            return { url: data.publicUrl, storagePath: path, storageProvider: 'supabase' };
+                        }
+                    } else {
+                        console.warn('[MD] Supabase upload:', error.message || error);
+                    }
+                } catch (e) {
+                    console.warn('[MD] Supabase falhou, a usar Firebase…', e);
+                }
+            }
+
+            const r = ref(storage, path);
+            const task = await uploadBytesResumable(r, file, { contentType });
+            const url = await getDownloadURL(task.ref);
+            return { url, storagePath: path, storageProvider: 'firebase' };
+        }
+
+        function detectCategoryFromFile(file) {
+            if (!file) return 'document';
+            if (file.type.startsWith('image/')) return 'image';
+            if (file.type.startsWith('video/')) return 'video';
+            return 'document';
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
             const textarea = document.getElementById('inputPostText');
             const submitBtn = document.getElementById('submitBtn');
             const text = (textarea?.value || '').trim();
+            const file = selectedFile || null;
 
-            if (!text) {
-                showToast('Escreva o texto da publicação.', 'error');
+            if (!text && !file) {
+                showToast('Escreva um texto ou anexe um ficheiro.', 'error');
                 return;
             }
             if (!currentUserId) {
@@ -5922,15 +5990,42 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>A publicar...</span>';
 
             try {
-                // Título automático: primeiras palavras do texto (só para listagens/admin)
-                const autoTitle = text.length > 60 ? text.slice(0, 57).trim() + '…' : text;
+                let url = '';
+                let storagePath = '';
+                let storageProvider = '';
+                let category = 'text';
+                let fileName = '';
+                let fileType = '';
+                let fileSize = 0;
+
+                if (file) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>A enviar ficheiro…</span>';
+                    const up = await uploadPublicContentFile(file);
+                    url = up.url;
+                    storagePath = up.storagePath;
+                    storageProvider = up.storageProvider;
+                    category = detectCategoryFromFile(file);
+                    fileName = file.name || '';
+                    fileType = file.type || '';
+                    fileSize = file.size || 0;
+                }
+
+                const autoTitle = text
+                    ? (text.length > 60 ? text.slice(0, 57).trim() + '…' : text)
+                    : (fileName || 'Ficheiro partilhado');
+
                 await addDoc(collection(db, 'contents'), {
                     title: autoTitle,
-                    category: 'text',
-                    description: text,
-                    text: text,
-                    url: '',
-                    bgId: selectedPostBg || 'default',
+                    category,
+                    description: text || fileName || '',
+                    text: text || '',
+                    url,
+                    storagePath: storagePath || null,
+                    storageProvider: storageProvider || null,
+                    fileName: fileName || null,
+                    fileType: fileType || null,
+                    fileSize: fileSize || null,
+                    bgId: (!file && (selectedPostBg || 'default')) || 'default',
                     textFont: selectedPostFont || 'system-ui, sans-serif',
                     textSize: selectedPostSize || '16px',
                     textColor: selectedPostColor || '',
@@ -5941,11 +6036,14 @@
                     createdAt: serverTimestamp()
                 });
                 resetAddContentForm();
+                clearSelectedFile();
                 closeModal('addContentModal');
-                showToast('Publicação criada!', 'success');
+                showToast(file ? 'Ficheiro publicado! Todos podem ver.' : 'Publicação criada!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Erro ao publicar. Tente novamente.', 'error');
+                showToast(err && err.code === 'storage/unauthorized'
+                    ? 'Sem permissão no Storage. Verifique as regras do Firebase/Supabase.'
+                    : 'Erro ao publicar. Tente novamente.', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50');
@@ -5972,6 +6070,7 @@
             applyPostBgToTextarea();
             renderPostBgPalette();
             updatePostCharCount();
+            try { clearSelectedFile(); } catch (_) {}
         }
 
         function detectMediaFromUrl(url) {
@@ -6047,138 +6146,12 @@
             }
         }
 
-        // ========== Mundo Quiz (dentro de Entretenimento) ==========
-        const MQ_MAX_ROUNDS = 100;
-        const MQ_TIME_LIMIT = 30;
-        const MQ_DB = [
-            { category: "Análise Técnica", question: "Ao identificar um 'Engolfo de Alta' (Bullish Engulfing) em zona de suporte, qual é a indicação?", options: ["Sinal de reversão para alta (Compra)", "Continuação de queda forte", "Consolidação sem tendência", "Fechamento automático no Stop Loss"], answer: 0 },
-            { category: "Gestão de Risco", question: "Qual a % máxima recomendada de risco do capital por operação?", options: ["Entre 1% e 2% da banca", "50% do saldo", "10% a 15% em cada ordem", "Alavancagem máxima sempre"], answer: 0 },
-            { category: "Indicadores", question: "Quando o RSI cruza acima de 70, o mercado está:", options: ["Sobrecomprado (alerta de correção/venda)", "Sobrevendido (compra forte)", "Sem volatilidade", "Sem necessidade de Stop Loss"], answer: 0 },
-            { category: "Sinais & Estratégia", question: "O que é definir um Take Profit (TP)?", options: ["Fechar automaticamente com o lucro atingido", "Aumentar o lote automaticamente", "Limitar perdas contra a posição", "Pagar o spread da corretora"], answer: 0 },
-            { category: "Price Action", question: "O padrão Estrela da Manhã (Morning Star) indica:", options: ["Reversão de alta após tendência de baixa", "Continuação de queda", "Fecho das bolsas", "Slippage de ordens"], answer: 0 },
-            { category: "Gestão de Risco", question: "O que é o Stop Loss?", options: ["Ordem que limita a perda máxima", "Meta de lucro automático", "Taxa da corretora", "Tipo de alavancagem"], answer: 0 }
-        ];
-
-        function mountMundoQuiz(host) {
-            if (!host) return;
-            const hist = new Set();
-            let score = 0, qNum = 1, lastCorrectIdx = -1, timer = null, timeLeft = MQ_TIME_LIMIT;
-            let curA = '';
-            let totalPlayed = parseInt(localStorage.getItem('mq_total_rounds') || '0', 10);
-            host.innerHTML = `
-            <div id="mundoQuizRoot" class="w-full max-w-xl mx-auto">
-              <div class="rounded-2xl border border-cyan-500/25 bg-slate-900/90 p-4 shadow-xl">
-                <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                  <span class="text-[10px] font-bold uppercase text-slate-400">Quiz Forex</span>
-                  <span id="mqLevel" class="text-[11px] font-extrabold text-sky-300">⭐ Nível 1</span>
-                  <span class="text-xs font-bold text-cyan-300">🏆 <span id="mqScore">0</span></span>
-                </div>
-                <div id="mqGame">
-                  <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                    <span id="mqCat" class="text-[10px] font-bold uppercase text-cyan-300">Forex</span>
-                    <span id="mqTimer" class="text-xs font-extrabold text-cyan-300">⏱️ 30s</span>
-                    <span id="mqRound" class="text-[11px] text-slate-400">Rodada 1 / ${MQ_MAX_ROUNDS}</span>
-                  </div>
-                  <div id="mqQuestion" class="text-base font-bold text-white leading-snug mb-4 min-h-[3rem]">A carregar…</div>
-                  <div id="mqOptions" class="flex flex-col gap-2"></div>
-                </div>
-                <div id="mqFeedback" class="hidden mt-3 p-3 rounded-xl border text-sm"></div>
-                <div id="mqSummary" class="hidden text-center py-4">
-                  <div class="text-3xl mb-2">🏆</div>
-                  <p class="font-bold text-white mb-2">${MQ_MAX_ROUNDS} rodadas concluídas</p>
-                  <p class="text-cyan-300 font-extrabold text-xl mb-3"><span id="mqFinalScore">0</span> acertos · <span id="mqFinalAcc">0%</span></p>
-                  <button type="button" id="mqResetBtn" class="px-4 py-2 rounded-xl font-bold text-sm bg-cyan-500 text-slate-950">🔄 Reiniciar</button>
-                </div>
-              </div>
-            </div>`;
-            const el = (id) => document.getElementById(id);
-            function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
-            window._mqStopTimer = stopTimer;
-            function updateLevel() {
-                const nivel = Math.floor(totalPlayed / 100) + 1;
-                if (el('mqLevel')) el('mqLevel').textContent = `⭐ Nível ${nivel}`;
-            }
-            function startTimer(correctIdx) {
-                stopTimer();
-                timeLeft = MQ_TIME_LIMIT;
-                const t = el('mqTimer');
-                if (t) t.textContent = `⏱️ ${timeLeft}s`;
-                timer = setInterval(() => {
-                    timeLeft--;
-                    if (t) t.textContent = `⏱️ ${timeLeft}s`;
-                    if (timeLeft <= 0) { stopTimer(); handleAns(false, null, correctIdx, true); }
-                }, 1000);
-            }
-            function nextQ() {
-                stopTimer();
-                el('mqFeedback')?.classList.add('hidden');
-                el('mqGame')?.classList.remove('hidden');
-                el('mqSummary')?.classList.add('hidden');
-                let pool = MQ_DB.filter(q => !hist.has(q.question));
-                if (!pool.length) { hist.clear(); pool = [...MQ_DB]; }
-                const quiz = pool[Math.floor(Math.random() * pool.length)];
-                hist.add(quiz.question);
-                curA = quiz.options[quiz.answer];
-                let opts = [], correctIdx = -1, tries = 0;
-                do {
-                    opts = [...quiz.options].sort(() => Math.random() - 0.5);
-                    correctIdx = opts.indexOf(curA);
-                    tries++;
-                } while (correctIdx === lastCorrectIdx && tries < 12);
-                lastCorrectIdx = correctIdx;
-                el('mqCat').textContent = quiz.category;
-                el('mqRound').textContent = `Rodada ${qNum} / ${MQ_MAX_ROUNDS}`;
-                el('mqQuestion').textContent = quiz.question;
-                el('mqOptions').innerHTML = '';
-                ['A','B','C','D'].forEach((k, idx) => {
-                    if (!opts[idx]) return;
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'w-full text-left px-3 py-2.5 rounded-xl border border-cyan-500/20 bg-slate-950/60 text-slate-100 text-sm font-semibold flex gap-2 items-center hover:border-cyan-400';
-                    btn.innerHTML = `<span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-xs font-extrabold shrink-0">${k}</span><span>${escapeHTML(opts[idx])}</span>`;
-                    btn.onclick = () => handleAns(idx === correctIdx, btn, correctIdx, false);
-                    el('mqOptions').appendChild(btn);
-                });
-                startTimer(correctIdx);
-            }
-            function handleAns(ok, selectedBtn, correctIdx, timeout) {
-                stopTimer();
-                el('mqOptions').querySelectorAll('button').forEach(b => b.disabled = true);
-                totalPlayed++;
-                localStorage.setItem('mq_total_rounds', String(totalPlayed));
-                updateLevel();
-                const btns = el('mqOptions').querySelectorAll('button');
-                if (ok && selectedBtn) { selectedBtn.classList.add('border-emerald-500', 'bg-emerald-500/20'); score++; el('mqScore').textContent = score; }
-                else {
-                    if (selectedBtn) selectedBtn.classList.add('border-rose-500', 'bg-rose-500/20');
-                    if (btns[correctIdx]) btns[correctIdx].classList.add('border-emerald-500', 'bg-emerald-500/20');
-                }
-                const fb = el('mqFeedback');
-                fb.classList.remove('hidden');
-                fb.className = 'mt-3 p-3 rounded-xl border text-sm ' + (ok ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/40 bg-rose-500/10 text-rose-200');
-                fb.innerHTML = `<b>${ok ? '✨ Correto!' : (timeout ? '⏰ Tempo esgotado!' : '❌ Incorreto!')}</b><br><span class="text-white">Resposta: ${escapeHTML(curA)}</span>`;
-                setTimeout(() => {
-                    if (qNum >= MQ_MAX_ROUNDS) {
-                        el('mqGame')?.classList.add('hidden');
-                        el('mqFeedback')?.classList.add('hidden');
-                        el('mqSummary')?.classList.remove('hidden');
-                        el('mqFinalScore').textContent = score;
-                        el('mqFinalAcc').textContent = Math.round((score / MQ_MAX_ROUNDS) * 100) + '%';
-                    } else { qNum++; nextQ(); }
-                }, 5000);
-            }
-            el('mqResetBtn')?.addEventListener('click', () => { score = 0; qNum = 1; lastCorrectIdx = -1; hist.clear(); el('mqScore').textContent = '0'; nextQ(); });
-            updateLevel();
-            nextQ();
-        }
-
         function viewContent(id) {
             const item = contents.find(c => c.id === id);
             if (!item) return;
 
             leaveEntertainmentViewers();
             leaveContentComments();
-            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
 
             const bodyText = item.text || item.description || '';
             document.getElementById('viewTitle').innerText = item.category === 'text'
@@ -6205,32 +6178,6 @@
             if (toggleChatBtn) toggleChatBtn.classList.add('hidden');
             const badge = document.getElementById('viewersBadge');
             if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
-
-            // Mundo Quiz (Entretenimento)
-            if (item.isQuiz || item.id === 'mundo-quiz') {
-                if (typeIcon) typeIcon.innerHTML = `<i class="fa-solid fa-chart-line text-lg"></i>`;
-                if (categoryDate) categoryDate.innerText = 'Entretenimento · Quiz';
-                document.getElementById('viewDescription').innerText = 'Jogue e use o chat enquanto outros jogam.';
-                downloadBtn.classList.add('hidden');
-                actionContainer.style.display = 'flex';
-                if (toggleChatBtn) {
-                    toggleChatBtn.classList.remove('hidden');
-                    toggleChatBtn.classList.add('inline-flex');
-                    toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Chat`;
-                }
-                if (badge) badge.innerHTML = `<i class="fa-solid fa-gamepad"></i> <span id="viewersCount">0</span> a jogar`;
-                container.innerHTML = '';
-                mountMundoQuiz(container);
-                joinEntertainmentViewers('mundo-quiz');
-                enableCommentsPanel('mundo-quiz');
-                if (window.innerWidth >= 640 && chatPanel) {
-                    entertainmentChatOpen = true;
-                    chatPanel.classList.remove('hidden');
-                    chatPanel.classList.add('flex');
-                }
-                openModal('viewContentModal');
-                return;
-            }
 
             downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir / Descarregar`;
             downloadBtn.onclick = null;
@@ -6893,11 +6840,6 @@
         function closeViewContent() {
             leaveEntertainmentViewers();
             leaveContentComments();
-            if (window._mqStopTimer) { try { window._mqStopTimer(); } catch (_) {} }
-            const badge = document.getElementById('viewersBadge');
-            if (badge) badge.innerHTML = `<i class="fa-solid fa-eye"></i> <span id="viewersCount">0</span> a assistir`;
-            const toggleChatBtn = document.getElementById('toggleChatBtn');
-            if (toggleChatBtn) toggleChatBtn.innerHTML = `<i class="fa-solid fa-comments"></i> Comentários`;
             const vid = document.getElementById('mdInternalVideo');
             if (vid) { try { vid.pause(); } catch (_) {} }
             closeModal('viewContentModal');
